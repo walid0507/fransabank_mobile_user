@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'header.dart'; // Importation du header personnalisé
+import 'inscription.dart'; // Importation de la page d'inscription
+import 'mdpoub.dart'; // Importation de la page Mot de passe oublié
+import 'home.dart'; // Importation de la page d'accueil
 
 void main() {
   runApp(MyApp());
@@ -8,10 +12,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Francabank Connexion',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      debugShowCheckedModeBanner: false,
+      title: 'Flutter Login',
       home: LoginScreen(),
     );
   }
@@ -36,19 +38,31 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
+      // Récupérer le nom de l'utilisateur (exemple simple)
+      String userName = _emailController.text.split('@')[0];
+
+      // Naviguer vers la page d'accueil avec le nom de l'utilisateur
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => BlankScreen()),
+        MaterialPageRoute(
+          builder: (context) => ProfileScreen(nomClient: userName),
+        ),
       );
     }
   }
 
   void _navigateToForgotPassword() {
-    print('Mot de passe oublié cliqué');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ChangerMotDePasse()),
+    );
   }
 
   void _navigateToCreateAccount() {
-    print('Créer un compte cliqué');
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => Inscription()),
+    );
   }
 
   @override
@@ -59,27 +73,12 @@ class _LoginScreenState extends State<LoginScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.blue.shade300, Colors.blue.shade900],
+            colors: [Colors.blue.shade900, Colors.blue.shade300],
           ),
         ),
         child: Column(
           children: [
-            ClipPath(
-              clipper: WaveClipper(),
-              child: Container(
-                width: double.infinity,
-                height: 150,
-                color: Colors.white,
-                child: Center(
-                  child: Image.asset(
-                    'assets/images/fransa.jpeg',
-                    width: 120,
-                    height: 120,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
+            AppHeader(),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -166,33 +165,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-}
-
-class BlankScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text('Page Blanche', style: TextStyle(fontSize: 24)),
-      ),
-    );
-  }
-}
-
-class WaveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    Path path = Path();
-    path.lineTo(0, size.height - 30);
-    path.quadraticBezierTo(
-        size.width / 4, size.height, size.width / 2, size.height - 20);
-    path.quadraticBezierTo(
-        3 * size.width / 4, size.height - 40, size.width, size.height - 20);
-    path.lineTo(size.width, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

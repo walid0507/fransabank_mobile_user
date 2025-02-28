@@ -45,5 +45,8 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NFCReaderUsageDescription</key>
+	<string>Nous avons besoin d'acceder au NFC pour lire les cartes d'identite .</string>
+
 </dict>
 </plist>
