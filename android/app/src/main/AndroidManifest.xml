@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.flutter_application_2"> <!-- Remplace par ton package réel -->
+    package="com.example.projet1"> <!-- Remplace par ton package réel -->
 
     <!-- Permission pour utiliser NFC -->
     <uses-permission android:name="android.permission.NFC" />
@@ -7,7 +7,7 @@
     <uses-feature android:name="android.hardware.nfc.hce" android:required="false" />
 
     <application
-        android:label="flutter_application_2"
+        android:label="projet1"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         

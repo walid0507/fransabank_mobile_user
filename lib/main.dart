@@ -3,6 +3,9 @@ import 'header.dart'; // Importation du header personnalisé
 import 'inscription.dart'; // Importation de la page d'inscription
 import 'mdpoub.dart'; // Importation de la page Mot de passe oublié
 import 'home.dart'; // Importation de la page d'accueil
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(MyApp());
@@ -36,18 +39,51 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _submit() {
+  void _submit() async {
     if (_formKey.currentState!.validate()) {
-      // Récupérer le nom de l'utilisateur (exemple simple)
-      String userName = _emailController.text.split('@')[0];
+      String email = _emailController.text;
+      String password = _passwordController.text;
 
-      // Naviguer vers la page d'accueil avec le nom de l'utilisateur
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ProfileScreen(nomClient: userName),
-        ),
-      );
+      final url = Uri.parse('http://127.0.0.1:8000/api/login/'); // URL de l'API de connexion
+      print("🔹 Envoi des identifiants à l'API...");
+
+      try {
+        final response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'email': email, 'password': password}),
+        );
+
+        print("🔹 Réponse API reçue: ${response.statusCode}");
+        print("🔹 Corps de la réponse: ${response.body}");
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          String token = data['access']; // Récupération du token JWT
+
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('auth_token', token);
+
+          print("✅ Connexion réussie, Token JWT : $token");
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProfileScreen(nomClient: email.split('@')[0]),
+            ),
+          );
+        } else {
+          print("❌ Erreur de connexion: ${response.body}");
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Identifiants incorrects')),
+          );
+        }
+      } catch (error) {
+        print("❌ Erreur réseau: $error");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Problème de connexion au serveur')),
+        );
+      }
     }
   }
 

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'header.dart';
 import 'home.dart'; // Importe la page ProfileScreen
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Inscription extends StatefulWidget {
   const Inscription({super.key});
@@ -10,10 +13,65 @@ class Inscription extends StatefulWidget {
 }
 
 class _InscriptionState extends State<Inscription> {
+  final _formKey = GlobalKey<FormState>();
+  final _nomController = TextEditingController();
+  final _prenomController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
+  }
+
+  Future<void> _submit() async {
+    if (_formKey.currentState!.validate()) {
+      if (_passwordController.text != _confirmPasswordController.text) {
+        _showMessage("Les mots de passe ne correspondent pas.");
+        return;
+      }
+
+      final url = Uri.parse(
+          'http://127.0.0.1:8000/api/register/'); // URL de l'API d'inscription
+      final body = jsonEncode({
+        'username':
+            _emailController.text, // Utilisez l'email comme nom d'utilisateur
+        'email': _emailController.text,
+        'password': _passwordController.text,
+        'password2': _confirmPasswordController.text, // Ajoutez ce champ
+        'first_name': _prenomController.text,
+        'last_name': _nomController.text,
+      });
+
+      try {
+        final response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: body,
+        );
+
+        if (response.statusCode == 201) {
+          _showMessage("Inscription réussie !");
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProfileScreen(
+                nomClient: _prenomController.text,
+              ),
+            ),
+          );
+        } else {
+          final data = jsonDecode(response.body);
+          print(
+              "Erreur API: ${response.statusCode}, ${response.body}"); // Affichez l'erreur
+          _showMessage(data['error'] ?? "Erreur lors de l'inscription");
+        }
+      } catch (error) {
+        _showMessage("Erreur réseau: $error");
+      }
+    }
   }
 
   @override
@@ -50,39 +108,34 @@ class _InscriptionState extends State<Inscription> {
               Padding(
                 padding: EdgeInsets.all(30),
                 child: Form(
+                  key: _formKey,
                   child: Column(
                     children: [
                       SizedBox(height: 30),
-                      _buildTextField(Icons.account_circle, "Votre nom", "Nom"),
+                      _buildTextField(Icons.account_circle, "Votre nom", "Nom",
+                          _nomController),
+                      SizedBox(height: 20),
+                      _buildTextField(Icons.account_circle, "Votre prénom",
+                          "Prénom", _prenomController),
                       SizedBox(height: 20),
                       _buildTextField(
-                          Icons.account_circle, "Votre prénom", "Prénom"),
-                      SizedBox(height: 20),
-                      _buildTextField(Icons.mail, "Votre mail", "E-mail"),
+                          Icons.mail, "Votre mail", "E-mail", _emailController),
                       SizedBox(height: 20),
                       _buildTextField(Icons.lock, "Votre mot de passe",
-                          "Créer un mot de passe"),
+                          "Créer un mot de passe", _passwordController,
+                          isPassword: true),
                       SizedBox(height: 20),
-                      _buildTextField(Icons.lock, "Confirmez",
-                          "Confirmez votre mot de passe"),
-                      SizedBox(height: 20),
-                      _buildTextField(Icons.phone, "Votre numéro de téléphone",
-                          "Numéro de téléphone"),
+                      _buildTextField(
+                          Icons.lock,
+                          "Confirmez",
+                          "Confirmez votre mot de passe",
+                          _confirmPasswordController,
+                          isPassword: true),
                       SizedBox(height: 20),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            // Redirection vers ProfileScreen
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ProfileScreen(
-                                  nomClient: "Nom du Client", // Remplace par la valeur du formulaire
-                                ),
-                              ),
-                            );
-                          },
+                          onPressed: _submit,
                           child: Text("S'inscrire"),
                         ),
                       ),
@@ -129,8 +182,12 @@ class _InscriptionState extends State<Inscription> {
     );
   }
 
-  Widget _buildTextField(IconData icon, String hintText, String labelText) {
+  Widget _buildTextField(IconData icon, String hintText, String labelText,
+      TextEditingController controller,
+      {bool isPassword = false}) {
     return TextFormField(
+      controller: controller,
+      obscureText: isPassword,
       decoration: InputDecoration(
         prefixIcon: Icon(icon),
         hintText: hintText,
@@ -142,6 +199,18 @@ class _InscriptionState extends State<Inscription> {
           borderSide: BorderSide.none,
         ),
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Ce champ est obligatoire';
+        }
+        if (labelText.contains("mail") && !value.contains('@')) {
+          return 'Veuillez entrer un email valide';
+        }
+        if (labelText.contains("mot de passe") && value.length < 8) {
+          return 'Le mot de passe doit contenir au moins 8 caractères';
+        }
+        return null;
+      },
     );
   }
 
