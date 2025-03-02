@@ -32,8 +32,8 @@ class _InscriptionState extends State<Inscription> {
         _showMessage("Les mots de passe ne correspondent pas.");
         return;
       }
-      const String API_BASE_URL = "https://xxxxx.ngrok.io";
 
+      const String API_BASE_URL = "https://b37c-154-121-24-24.ngrok-free.app";
       final url = Uri.parse('$API_BASE_URL/api/register/');
 
       final body = jsonEncode({
@@ -44,27 +44,25 @@ class _InscriptionState extends State<Inscription> {
         'first_name': _prenomController.text,
         'last_name': _nomController.text,
       });
-      print("📤 Données envoyées: $body");
-      final response = await http.post(
-  url,
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  },
-  body: body,
-);
 
-print("📩 Réponse reçue: ${response.statusCode} - ${response.body}");
+      print("📤 Données envoyées: $body");
 
       try {
         final response = await http.post(
           url,
-          headers: {'Content-Type': 'application/json'},
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
           body: body,
         );
 
+        print("📩 Réponse reçue: ${response.statusCode} - ${response.body}");
+
         if (response.statusCode == 201) {
           _showMessage("Inscription réussie ! Vérifiez votre email.");
+
+          // ✅ Redirection correcte vers EmailVerificationScreen
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -74,10 +72,10 @@ print("📩 Réponse reçue: ${response.statusCode} - ${response.body}");
           );
         } else {
           final data = jsonDecode(response.body);
-          _showMessage(data['error'] ?? "Erreur lors de l'inscription");
+          _showMessage(data['error'] ?? "Erreur lors de l'inscription.");
         }
       } catch (error) {
-        _showMessage("Erreur réseau: $error");
+        _showMessage("Erreur réseau : $error");
       }
     }
   }
@@ -102,10 +100,7 @@ print("📩 Réponse reçue: ${response.statusCode} - ${response.body}");
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                Colors.blue.shade900,
-                Colors.blue.shade300,
-              ],
+              colors: [Colors.blue.shade900, Colors.blue.shade300],
             ),
           ),
           child: Column(

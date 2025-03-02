@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'header.dart'; // Importation du header personnalisé
-import 'inscription.dart'; // Importation de la page d'inscription
-import 'mdpoub.dart'; // Importation de la page Mot de passe oublié
-import 'home.dart'; // Importation de la page d'accueil
+import 'header.dart';
+import 'inscription.dart';
+import 'mdpoub.dart'; // Mot de passe oublié
+import 'home.dart'; // Page d'accueil
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'verif_mail.dart';
+import 'verif_mail.dart'; // Page de vérification d'email
 
 void main() {
   runApp(MyApp());
@@ -32,6 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -40,54 +41,69 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _submit() async {
-    if (_formKey.currentState!.validate()) {
-      String email = _emailController.text;
-      String password = _passwordController.text;
-      const String API_BASE_URL = "https://xxxxx.ngrok.io";
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
 
-      final url = Uri.parse('$API_BASE_URL/api/register/');
- // URL de l'API de connexion
-      print("🔹 Envoi des identifiants à l'API...");
+    setState(() => _isLoading = true);
 
-      try {
-        final response = await http.post(
-          url,
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({'email': email, 'password': password}),
-        );
+    String email = _emailController.text.trim();
+    String password = _passwordController.text;
+    const String API_BASE_URL = "https://b37c-154-121-24-24.ngrok-free.app";
+    final url = Uri.parse('$API_BASE_URL/api/login/');
 
-        print("🔹 Réponse API reçue: ${response.statusCode}");
-        print("🔹 Corps de la réponse: ${response.body}");
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
+      );
 
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          String token = data['access']; // Récupération du token JWT
+      final data = jsonDecode(response.body);
 
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('auth_token', token);
+      if (response.statusCode == 200) {
+        bool emailVerifie = data['email_verified'] ?? false;
 
-          print("✅ Connexion réussie, Token JWT : $token");
-
+        if (!emailVerifie) {
+          _showMessage("Veuillez vérifier votre email avant de vous connecter.");
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ProfileScreen(nomClient: email.split('@')[0]),
+              builder: (context) => EmailVerificationScreen(email: email),
             ),
           );
-        } else {
-          print("❌ Erreur de connexion: ${response.body}");
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Identifiants incorrects')),
-          );
+          return;
         }
-      } catch (error) {
-        print("❌ Erreur réseau: $error");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Problème de connexion au serveur')),
+
+        String token = data['access']; // Récupération du token JWT
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', token);
+
+        print("✅ Connexion réussie, Token JWT : $token");
+        _showMessage("Connexion réussie", isError: false);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  ProfileScreen(nomClient: email.split('@')[0])),
         );
+      } else {
+        _showMessage(data['error'] ?? "Identifiants incorrects");
       }
+    } catch (error) {
+      _showMessage("Problème de connexion au serveur");
+    } finally {
+      setState(() => _isLoading = false);
     }
+  }
+
+  void _showMessage(String message, {bool isError = true}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
   }
 
   void _navigateToForgotPassword() {
@@ -191,8 +207,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       SizedBox(height: 24.0),
                       ElevatedButton(
-                        onPressed: _submit,
-                        child: Text('Se connecter'),
+                        onPressed: _isLoading ? null : _submit,
+                        child: _isLoading
+                            ? CircularProgressIndicator(color: Colors.white)
+                            : Text('Se connecter'),
                       ),
                     ],
                   ),
