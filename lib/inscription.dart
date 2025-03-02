@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'header.dart';
-import 'home.dart'; // Importe la page ProfileScreen
+import 'verif_mail.dart'; // Import de l'écran de vérification
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Inscription extends StatefulWidget {
   const Inscription({super.key});
@@ -14,6 +13,7 @@ class Inscription extends StatefulWidget {
 
 class _InscriptionState extends State<Inscription> {
   final _formKey = GlobalKey<FormState>();
+  final _usernameController = TextEditingController();
   final _nomController = TextEditingController();
   final _prenomController = TextEditingController();
   final _emailController = TextEditingController();
@@ -32,18 +32,29 @@ class _InscriptionState extends State<Inscription> {
         _showMessage("Les mots de passe ne correspondent pas.");
         return;
       }
+      const String API_BASE_URL = "https://xxxxx.ngrok.io";
 
-      final url = Uri.parse(
-          'http://127.0.0.1:8000/api/register/'); // URL de l'API d'inscription
+      final url = Uri.parse('$API_BASE_URL/api/register/');
+
       final body = jsonEncode({
-        'username':
-            _emailController.text, // Utilisez l'email comme nom d'utilisateur
+        'username': _usernameController.text,
         'email': _emailController.text,
         'password': _passwordController.text,
-        'password2': _confirmPasswordController.text, // Ajoutez ce champ
+        'password2': _confirmPasswordController.text,
         'first_name': _prenomController.text,
         'last_name': _nomController.text,
       });
+      print("📤 Données envoyées: $body");
+      final response = await http.post(
+  url,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
+  body: body,
+);
+
+print("📩 Réponse reçue: ${response.statusCode} - ${response.body}");
 
       try {
         final response = await http.post(
@@ -53,19 +64,16 @@ class _InscriptionState extends State<Inscription> {
         );
 
         if (response.statusCode == 201) {
-          _showMessage("Inscription réussie !");
+          _showMessage("Inscription réussie ! Vérifiez votre email.");
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ProfileScreen(
-                nomClient: _prenomController.text,
-              ),
+              builder: (context) =>
+                  EmailVerificationScreen(email: _emailController.text),
             ),
           );
         } else {
           final data = jsonDecode(response.body);
-          print(
-              "Erreur API: ${response.statusCode}, ${response.body}"); // Affichez l'erreur
           _showMessage(data['error'] ?? "Erreur lors de l'inscription");
         }
       } catch (error) {
@@ -111,7 +119,12 @@ class _InscriptionState extends State<Inscription> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      SizedBox(height: 30),
+                      _buildTextField(
+                          Icons.person,
+                          "Entrez votre nom d'utilisateur",
+                          "Nom d'utilisateur",
+                          _usernameController),
+                      SizedBox(height: 16.0),
                       _buildTextField(Icons.account_circle, "Votre nom", "Nom",
                           _nomController),
                       SizedBox(height: 20),
@@ -139,40 +152,9 @@ class _InscriptionState extends State<Inscription> {
                           child: Text("S'inscrire"),
                         ),
                       ),
-                      SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Expanded(
-                              child:
-                                  Divider(thickness: 0.5, color: Colors.white)),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 10),
-                            child: Text("Nous contacter",
-                                style: TextStyle(color: Colors.white)),
-                          ),
-                          Expanded(
-                              child:
-                                  Divider(thickness: 0.5, color: Colors.white)),
-                        ],
-                      ),
                     ],
                   ),
                 ),
-              ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: () => _showMessage("021 99 92 04"),
-                    child: _buildIconContainer("assets/images/telephone.png"),
-                  ),
-                  SizedBox(width: 20),
-                  GestureDetector(
-                    onTap: () => _showMessage("info@fransabank.dz"),
-                    child: _buildIconContainer("assets/images/mail.png"),
-                  ),
-                ],
               ),
               SizedBox(height: 30),
             ],
@@ -211,21 +193,6 @@ class _InscriptionState extends State<Inscription> {
         }
         return null;
       },
-    );
-  }
-
-  Widget _buildIconContainer(String assetPath) {
-    return Container(
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black38),
-        borderRadius: BorderRadius.circular(16),
-        color: Colors.grey,
-      ),
-      child: Image.asset(
-        assetPath,
-        height: 20,
-      ),
     );
   }
 }

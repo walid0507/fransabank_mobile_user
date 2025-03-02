@@ -6,6 +6,7 @@ import 'home.dart'; // Importation de la page d'accueil
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'verif_mail.dart';
 
 void main() {
   runApp(MyApp());
@@ -43,8 +44,10 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       String email = _emailController.text;
       String password = _passwordController.text;
+      const String API_BASE_URL = "https://xxxxx.ngrok.io";
 
-      final url = Uri.parse('http://127.0.0.1:8000/api/login/'); // URL de l'API de connexion
+      final url = Uri.parse('$API_BASE_URL/api/register/');
+ // URL de l'API de connexion
       print("🔹 Envoi des identifiants à l'API...");
 
       try {
