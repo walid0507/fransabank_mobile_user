@@ -48,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     String email = _emailController.text.trim();
     String password = _passwordController.text;
-    const String API_BASE_URL = "https://b37c-154-121-24-24.ngrok-free.app";
+    const String API_BASE_URL = "https://8620-154-121-84-21.ngrok-free.app";
     final url = Uri.parse('$API_BASE_URL/api/login/');
 
     try {
@@ -64,7 +64,8 @@ class _LoginScreenState extends State<LoginScreen> {
         bool emailVerifie = data['email_verified'] ?? false;
 
         if (!emailVerifie) {
-          _showMessage("Veuillez vérifier votre email avant de vous connecter.");
+          _showMessage(
+              "Veuillez vérifier votre email avant de vous connecter.");
           Navigator.push(
             context,
             MaterialPageRoute(
