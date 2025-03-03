@@ -48,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     String email = _emailController.text.trim();
     String password = _passwordController.text;
-    const String API_BASE_URL = "https://8620-154-121-84-21.ngrok-free.app";
+    const String API_BASE_URL = "https://fd0c-41-220-147-108.ngrok-free.app";
     final url = Uri.parse('$API_BASE_URL/api/login/');
 
     try {
