@@ -33,7 +33,7 @@ class _InscriptionState extends State<Inscription> {
         return;
       }
 
-      const String API_BASE_URL = "https://0e0b-105-100-185-40.ngrok-free.app";
+      const String API_BASE_URL = "https://fd0c-41-220-147-108.ngrok-free.app";
       final url = Uri.parse('$API_BASE_URL/api/register/');
 
       final body = jsonEncode({
