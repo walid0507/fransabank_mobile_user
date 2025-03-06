@@ -48,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     String email = _emailController.text.trim();
     String password = _passwordController.text;
-    const String API_BASE_URL = "https://8620-154-121-84-21.ngrok-free.app";
+    const String API_BASE_URL = "https://0e0b-105-100-185-40.ngrok-free.app";
     final url = Uri.parse('$API_BASE_URL/api/login/');
 
     try {
@@ -124,12 +124,17 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.blue.shade900, Colors.blue.shade300],
+            colors: [Colors.blue.shade300, Colors.blue.shade900],
           ),
         ),
         child: Column(

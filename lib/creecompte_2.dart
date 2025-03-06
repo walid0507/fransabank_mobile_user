@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_nfc_kit/flutter_nfc_kit.dart';
-import 'dart:convert';
 
 class CreateAccount extends StatefulWidget {
   @override
@@ -16,47 +14,6 @@ class _CreateAccountState extends State<CreateAccount> {
   TextEditingController dateNaissanceController = TextEditingController();
   TextEditingController lieuNaissanceController = TextEditingController();
   TextEditingController numIdentiteController = TextEditingController();
-
-  Future<void> _scanNFC() async {
-    try {
-      NFCTag tag = await FlutterNfcKit.poll();
-
-      // Exemple de commande APDU pour sélectionner une application (à adapter selon la carte)
-      String response =
-          await FlutterNfcKit.transceive("00A4040007A0000002471001");
-      print("Réponse APDU: $response");
-
-      // Exemple de lecture d'un fichier spécifique sur la carte (à adapter selon la structure)
-      String dataResponse = await FlutterNfcKit.transceive("00B000000A");
-      print("Données brutes: $dataResponse");
-
-      // Décodage des données (à adapter en fonction du format réel)
-      Map<String, String> parsedData = _parseCardData(dataResponse);
-
-      setState(() {
-        nomController.text = parsedData['nom'] ?? '';
-        prenomController.text = parsedData['prenom'] ?? '';
-        dateNaissanceController.text = parsedData['date_naissance'] ?? '';
-        lieuNaissanceController.text = parsedData['lieu_naissance'] ?? '';
-        numIdentiteController.text = parsedData['num_identite'] ?? '';
-        gender = parsedData['sexe'] == 'M' ? 'Homme' : 'Femme';
-      });
-    } catch (e) {
-      print('Erreur de lecture NFC : $e');
-    }
-  }
-
-  Map<String, String> _parseCardData(String data) {
-    // Simuler un parsing des données (à remplacer par un vrai décodeur selon le format de la carte)
-    return {
-      'nom': 'Doe',
-      'prenom': 'John',
-      'date_naissance': '01/01/1990',
-      'lieu_naissance': 'Alger',
-      'num_identite': '123456789',
-      'sexe': 'M'
-    };
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -108,12 +65,6 @@ class _CreateAccountState extends State<CreateAccount> {
                   _buildTextField(
                       "Numéro d'identité nationale", numIdentiteController),
                   SizedBox(height: 20),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _scanNFC,
-                      child: Text('Scanner la carte NFC'),
-                    ),
-                  ),
                 ],
               ),
             ),

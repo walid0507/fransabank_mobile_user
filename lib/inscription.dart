@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'header.dart';
-import 'verif_mail.dart'; // Import de l'écran de vérification
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'verif_mail.dart';
+import 'header.dart';
 
 class Inscription extends StatefulWidget {
   const Inscription({super.key});
@@ -33,7 +33,7 @@ class _InscriptionState extends State<Inscription> {
         return;
       }
 
-      const String API_BASE_URL = "https://8620-154-121-84-21.ngrok-free.app";
+      const String API_BASE_URL = "https://0e0b-105-100-185-40.ngrok-free.app";
       final url = Uri.parse('$API_BASE_URL/api/register/');
 
       final body = jsonEncode({
@@ -45,24 +45,15 @@ class _InscriptionState extends State<Inscription> {
         'last_name': _nomController.text,
       });
 
-      print("📤 Données envoyées: $body");
-
       try {
         final response = await http.post(
           url,
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
+          headers: {'Content-Type': 'application/json'},
           body: body,
         );
 
-        print("📩 Réponse reçue: ${response.statusCode} - ${response.body}");
-
         if (response.statusCode == 201) {
           _showMessage("Inscription réussie ! Vérifiez votre email.");
-
-          // ✅ Redirection correcte vers EmailVerificationScreen
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -85,57 +76,50 @@ class _InscriptionState extends State<Inscription> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        backgroundColor: Colors.blue.shade900,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.blue.shade900, Colors.blue.shade300],
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.blue.shade300, Colors.blue.shade900],
           ),
+        ),
+        child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(height: MediaQuery.of(context).size.height * 0.1),
               AppHeader(),
-              SizedBox(height: 30),
               Padding(
                 padding: EdgeInsets.all(30),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     children: [
-                      _buildTextField(
-                          Icons.person,
-                          "Entrez votre nom d'utilisateur",
-                          "Nom d'utilisateur",
+                      _buildTextField(Icons.person, "Nom d'utilisateur",
                           _usernameController),
                       SizedBox(height: 16.0),
-                      _buildTextField(Icons.account_circle, "Votre nom", "Nom",
-                          _nomController),
-                      SizedBox(height: 20),
-                      _buildTextField(Icons.account_circle, "Votre prénom",
-                          "Prénom", _prenomController),
+                      _buildTextField(
+                          Icons.account_circle, "Nom", _nomController),
                       SizedBox(height: 20),
                       _buildTextField(
-                          Icons.mail, "Votre mail", "E-mail", _emailController),
+                          Icons.account_circle, "Prénom", _prenomController),
                       SizedBox(height: 20),
-                      _buildTextField(Icons.lock, "Votre mot de passe",
-                          "Créer un mot de passe", _passwordController,
+                      _buildTextField(Icons.mail, "E-mail", _emailController),
+                      SizedBox(height: 20),
+                      _buildTextField(Icons.lock, "Créer un mot de passe",
+                          _passwordController,
                           isPassword: true),
                       SizedBox(height: 20),
                       _buildTextField(
                           Icons.lock,
-                          "Confirmez",
                           "Confirmez votre mot de passe",
                           _confirmPasswordController,
                           isPassword: true),
@@ -151,7 +135,6 @@ class _InscriptionState extends State<Inscription> {
                   ),
                 ),
               ),
-              SizedBox(height: 30),
             ],
           ),
         ),
@@ -159,15 +142,14 @@ class _InscriptionState extends State<Inscription> {
     );
   }
 
-  Widget _buildTextField(IconData icon, String hintText, String labelText,
-      TextEditingController controller,
+  Widget _buildTextField(
+      IconData icon, String labelText, TextEditingController controller,
       {bool isPassword = false}) {
     return TextFormField(
       controller: controller,
       obscureText: isPassword,
       decoration: InputDecoration(
         prefixIcon: Icon(icon),
-        hintText: hintText,
         labelText: labelText,
         filled: true,
         fillColor: Colors.blue.shade50,
