@@ -4,12 +4,9 @@ class CommonHeader extends StatelessWidget {
   final Widget body;
   final String title;
 
-  const CommonHeader({
-    Key? key,
-    required this.body,
-    required this.title,
-  }) : super(key: key);
-
+  const CommonHeader({Key? key, required this.body, required this.title})
+    : super(key: key);
+  //hello nchalah sa marche
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,7 +39,8 @@ class CommonHeader extends StatelessWidget {
         // Ajout d'un Padding en haut pour décaler le contenu vers le bas
         child: Padding(
           padding: const EdgeInsets.only(
-              top: 50.0), // Ajustez cette valeur selon vos besoins
+            top: 50.0,
+          ), // Ajustez cette valeur selon vos besoins
           child: body,
         ),
       ),
