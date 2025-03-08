@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'creecompte.dart'; // Importation de la page de création de compte
 import 'main.dart'; // Importation de la page de connexion
-import 'cartes.dart'; // Importation de la page Cartes
-import 'agences_gab.dart'; // Importation de la page Agences & GAB
-import 'parametres.dart'; // Importation de la page Paramètres
-import 'offres.dart'; // Importation de la page Offres
+import 'cocomptebanc.dart'; // Importation de la page de compte existant
 
 class ProfileScreen extends StatelessWidget {
   final String nomClient;
@@ -18,12 +15,6 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
         centerTitle: true,
         title: Image.asset(
           'assets/images/image003.jpeg',
@@ -41,161 +32,84 @@ class ProfileScreen extends StatelessWidget {
           ),
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 200),
+            const SizedBox(height: 50),
             Text(
-              "Bonjour $nomClient",
+              "Bonjour, $nomClient",
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 10),
-            const Text(
-              "Bienvenue dans votre espace client",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
-            ),
+            const SizedBox(height: 30),
+            _buildButton(context, "J'ai déjà un compte bancaire", () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => LoginPage()),
+              );
+            }),
             const SizedBox(height: 20),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: GridView.count(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  padding: const EdgeInsets.only(bottom: 20),
-                  children: [
-                    _buildMenuItem(Icons.person, 'Comptes'),
-                    _buildMenuItem(
-                      Icons.credit_card,
-                      'Cartes',
-                      onPressed: () => _onCartesPressed(context),
-                    ),
-                    _buildMenuItem(
-                      Icons.local_offer,
-                      'Offres',
-                      onPressed: () => _onOffresPressed(
-                          context), // Ajout de l'action pour le bouton "Offres"
-                    ),
-                    _buildMenuItem(
-                      Icons.location_on,
-                      'Agences & GAB',
-                      onPressed: () => _onAgencesPressed(context),
-                    ),
-                    _buildMenuItem(
-                      Icons.settings,
-                      'Paramètres',
-                      onPressed: () => _onParametresPressed(
-                          context), // Ajout de l'action pour le bouton "Paramètres"
-                    ),
-                    _buildMenuItem(
-                      Icons.add_business,
-                      'Créer un compte bancaire',
-                      onPressed: () => _onCreateAccountPressed(context),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            _buildButton(context, "Créer un compte bancaire", () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CreateAccountScreen()),
+              );
+            }),
+            const Spacer(),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton.icon(
-                onPressed: () => _onLogoutPressed(context),
+                onPressed: () {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                    (Route<dynamic> route) => false,
+                  );
+                },
                 icon: const Icon(Icons.logout),
                 label: const Text('Déconnexion'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.redAccent,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 16.0, horizontal: 24.0),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
               ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMenuItem(IconData icon, String label,
-      {VoidCallback? onPressed}) {
-    return ElevatedButton(
-      onPressed: onPressed ?? () {},
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.blue.shade700,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+  Widget _buildButton(
+      BuildContext context, String label, VoidCallback onPressed) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.blue.shade700,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 16),
+          ),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 20),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 30, color: Colors.blue.shade700),
-          const SizedBox(height: 10),
-          Text(label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14)),
-        ],
-      ),
-    );
-  }
-
-  // Fonction pour la création de compte
-  void _onCreateAccountPressed(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => CreateAccountScreen()),
-    );
-  }
-
-  // Fonction pour la déconnexion
-  void _onLogoutPressed(BuildContext context) {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
-      (Route<dynamic> route) => false,
-    );
-  }
-
-  // Fonction pour naviguer vers la page Cartes
-  void _onCartesPressed(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CartesPage(nomClient: nomClient),
-      ),
-    );
-  }
-
-  // Fonction pour naviguer vers la page Agences & GAB
-  void _onAgencesPressed(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => AgencesScreen()),
-    );
-  }
-
-  // Fonction pour naviguer vers la page Offres
-  void _onOffresPressed(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => OffresScreen()),
-    );
-  }
-
-  // Fonction pour naviguer vers la page Paramètres
-  void _onParametresPressed(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => ParametresScreen()),
     );
   }
 }
