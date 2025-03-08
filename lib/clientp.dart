@@ -6,10 +6,10 @@ import 'agences_gab.dart'; // Importation de la page Agences & GAB
 import 'parametres.dart'; // Importation de la page Paramètres
 import 'offres.dart'; // Importation de la page Offres
 
-class ProfileScreen extends StatelessWidget {
+class ClientScreen extends StatelessWidget {
   final String nomClient;
 
-  const ProfileScreen({Key? key, required this.nomClient}) : super(key: key);
+  const ClientScreen({Key? key, required this.nomClient}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -6,7 +6,8 @@ import 'home.dart'; // Page d'accueil
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'verif_mail.dart'; // Page de vérification d'email
+import 'verif_mail.dart';
+import 'clientp.dart'; // Page de vérification d'email
 
 void main() {
   runApp(MyApp());
@@ -48,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     String email = _emailController.text.trim();
     String password = _passwordController.text;
-    const String API_BASE_URL = "https://d97b-105-98-117-53.ngrok-free.app";
+    const String API_BASE_URL = "https://e189-105-101-26-159.ngrok-free.app";
 
     final url = Uri.parse('$API_BASE_URL/api/login/');
 
