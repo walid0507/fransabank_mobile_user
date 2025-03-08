@@ -14,24 +14,6 @@ class ClientScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        centerTitle: true,
-        title: Image.asset(
-          'assets/images/image003.jpeg',
-          width: 250,
-          height: 80,
-          fit: BoxFit.contain,
-        ),
-      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -42,7 +24,9 @@ class ClientScreen extends StatelessWidget {
         ),
         child: Column(
           children: [
-            const SizedBox(height: 200),
+            const SizedBox(height: 50),
+            _buildFrontCard(),
+            const SizedBox(height: 20),
             Text(
               "Bonjour $nomClient",
               style: const TextStyle(
@@ -70,51 +54,48 @@ class ClientScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 20),
                   children: [
                     _buildMenuItem(Icons.person, 'Comptes'),
+                    _buildMenuItem(Icons.credit_card, 'Cartes'),
+                    _buildMenuItem(Icons.local_offer, 'Offres'),
+                    _buildMenuItem(Icons.location_on, 'Agences & GAB'),
+                    _buildMenuItem(Icons.settings, 'Paramètres'),
                     _buildMenuItem(
-                      Icons.credit_card,
-                      'Cartes',
-                      onPressed: () => _onCartesPressed(context),
-                    ),
-                    _buildMenuItem(
-                      Icons.local_offer,
-                      'Offres',
-                      onPressed: () => _onOffresPressed(
-                          context), // Ajout de l'action pour le bouton "Offres"
-                    ),
-                    _buildMenuItem(
-                      Icons.location_on,
-                      'Agences & GAB',
-                      onPressed: () => _onAgencesPressed(context),
-                    ),
-                    _buildMenuItem(
-                      Icons.settings,
-                      'Paramètres',
-                      onPressed: () => _onParametresPressed(
-                          context), // Ajout de l'action pour le bouton "Paramètres"
-                    ),
-                    _buildMenuItem(
-                      Icons.add_business,
-                      'Créer un compte bancaire',
-                      onPressed: () => _onCreateAccountPressed(context),
-                    ),
+                        Icons.add_business, 'Créer un compte bancaire'),
                   ],
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton.icon(
-                onPressed: () => _onLogoutPressed(context),
-                icon: const Icon(Icons.logout),
-                label: const Text('Déconnexion'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
+            const SizedBox(height: 20),
+            Text(
+              'Transactions',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics: AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                itemCount: 3,
+                itemBuilder: (context, index) {
+                  return _buildTransactionItem(
+                    index == 0
+                        ? Icons.payment
+                        : (index == 1
+                            ? Icons.shopping_cart
+                            : Icons.directions_car),
+                    index == 0 ? 'netflix' : (index == 1 ? 'psplus' : 'yassir'),
+                    index == 0
+                        ? '-570 da'
+                        : (index == 1 ? '-205 da' : '-398 da'),
+                    index == 0 ? 'Paid' : 'Failed',
+                    index == 0
+                        ? '14 Juillet 2025'
+                        : (index == 1 ? '02 Juillet 2025' : '10 juin 2025'),
+                  );
+                },
               ),
             ),
           ],
@@ -123,79 +104,117 @@ class ClientScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(IconData icon, String label,
-      {VoidCallback? onPressed}) {
-    return ElevatedButton(
-      onPressed: onPressed ?? () {},
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.blue.shade700,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+  Widget _buildMenuItem(IconData icon, String label) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, size: 40, color: Colors.white),
+        const SizedBox(height: 5),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 20),
+      ],
+    );
+  }
+
+  Widget _buildFrontCard() {
+    return Container(
+      width: 350,
+      height: 200,
+      margin: EdgeInsets.all(16),
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.blue.shade800, Colors.blue.shade500],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 30, color: Colors.blue.shade700),
-          const SizedBox(height: 10),
-          Text(label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Fransabank',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Icon(Icons.credit_card, color: Colors.white, size: 30),
+            ],
+          ),
+          SizedBox(height: 20),
+          Text(
+            '6501 0702 1205 5051',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              letterSpacing: 2,
+            ),
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Exp: 12/20',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+            ),
+          ),
         ],
       ),
     );
   }
+}
 
-  // Fonction pour la création de compte
-  void _onCreateAccountPressed(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => CreateAccountScreen()),
-    );
-  }
-
-  // Fonction pour la déconnexion
-  void _onLogoutPressed(BuildContext context) {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
-      (Route<dynamic> route) => false,
-    );
-  }
-
-  // Fonction pour naviguer vers la page Cartes
-  void _onCartesPressed(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CartesPage(nomClient: nomClient),
+Widget _buildTransactionItem(
+    IconData icon, String title, String amount, String status, String date) {
+  return Card(
+    margin: EdgeInsets.only(bottom: 10),
+    elevation: 3,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: ListTile(
+      leading: Icon(icon, color: Colors.blue.shade900),
+      title: Text(title,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      subtitle: Text(date, style: TextStyle(fontSize: 14)),
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            amount,
+            style: TextStyle(
+              fontSize: 16,
+              color: status == 'Failed' ? Colors.red : Colors.green,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            status,
+            style: TextStyle(
+              fontSize: 12,
+              color: status == 'Failed' ? Colors.red : Colors.green,
+            ),
+          ),
+        ],
       ),
-    );
-  }
-
-  // Fonction pour naviguer vers la page Agences & GAB
-  void _onAgencesPressed(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => AgencesScreen()),
-    );
-  }
-
-  // Fonction pour naviguer vers la page Offres
-  void _onOffresPressed(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => OffresScreen()),
-    );
-  }
-
-  // Fonction pour naviguer vers la page Paramètres
-  void _onParametresPressed(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => ParametresScreen()),
-    );
-  }
+    ),
+  );
 }
