@@ -48,7 +48,7 @@ class ClientScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: GridView.count(
-                  crossAxisCount: 3,
+                  crossAxisCount: 4,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
                   padding: const EdgeInsets.only(bottom: 20),
@@ -73,31 +73,6 @@ class ClientScreen extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
-            Expanded(
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics: AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                itemCount: 3,
-                itemBuilder: (context, index) {
-                  return _buildTransactionItem(
-                    index == 0
-                        ? Icons.payment
-                        : (index == 1
-                            ? Icons.shopping_cart
-                            : Icons.directions_car),
-                    index == 0 ? 'netflix' : (index == 1 ? 'psplus' : 'yassir'),
-                    index == 0
-                        ? '-570 da'
-                        : (index == 1 ? '-205 da' : '-398 da'),
-                    index == 0 ? 'Paid' : 'Failed',
-                    index == 0
-                        ? '14 Juillet 2025'
-                        : (index == 1 ? '02 Juillet 2025' : '10 juin 2025'),
-                  );
-                },
-              ),
-            ),
           ],
         ),
       ),
@@ -108,13 +83,23 @@ class ClientScreen extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, size: 40, color: Colors.white),
+        Container(
+          padding: EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 24, color: Colors.blue.shade900),
+        ),
         const SizedBox(height: 5),
         Text(
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-              color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ],
     );
