@@ -1,72 +1,93 @@
 import 'package:flutter/material.dart';
+import 'creecompte_3.dart';
+import 'fatca_page.dart';
 
-class CreateAccount extends StatefulWidget {
+class CreateAccountStep2 extends StatefulWidget {
+  final String? civility;
+
+  CreateAccountStep2({required this.civility});
+
   @override
-  _CreateAccountState createState() => _CreateAccountState();
+  _CreateAccountStep2State createState() => _CreateAccountStep2State();
 }
 
-class _CreateAccountState extends State<CreateAccount> {
+class _CreateAccountStep2State extends State<CreateAccountStep2> {
   final _formKey = GlobalKey<FormState>();
-  String? gender;
+  String? nationality1;
+  String? nationality2;
 
-  TextEditingController nomController = TextEditingController();
-  TextEditingController prenomController = TextEditingController();
-  TextEditingController dateNaissanceController = TextEditingController();
-  TextEditingController lieuNaissanceController = TextEditingController();
-  TextEditingController numIdentiteController = TextEditingController();
+  void _navigateToNextPage() {
+    if (nationality1 == 'Américaine' || nationality2 == 'Américaine') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => FatcaPage()),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => CreateAccountStep3()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        centerTitle: true,
-        title: Image.asset(
-          'assets/images/logofransabank.jpg',
-          width: 250,
-          height: 80,
-          fit: BoxFit.contain,
-        ),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.blue.shade300, Colors.blue.shade900],
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 90),
-                  _buildTextField('Nom', nomController),
-                  _buildTextField('Prénom', prenomController),
-                  _buildTextField('Date de naissance', dateNaissanceController),
-                  _buildTextField('Lieu de naissance', lieuNaissanceController),
-                  _buildDropdownField('Sexe', ['Homme', 'Femme'], (value) {
-                    setState(() {
-                      gender = value;
-                    });
-                  }),
-                  _buildTextField(
-                      "Numéro d'identité nationale", numIdentiteController),
-                  SizedBox(height: 20),
-                ],
-              ),
+      appBar: AppBar(title: Text('Informations complémentaires')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (widget.civility == 'Madame')
+                  _buildTextField('Nom de jeune fille'),
+                _buildTextField('Prénom du père'),
+                _buildTextField('Nom de la mère'),
+                _buildTextField('Prénom de la mère'),
+                _buildTextField('Numéro de téléphone'),
+                _buildDropdownField(
+                    'Nationalité 1', ['Française', 'Américaine', 'Autre'],
+                    (value) {
+                  setState(() {
+                    nationality1 = value;
+                  });
+                }),
+                _buildDropdownField('Nationalité 2',
+                    ['Aucune', 'Française', 'Américaine', 'Autre'], (value) {
+                  setState(() {
+                    nationality2 = value;
+                  });
+                }),
+                _buildDropdownField('Situation familiale',
+                    ['Célibataire', 'Marié(e)', 'Divorcé(e)'], (value) {}),
+                SizedBox(height: 20),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        _navigateToNextPage();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.blue.shade700,
+                      padding:
+                          EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: Text(
+                      'Suivant',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -74,11 +95,10 @@ class _CreateAccountState extends State<CreateAccount> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller) {
+  Widget _buildTextField(String label) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
-        controller: controller,
         decoration: InputDecoration(
           labelText: label,
           fillColor: Colors.white,
@@ -106,7 +126,6 @@ class _CreateAccountState extends State<CreateAccount> {
           filled: true,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         ),
-        value: gender,
         items: options.map((option) {
           return DropdownMenuItem(
             value: option,

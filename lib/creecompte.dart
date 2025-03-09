@@ -9,15 +9,20 @@ class CreateAccountScreen extends StatefulWidget {
 
 class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _formKey = GlobalKey<FormState>();
+  String? civility;
 
-  String? accountType;
-  String? familyStatus;
-
-  void _navigateToCreateAccount() {
+  void _navigateToNextPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => CreateAccount()),
+      MaterialPageRoute(
+        builder: (context) => CreateAccountStep2(civility: civility ?? ""),
+      ),
     );
+  }
+
+  void _uploadCard() {
+    // Logique pour uploader la carte
+    print("Upload de la carte en cours...");
   }
 
   @override
@@ -33,46 +38,61 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: 90),
+                _buildDropdownField('Civilité', ['Monsieur', 'Madame'],
+                    (value) {
+                  setState(() {
+                    civility = value;
+                  });
+                }),
                 _buildTextField('Prénom'),
                 _buildTextField('Nom'),
-                _buildTextField('Nom de jeune fille '),
-                _buildDropdownField(
-                    'Type de compte', ['Courant', 'Épargne', 'Jeune'], (value) {
-                  setState(() {
-                    accountType = value;
-                  });
-                }),
-                _buildTextField('Profession'),
-                _buildTextField('Revenus'),
-                _buildTextField('Salaire'),
-                _buildDropdownField('Situation familiale',
-                    ['Célibataire', 'Marié(e)', 'Divorcé(e)'], (value) {
-                  setState(() {
-                    familyStatus = value;
-                  });
-                }),
+                _buildTextField('Date de naissance'),
+                _buildTextField('Lieu de naissance'),
+                _buildTextField('Numéro de la carte nationale'),
                 SizedBox(height: 20),
                 Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _navigateToCreateAccount();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.blue.shade700,
-                      padding:
-                          EdgeInsets.symmetric(vertical: 15, horizontal: 40),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  child: Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: _uploadCard,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.blue.shade700,
+                          padding: EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 40),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          'Uploader la carte',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Informations personnelles',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+                      SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            _navigateToNextPage();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.blue.shade700,
+                          padding: EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 40),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          'Suivant',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
