@@ -29,6 +29,10 @@
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>
+	<key>NSCameraUsageDescription</key>
+    <string>Nous avons besoin d'accéder à votre caméra pour prendre des photos.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Nous avons besoin d'accéder à votre galerie pour sélectionner des photos.</string>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>

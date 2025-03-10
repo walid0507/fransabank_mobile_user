@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'creecompte_3.dart';
-import 'fatca_page.dart';
+import 'fatca_page.dart'; // Assurez-vous que cette importation est correcte
 
 class CreateAccountStep2 extends StatefulWidget {
   final String? civility;
+  final Map<String, dynamic> formData;
 
-  CreateAccountStep2({required this.civility});
+  CreateAccountStep2({required this.civility, required this.formData});
 
   @override
   _CreateAccountStep2State createState() => _CreateAccountStep2State();
@@ -17,16 +18,27 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
   String? nationality2;
 
   void _navigateToNextPage() {
-    if (nationality1 == 'Américaine' || nationality2 == 'Américaine') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => FatcaPage()),
-      );
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => CreateAccountStep3()),
-      );
+    if (_formKey.currentState!.validate()) {
+      widget.formData.addAll({
+        "Prénom_pere": "Prénom père",
+        "Nom_mere": "Nom mère",
+        "Prénom_mere": "Prénom mère",
+        "phone_number": "Téléphone",
+        "Nationalité": nationality1,
+        "Nationalité2": nationality2,
+      });
+
+      if (nationality1 == 'Américaine' || nationality2 == 'Américaine') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => FatcaPage(formData: widget.formData)),
+        );
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => CreateAccountStep3(formData: widget.formData)),
+        );
+      }
     }
   }
 
@@ -66,11 +78,7 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
                 SizedBox(height: 20),
                 Center(
                   child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _navigateToNextPage();
-                      }
-                    },
+                    onPressed: _navigateToNextPage,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: Colors.blue.shade700,
