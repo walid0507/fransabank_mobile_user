@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projet1/comptes.dart';
 import 'header.dart';
 import 'inscription.dart';
 import 'mdpoub.dart'; // Mot de passe oublié
@@ -49,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     String email = _emailController.text.trim();
     String password = _passwordController.text;
-    const String API_BASE_URL = "https://f3e5-105-99-19-72.ngrok-free.app";
+    const String API_BASE_URL = "https://f2a3-105-101-99-191.ngrok-free.app";
 
     final url = Uri.parse('$API_BASE_URL/api/login/');
 
@@ -88,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
           context,
           MaterialPageRoute(
               builder: (context) =>
-                  ProfileScreen(nomClient: email.split('@')[0])),
+                  ComptesPage(nomClient: email.split('@')[0])),
         );
       } else {
         _showMessage(data['error'] ?? "Identifiants incorrects");
