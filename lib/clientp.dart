@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projet1/demcarte.dart';
 import 'package:projet1/motdepasse.dart';
 import 'main.dart'; // Importation de la page de connexion
 import 'agences_gab.dart'; // Importation de la page Agences & GAB
@@ -47,15 +48,15 @@ class ClientScreen extends StatelessWidget {
               const SizedBox(height: 10), // Espace réduit
               // Section des icônes
               GridView.count(
-                crossAxisCount: 4, // 2 icônes par ligne
+                crossAxisCount: 3, // 3 icônes par ligne
                 shrinkWrap: true,
                 physics:
                     NeverScrollableScrollPhysics(), // Désactive le défilement
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                childAspectRatio: 2.0, // Ajuste la taille des carreaux
-                mainAxisSpacing: 15, // Espace vertical entre les carreaux
-                crossAxisSpacing: 15, // Espace horizontal entre les carreaux
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                childAspectRatio: 1.5, // Ajuste la taille des carreaux
+                mainAxisSpacing: 10, // Espace vertical entre les carreaux
+                crossAxisSpacing: 10, // Espace horizontal entre les carreaux
                 children: [
                   _buildMenuItem(Icons.vpn_key, 'Mots de passes', () {
                     Navigator.push(
@@ -66,13 +67,23 @@ class ClientScreen extends StatelessWidget {
                     );
                   }),
                   _buildMenuItem(Icons.local_offer, 'Offres', () {
-                    _onOffresPressed(context); // Action pour "Offres"
+                    _onOffresPressed(context);
                   }),
                   _buildMenuItem(Icons.location_on, 'Agences & GAB', () {
-                    _onAgencesPressed(context); // Action pour "Agences & GAB"
+                    _onAgencesPressed(context);
                   }),
                   _buildMenuItem(Icons.settings, 'Paramètres', () {
                     _onParametresPressed(context); // Action pour "Paramètres"
+                  }),
+                  _buildMenuItem(Icons.credit_card, 'Demande carte', () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => DemCarte(nomClient: nomClient)),
+                    );
+                  }),
+                  _buildMenuItem(Icons.video_call, 'Vidéo conférence', () {
+                    // Action à définir pour la vidéo conférence
                   }),
                 ],
               ),
@@ -124,9 +135,9 @@ class ClientScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10), // Bordures arrondies
         ),
-        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 4),
-        minimumSize: Size(40,
-            25), // Réduit la largeur (ajuste selon ton besoin) // Padding réduit
+        padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 3),
+        minimumSize: Size(35,
+            35), // Réduit la largeur (ajuste selon ton besoin) // Padding réduit
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
