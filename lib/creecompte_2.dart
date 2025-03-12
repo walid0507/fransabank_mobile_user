@@ -17,15 +17,23 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
   String? nationality1;
   String? nationality2;
 
+  // Ajout des contrôleurs pour récupérer les valeurs des champs
+  final _fatherFirstNameController = TextEditingController();
+  final _motherLastNameController = TextEditingController();
+  final _motherFirstNameController = TextEditingController();
+  final _phoneNumberController = TextEditingController();
+  final _maidenNameController = TextEditingController();
+
   void _navigateToNextPage() {
     if (_formKey.currentState!.validate()) {
       widget.formData.addAll({
-        "Prénom_pere": "Prénom père",
-        "Nom_mere": "Nom mère",
-        "Prénom_mere": "Prénom mère",
-        "phone_number": "Téléphone",
+        "Prénom_pere": _fatherFirstNameController.text,
+        "Nom_mere": _motherLastNameController.text,
+        "Prénom_mere": _motherFirstNameController.text,
+        "phone_number": _phoneNumberController.text,
         "Nationalité": nationality1,
         "Nationalité2": nationality2,
+        "Nom_jeune_fille": _maidenNameController.text,
       });
 
       if (nationality1 == 'Américaine' || nationality2 == 'Américaine') {
@@ -54,12 +62,12 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (widget.civility == 'Madame')
-                  _buildTextField('Nom de jeune fille'),
-                _buildTextField('Prénom du père'),
-                _buildTextField('Nom de la mère'),
-                _buildTextField('Prénom de la mère'),
-                _buildTextField('Numéro de téléphone'),
+         if (widget.civility == 'Madame')
+                  _buildTextField('Nom de jeune fille', _maidenNameController),
+                _buildTextField('Prénom du père', _fatherFirstNameController),
+                _buildTextField('Nom de la mère', _motherLastNameController),
+                _buildTextField('Prénom de la mère', _motherFirstNameController),
+                _buildTextField('Numéro de téléphone', _phoneNumberController),
                 _buildDropdownField(
                     'Nationalité 1', ['Française', 'Américaine', 'Autre'],
                     (value) {
@@ -103,10 +111,11 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
     );
   }
 
-  Widget _buildTextField(String label) {
+  Widget _buildTextField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
+        controller: controller,
         decoration: InputDecoration(
           labelText: label,
           fillColor: Colors.white,

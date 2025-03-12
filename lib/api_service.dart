@@ -1,35 +1,81 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'dart:io';
 
 class ApiService {
-  static const String baseUrl = "https://f3e5-105-99-19-72.ngrok-free.app"; // Mets l'IP de ton serveur
+  static const String baseUrl =
+      "http://127.0.0.1:8000/api/demandecompte/"; // Remplacez par l'URL de votre API
 
-  static Future<Map<String, dynamic>> createDemande(Map<String, dynamic> data, String token) async {
+  static Future<Map<String, dynamic>> createDemande(
+      Map<String, dynamic> formData, String token) async {
+    if (token == null || token.isEmpty) {
+      throw Exception("Token manquant !");
+    }
+
+    print("Token utilisé : $token");
+    print("En-têtes envoyés: ${{
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    }}");
+
     final response = await http.post(
-      Uri.parse("${baseUrl}demandecompte/"),
+      Uri.parse('$baseUrl'),
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token"
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
       },
-      body: jsonEncode(data),
+      body: jsonEncode(formData),
     );
 
-    if (response.statusCode == 201) {
+    print("Code réponse: ${response.statusCode}");
+    print("Réponse : ${response.body}");
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
       return jsonDecode(response.body);
     } else {
-      throw Exception("Erreur lors de la création de la demande");
+      throw Exception('Erreur ${response.statusCode}: ${response.body}');
     }
   }
 
+  // Méthode pour uploader des fichiers (photo, signature)
   static Future<void> uploadFile(String url, File file, String token) async {
-    var request = http.MultipartRequest("POST", Uri.parse(url));
-    request.headers["Authorization"] = "Bearer $token";
-    request.files.add(await http.MultipartFile.fromPath('document', file.path));
+    if (token == null || token.isEmpty) {
+      throw Exception("Token manquant !");
+    }
+
+    print("Token utilisé pour l'upload : $token");
+
+    var request = http.MultipartRequest('POST', Uri.parse(url));
+    request.headers['Authorization'] = 'Bearer $token';
+    request.files.add(await http.MultipartFile.fromPath('file', file.path));
 
     var response = await request.send();
+    print("Code réponse upload: ${response.statusCode}");
+
     if (response.statusCode != 200) {
-      throw Exception("Échec de l'upload");
+      throw Exception(
+          'Échec de l\'upload du fichier. Code: ${response.statusCode}');
+    }
+  }
+
+  // Vérifier si le token est valide
+  static Future<void> checkToken(String token) async {
+    if (token == null || token.isEmpty) {
+      throw Exception("Token manquant !");
+    }
+
+    final response = await http.get(
+      Uri.parse(
+          'http://127.0.0.1:8000/api/protected-endpoint/'), // Un endpoint nécessitant un token
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print("Le token est valide ✅");
+    } else {
+      print("Token invalide ❌ : ${response.statusCode} - ${response.body}");
     }
   }
 }

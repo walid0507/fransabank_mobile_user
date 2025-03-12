@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Ajout de SharedPreferences
 
 class CreateAccountStep3 extends StatefulWidget {
   final Map<String, dynamic> formData;
@@ -22,6 +23,12 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
   String? employerName;
   String? clientType;
 
+  // Ajout des contrôleurs pour récupérer les valeurs des champs
+  final _addressController = TextEditingController();
+  final _countryOfBirthController = TextEditingController();
+  final _employerNameController = TextEditingController();
+  final _clientTypeController = TextEditingController();
+
   Future<void> _pickImage(bool isPhoto) async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -35,21 +42,63 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
     }
   }
 
+  Future<String?> _getToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token'); // Récupère le token
+    print("Token récupéré depuis SharedPreferences : $token"); // Affiche le token récupéré
+    return token;
+  }
+
   void _submitFinal() async {
     if (_formKey.currentState!.validate()) {
+      // Récupérer le token depuis SharedPreferences
+      String? token = await _getToken();
+      print("Token utilisé pour la requête : $token"); // Affiche le token utilisé
+
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur : Token non trouvé. Veuillez vous reconnecter.')),
+        );
+        return; // Arrête l'exécution si le token est null
+      }
+
+      // Ajout des données des champs à formData
       widget.formData.addAll({
-        "address": address,
-        "Pays_naissance": countryOfBirth,
+        "address": _addressController.text,
+        "Pays_naissance": _countryOfBirthController.text,
+        "employer_name": _employerNameController.text,
+        "client_type": _clientTypeController.text,
       });
 
       try {
-        var response = await ApiService.createDemande(widget.formData, "<TOKEN>");
+        // Envoyer les données à l'API
+        var response = await ApiService.createDemande(widget.formData, token);
         int demandeId = response["id"];
 
-        if (photo != null) await ApiService.uploadFile("${ApiService.baseUrl}demandecompte/$demandeId/upload_photo/", photo!, "<TOKEN>");
-        if (signature != null) await ApiService.uploadFile("${ApiService.baseUrl}demandecompte/$demandeId/upload_signature/", signature!, "<TOKEN>");
+        // Upload de la photo et de la signature si elles existent
+        if (photo != null) {
+          await ApiService.uploadFile(
+              "${ApiService.baseUrl}demandecompte/$demandeId/upload_photo/",
+              photo!,
+              token);
+        }
+        if (signature != null) {
+          await ApiService.uploadFile(
+              "${ApiService.baseUrl}demandecompte/$demandeId/upload_signature/",
+              signature!,
+              token);
+        }
+
+        // Afficher un message de succès
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Demande créée avec succès')),
+        );
       } catch (e) {
+        // Gérer les erreurs
         print("Erreur : $e");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de la création de la demande')),
+        );
       }
     }
   }
@@ -66,16 +115,13 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Champ Adresse
                 TextFormField(
+                  controller: _addressController,
                   decoration: InputDecoration(
                     labelText: 'Adresse',
                     border: OutlineInputBorder(),
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      address = value;
-                    });
-                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Veuillez entrer votre adresse';
@@ -84,16 +130,14 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
                   },
                 ),
                 SizedBox(height: 20),
+
+                // Champ Pays de naissance
                 TextFormField(
+                  controller: _countryOfBirthController,
                   decoration: InputDecoration(
                     labelText: 'Pays de naissance',
                     border: OutlineInputBorder(),
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      countryOfBirth = value;
-                    });
-                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Veuillez entrer votre pays de naissance';
@@ -102,6 +146,8 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
                   },
                 ),
                 SizedBox(height: 20),
+
+                // Champ Photo
                 Text('Photo', style: TextStyle(fontSize: 16)),
                 SizedBox(height: 10),
                 photo == null
@@ -111,6 +157,8 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
                       )
                     : Image.file(photo!, height: 100),
                 SizedBox(height: 20),
+
+                // Champ Signature
                 Text('Signature', style: TextStyle(fontSize: 16)),
                 SizedBox(height: 10),
                 signature == null
@@ -120,16 +168,14 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
                       )
                     : Image.file(signature!, height: 100),
                 SizedBox(height: 20),
+
+                // Champ Nom de l'employeur
                 TextFormField(
+                  controller: _employerNameController,
                   decoration: InputDecoration(
                     labelText: "Nom de l'employeur",
                     border: OutlineInputBorder(),
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      employerName = value;
-                    });
-                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Veuillez entrer le nom de votre employeur';
@@ -138,12 +184,15 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
                   },
                 ),
                 SizedBox(height: 20),
+
+                // Champ Type de client
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(
                     labelText: 'Type de client',
                     border: OutlineInputBorder(),
                   ),
-                  items: ['Particulier', 'Entreprise', 'Autre'].map((String value) {
+                  items: ['Particulier', 'Entreprise', 'Autre']
+                      .map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
@@ -151,7 +200,7 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
                   }).toList(),
                   onChanged: (value) {
                     setState(() {
-                      clientType = value;
+                      _clientTypeController.text = value!;
                     });
                   },
                   validator: (value) {
@@ -162,6 +211,8 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
                   },
                 ),
                 SizedBox(height: 20),
+
+                // Bouton de soumission
                 Center(
                   child: ElevatedButton(
                     onPressed: _submitFinal,

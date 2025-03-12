@@ -13,14 +13,20 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   String? selectedDate;
   final Map<String, dynamic> formData = {}; // Stocke les infos à envoyer à l'API
 
+  // Ajout des contrôleurs pour récupérer les valeurs des champs
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _birthPlaceController = TextEditingController();
+  final _idNumberController = TextEditingController();
+
   void _navigateToNextPage() {
     if (_formKey.currentState!.validate()) {
       formData["civilité"] = civility;
-      formData["first_name"] = "Prénom"; // Remplace par la valeur du champ
-      formData["last_name"] = "Nom";
+      formData["first_name"] = _firstNameController.text; // Récupérer la valeur du champ Prénom
+      formData["last_name"] = _lastNameController.text; // Récupérer la valeur du champ Nom
       formData["date_of_birth"] = selectedDate;
-      formData["lieu_denaissance"] = "Lieu";
-      formData["numero_identite"] = "Numéro ID";
+      formData["lieu_denaissance"] = _birthPlaceController.text; // Récupérer la valeur du champ Lieu de naissance
+      formData["numero_identite"] = _idNumberController.text; // Récupérer la valeur du champ Numéro ID
 
       Navigator.push(
         context,
@@ -33,8 +39,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       );
     }
   }
-
-
 
   void _uploadCard() {
     // Logique pour uploader la carte
@@ -72,11 +76,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                   civility = value;
                 });
               }),
-              _buildTextField('Prénom'),
-              _buildTextField('Nom'),
+              _buildTextField('Prénom', _firstNameController),
+              _buildTextField('Nom', _lastNameController),
               _buildDateField('Date de naissance'),
-              _buildTextField('Lieu de naissance'),
-              _buildTextField('Numéro de la carte nationale'),
+              _buildTextField('Lieu de naissance', _birthPlaceController),
+              _buildTextField('Numéro de la carte nationale', _idNumberController),
               SizedBox(height: 20),
               Center(
                 child: Column(
@@ -86,38 +90,30 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: Colors.blue.shade700,
-                        padding: EdgeInsets.symmetric(
-                            vertical: 15, horizontal: 40),
+                        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       child: Text(
                         'Uploader la carte',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                     SizedBox(height: 10),
                     ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          _navigateToNextPage();
-                        }
-                      },
+                      onPressed: _navigateToNextPage,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: Colors.blue.shade700,
-                        padding: EdgeInsets.symmetric(
-                            vertical: 15, horizontal: 40),
+                        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       child: Text(
                         'Suivant',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -130,10 +126,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
   }
 
-  Widget _buildTextField(String label) {
+  Widget _buildTextField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
+        controller: controller,
         decoration: InputDecoration(
           labelText: label,
           fillColor: Colors.white,
