@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'creecompte.dart'; // Importation de la page de création de compte
-import 'main.dart'; // Importation de la page de connexion
 import 'header.dart'; // Importation du header commun
-import 'clientp.dart'; // Importation de la page client
 
-class ProfileScreen extends StatelessWidget {
+class ProfileUpdateScreen extends StatelessWidget {
   final String nomClient;
 
-  const ProfileScreen({Key? key, required this.nomClient}) : super(key: key);
+  const ProfileUpdateScreen({Key? key, required this.nomClient})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -40,30 +38,19 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 50),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 30),
                     _buildTextField("Numéro du compte"),
                     const SizedBox(height: 15),
                     _buildTextField("Mot de passe", obscureText: true),
-                    const SizedBox(height: 10),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    ClientScreen(nomClient: nomClient)),
-                          );
-                        },
-                        child: const Text(
-                          "Se connecter",
-                          style: TextStyle(color: Colors.white, fontSize: 14),
-                        ),
-                      ),
-                    ),
+                    const SizedBox(height: 15),
+                    _buildTextField("Nouveau mot de passe", obscureText: true),
+                    const SizedBox(height: 15),
+                    _buildTextField("Confirmer nouveau mot de passe",
+                        obscureText: true),
                     const Spacer(),
+                    _buildButton(context, "Valider", () {
+                      // Action de validation
+                    }),
                     const SizedBox(height: 20),
                   ],
                 ),

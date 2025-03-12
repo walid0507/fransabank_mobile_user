@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projet1/motdepasse.dart';
 import 'main.dart'; // Importation de la page de connexion
 import 'agences_gab.dart'; // Importation de la page Agences & GAB
 import 'parametres.dart'; // Importation de la page Paramètres
@@ -56,8 +57,13 @@ class ClientScreen extends StatelessWidget {
                 mainAxisSpacing: 15, // Espace vertical entre les carreaux
                 crossAxisSpacing: 15, // Espace horizontal entre les carreaux
                 children: [
-                  _buildMenuItem(Icons.person, 'Comptes', () {
-                    // Action pour "Comptes"
+                  _buildMenuItem(Icons.vpn_key, 'Mots de passes', () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              MotDePasse(nomClient: nomClient)),
+                    );
                   }),
                   _buildMenuItem(Icons.local_offer, 'Offres', () {
                     _onOffresPressed(context); // Action pour "Offres"

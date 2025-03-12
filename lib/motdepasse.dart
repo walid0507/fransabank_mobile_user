@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:projet1/chanmot.dart';
 import 'package:projet1/home.dart';
 import 'dart:convert';
 import 'header.dart';
 import 'creecompte.dart'; // Importation du header commun
 
-class ComptesPage extends StatefulWidget {
+class MotDePasse extends StatefulWidget {
   final String nomClient;
 
-  const ComptesPage({Key? key, required this.nomClient}) : super(key: key);
+  const MotDePasse({Key? key, required this.nomClient}) : super(key: key);
 
   @override
-  _ComptesPageState createState() => _ComptesPageState();
+  _MotDePasseState createState() => _MotDePasseState();
 }
 
-class _ComptesPageState extends State<ComptesPage> {
+class _MotDePasseState extends State<MotDePasse> {
   List<String> comptes = [
     "Compte 1",
     "Compte 2",
@@ -61,7 +62,7 @@ class _ComptesPageState extends State<ComptesPage> {
               child: Align(
                 alignment: Alignment.topLeft,
                 child: Text(
-                  'Comptes',
+                  'Choisissez votre compte',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -81,8 +82,8 @@ class _ComptesPageState extends State<ComptesPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                ProfileScreen(nomClient: widget.nomClient),
+                            builder: (context) => ProfileUpdateScreen(
+                                nomClient: widget.nomClient),
                           ),
                         );
                       },
@@ -112,27 +113,6 @@ class _ComptesPageState extends State<ComptesPage> {
                 alignment: Alignment.bottomRight,
                 child: SizedBox(
                   width: 150,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => CreateAccountScreen()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.blue.shade700,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    ),
-                    child: Text(
-                      '+ Ajouter',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ),
                 ),
               ),
             ),
