@@ -16,6 +16,7 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
   final _formKey = GlobalKey<FormState>();
   String? nationality1;
   String? nationality2;
+  String? situationFamiliale;
 
   // Ajout des contrôleurs pour récupérer les valeurs des champs
   final _fatherFirstNameController = TextEditingController();
@@ -34,17 +35,22 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
         "Nationalité": nationality1,
         "Nationalité2": nationality2,
         "Nom_jeune_fille": _maidenNameController.text,
+        "situation_familliale":
+            situationFamiliale, // ✅ Ajout de la situation familiale
       });
 
       if (nationality1 == 'Américaine' || nationality2 == 'Américaine') {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => FatcaPage(formData: widget.formData)),
+          MaterialPageRoute(
+              builder: (context) => FatcaPage(formData: widget.formData)),
         );
       } else {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => CreateAccountStep3(formData: widget.formData)),
+          MaterialPageRoute(
+              builder: (context) =>
+                  CreateAccountStep3(formData: widget.formData)),
         );
       }
     }
@@ -62,11 +68,12 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-         if (widget.civility == 'Madame')
+                if (widget.civility == 'Madame')
                   _buildTextField('Nom de jeune fille', _maidenNameController),
                 _buildTextField('Prénom du père', _fatherFirstNameController),
                 _buildTextField('Nom de la mère', _motherLastNameController),
-                _buildTextField('Prénom de la mère', _motherFirstNameController),
+                _buildTextField(
+                    'Prénom de la mère', _motherFirstNameController),
                 _buildTextField('Numéro de téléphone', _phoneNumberController),
                 _buildDropdownField(
                     'Nationalité 1', ['Française', 'Américaine', 'Autre'],
@@ -82,7 +89,9 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
                   });
                 }),
                 _buildDropdownField('Situation familiale',
-                    ['Célibataire', 'Marié(e)', 'Divorcé(e)'], (value) {}),
+                    ['Célibataire', 'Marié(e)', 'Divorcé(e)'], (value) {setState(() {
+    situationFamiliale = value; 
+  });}),
                 SizedBox(height: 20),
                 Center(
                   child: ElevatedButton(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'header2.dart'; // Importation du header commun
 import 'creecompte_2.dart';
-
+import 'package:intl/intl.dart';
 class CreateAccountScreen extends StatefulWidget {
   @override
   _CreateAccountScreenState createState() => _CreateAccountScreenState();
@@ -21,7 +21,13 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   void _navigateToNextPage() {
     if (_formKey.currentState!.validate()) {
-      formData["civilité"] = civility;
+      Map<String, String> civiliteMap = {
+  "Monsieur": "Mr",
+  "Madame": "Mme"
+};
+
+formData["civilité"] = civiliteMap[civility] ?? "";
+
       formData["first_name"] = _firstNameController.text; // Récupérer la valeur du champ Prénom
       formData["last_name"] = _lastNameController.text; // Récupérer la valeur du champ Nom
       formData["date_of_birth"] = selectedDate;
@@ -54,7 +60,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
     if (picked != null && picked != DateTime.now()) {
       setState(() {
-        selectedDate = "${picked.day}/${picked.month}/${picked.year}";
+        selectedDate = DateFormat('yyyy-MM-dd').format(picked);
+
       });
     }
   }

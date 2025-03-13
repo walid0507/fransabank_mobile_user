@@ -44,7 +44,8 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
 
   Future<String?> _getToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token'); // Récupère le token
+    String? token = prefs.getString('auth_token'); // Corrige le nom de la clé
+ // Récupère le token
     print("Token récupéré depuis SharedPreferences : $token"); // Affiche le token récupéré
     return token;
   }

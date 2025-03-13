@@ -4,7 +4,7 @@ import 'dart:io';
 
 class ApiService {
   static const String baseUrl =
-      "http://127.0.0.1:8000/api/demandecompte/"; // Remplacez par l'URL de votre API
+      "https://e564-197-204-252-224.ngrok-free.app/api/demandecompte/"; // Remplacez par l'URL de votre API
 
   static Future<Map<String, dynamic>> createDemande(
       Map<String, dynamic> formData, String token) async {
@@ -66,7 +66,7 @@ class ApiService {
 
     final response = await http.get(
       Uri.parse(
-          'http://127.0.0.1:8000/api/protected-endpoint/'), // Un endpoint nécessitant un token
+          'https://e564-197-204-252-224.ngrok-free.app/api/protected-endpoint/'), // Un endpoint nécessitant un token
       headers: {
         'Authorization': 'Bearer $token',
       },
