@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:projet1/demcarte.dart';
 import 'package:projet1/motdepasse.dart';
-import 'main.dart'; // Importation de la page de connexion
-import 'agences_gab.dart'; // Importation de la page Agences & GAB
-import 'parametres.dart'; // Importation de la page Paramètres
-import 'offres.dart'; // Importation de la page Offres
+import 'package:projet1/main.dart'; // Importation de la page de connexion
+import 'package:projet1/agences_gab.dart'; // Importation de la page Agences & GAB
+import 'package:projet1/parametres.dart'; // Importation de la page Paramètres
+import 'package:projet1/offres.dart'; // Importation de la page Offres
 
 class ClientScreen extends StatelessWidget {
   final String nomClient;

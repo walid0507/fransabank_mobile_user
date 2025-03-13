@@ -9,61 +9,61 @@ class DemCarte extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.blue.shade300, Colors.blue.shade900],
+      body: SafeArea(
+        // Ajout de SafeArea pour éviter l'overflow en haut
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.blue.shade300, Colors.blue.shade900],
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            AppHeader(), // Utilisation du header
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20.0, vertical: 30.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Text(
-                        "Bonjour, $nomClient",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    _buildTextField("Numéro du compte"),
-                    const SizedBox(height: 15),
-                    _buildTextField("Mot de passe", obscureText: true),
-                    const SizedBox(height: 15),
-                    _buildTextField("Nouveau mot de passe", obscureText: true),
-                    const SizedBox(height: 15),
-                    _buildTextField("Confirmer nouveau mot de passe",
-                        obscureText: true),
-                    const Spacer(),
-                    _buildButton(context, "Valider", () {
-                      // Action de validation
-                    }),
-                    const SizedBox(height: 20),
-                  ],
-                ),
+          child: SingleChildScrollView(
+            // Ajout du scroll
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppHeader(), // Affichage du header
+                  const SizedBox(height: 20), // Espacement
+
+                  // Suppression du texte "Bonjour, nomClient" pour éviter l'overflow
+                  _buildDropdownField("Type de carte", [
+                    "Visa",
+                    "MasterCard",
+                    "Visa Platinum",
+                    "MasterCard World Elite",
+                    "American Express",
+                    "American Express Gold"
+                  ]),
+                  const SizedBox(height: 15),
+                  _buildTextField("Plafond de paiement"),
+                  const SizedBox(height: 15),
+                  _buildTextField("Plafond de retrait"),
+                  const SizedBox(height: 15),
+                  _buildReadOnlyField("Frais de la carte: 50.00€"),
+                  const SizedBox(height: 15),
+                  _buildCheckbox("J'ai payé les frais de la carte"),
+                  const SizedBox(height: 30),
+                  _buildButton(context, "Valider la demande", () {
+                    // Action de validation
+                  }),
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildTextField(String label, {bool obscureText = false}) {
+  Widget _buildTextField(String label) {
     return TextField(
-      obscureText: obscureText,
+      keyboardType: TextInputType.number,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
@@ -75,6 +75,57 @@ class DemCarte extends StatelessWidget {
           borderSide: BorderSide.none,
         ),
       ),
+    );
+  }
+
+  Widget _buildDropdownField(String label, List<String> options) {
+    return DropdownButtonFormField<String>(
+      dropdownColor: Colors.blue.shade900,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.white70),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.2),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      items: options.map((option) {
+        return DropdownMenuItem(
+          value: option,
+          child: Text(option, style: const TextStyle(color: Colors.white)),
+        );
+      }).toList(),
+      onChanged: (value) {},
+    );
+  }
+
+  Widget _buildReadOnlyField(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(color: Colors.white70),
+      ),
+    );
+  }
+
+  Widget _buildCheckbox(String label) {
+    return Row(
+      children: [
+        Checkbox(
+          value: false,
+          onChanged: (bool? newValue) {},
+          checkColor: Colors.blue.shade900,
+          fillColor: MaterialStateProperty.all(Colors.white),
+        ),
+        Text(label, style: const TextStyle(color: Colors.white70)),
+      ],
     );
   }
 

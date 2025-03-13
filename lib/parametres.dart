@@ -27,61 +27,66 @@ class _ParametresScreenState extends State<ParametresScreen> {
   Widget build(BuildContext context) {
     return CommonHeader(
       title: 'Paramètres',
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          SizedBox(height: 50),
-          _buildSwitchTile(
-            icon: Icons.notifications,
-            title: 'Notifications de l\'application',
-            value: _notificationsEnabled,
-            onChanged: (value) {
-              setState(() {
-                _notificationsEnabled = value;
-              });
-            },
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              SizedBox(height: 50),
+              _buildSwitchTile(
+                icon: Icons.notifications,
+                title: 'Notifications de l\'application',
+                value: _notificationsEnabled,
+                onChanged: (value) {
+                  setState(() {
+                    _notificationsEnabled = value;
+                  });
+                },
+              ),
+              _buildDropdownTile(
+                icon: Icons.language,
+                title: 'Langue de l\'application',
+                value: _selectedLanguage,
+                items: _languages,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedLanguage = value!;
+                  });
+                },
+              ),
+              _buildDropdownTile(
+                icon: Icons.color_lens,
+                title: 'Thème de l\'application',
+                value: _selectedTheme,
+                items: _themes,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedTheme = value!;
+                  });
+                },
+              ),
+              _buildSliderTile(
+                icon: Icons.text_fields,
+                title: 'Taille et style du texte',
+                value: _textSize,
+                onChanged: (value) {
+                  setState(() {
+                    _textSize = value;
+                  });
+                },
+              ),
+              _buildSettingsItem(
+                  Icons.security, "Permissions de l'application"),
+              _buildInfoTile(
+                icon: Icons.bar_chart,
+                title: 'Statistiques d\'utilisation',
+                value: '$_appUsageTime minutes aujourd\'hui',
+              ),
+              _buildSettingsItem(Icons.delete, "Vider le cache"),
+              _buildSettingsItem(Icons.info, "Informations sur l’application"),
+            ],
           ),
-          _buildDropdownTile(
-            icon: Icons.language,
-            title: 'Langue de l\'application',
-            value: _selectedLanguage,
-            items: _languages,
-            onChanged: (value) {
-              setState(() {
-                _selectedLanguage = value!;
-              });
-            },
-          ),
-          _buildDropdownTile(
-            icon: Icons.color_lens,
-            title: 'Thème de l\'application',
-            value: _selectedTheme,
-            items: _themes,
-            onChanged: (value) {
-              setState(() {
-                _selectedTheme = value!;
-              });
-            },
-          ),
-          _buildSliderTile(
-            icon: Icons.text_fields,
-            title: 'Taille et style du texte',
-            value: _textSize,
-            onChanged: (value) {
-              setState(() {
-                _textSize = value;
-              });
-            },
-          ),
-          _buildSettingsItem(Icons.security, "Permissions de l'application"),
-          _buildInfoTile(
-            icon: Icons.bar_chart,
-            title: 'Statistiques d\'utilisation',
-            value: '$_appUsageTime minutes aujourd\'hui',
-          ),
-          _buildSettingsItem(Icons.delete, "Vider le cache"),
-          _buildSettingsItem(Icons.info, "Informations sur l’application"),
-        ],
+        ),
       ),
     );
   }

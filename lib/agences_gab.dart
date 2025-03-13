@@ -182,10 +182,15 @@ class _AgencesScreenState extends State<AgencesScreen> {
   Widget build(BuildContext context) {
     return CommonHeader(
       title: 'Agences & GAB',
-      body: ListView(
-        children: agencesParRegion.entries
-            .map((entry) => _buildRegionSection(entry.key, entry.value))
-            .toList(),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: agencesParRegion.entries
+                .map((entry) => _buildRegionSection(entry.key, entry.value))
+                .toList(),
+          ),
+        ),
       ),
     );
   }
@@ -221,7 +226,7 @@ class _AgencesScreenState extends State<AgencesScreen> {
         decoration: BoxDecoration(
           color: Colors.blue.shade100,
           border: Border.all(color: Colors.white),
-          borderRadius: BorderRadius.circular(10), // Ajout de bordures arrondies
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,57 +239,35 @@ class _AgencesScreenState extends State<AgencesScreen> {
                   color: Colors.black),
             ),
             SizedBox(height: 5),
-            Row(
-              children: [
-                Icon(Icons.location_on, size: 16, color: Colors.blue.shade900),
-                SizedBox(width: 5),
-                Text(agence["adresse"]!, style: TextStyle(color: Colors.black)),
-              ],
-            ),
-            SizedBox(height: 5),
-            Row(
-              children: [
-                Icon(Icons.phone, size: 16, color: Colors.blue.shade900),
-                SizedBox(width: 5),
-                Text("Tél: ${agence["telephone"]}",
-                    style: TextStyle(color: Colors.black)),
-              ],
-            ),
-            if (agence.containsKey("fax")) ...[
-              SizedBox(height: 5),
-              Row(
-                children: [
-                  Icon(Icons.fax, size: 16, color: Colors.blue.shade900),
-                  SizedBox(width: 5),
-                  Text("Fax: ${agence["fax"]}",
-                      style: TextStyle(color: Colors.black)),
-                ],
-              ),
-            ],
-            if (agence.containsKey("swift")) ...[
-              SizedBox(height: 5),
-              Row(
-                children: [
-                  Icon(Icons.code, size: 16, color: Colors.blue.shade900),
-                  SizedBox(width: 5),
-                  Text("SWIFT: ${agence["swift"]}",
-                      style: TextStyle(color: Colors.black)),
-                ],
-              ),
-            ],
-            if (agence.containsKey("email")) ...[
-              SizedBox(height: 5),
-              Row(
-                children: [
-                  Icon(Icons.email, size: 16, color: Colors.blue.shade900),
-                  SizedBox(width: 5),
-                  Text("Email: ${agence["email"]}",
-                      style: TextStyle(color: Colors.black)),
-                ],
-              ),
-            ],
+            _buildInfoRow(Icons.location_on, agence["adresse"]!),
+            _buildInfoRow(Icons.phone, "Tél: ${agence["telephone"]}"),
+            if (agence.containsKey("fax"))
+              _buildInfoRow(Icons.print, "Fax: ${agence["fax"]}"),
+            if (agence.containsKey("swift"))
+              _buildInfoRow(Icons.code, "SWIFT: ${agence["swift"]}"),
+            if (agence.containsKey("email"))
+              _buildInfoRow(Icons.email, "Email: ${agence["email"]}"),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: Colors.blue.shade900),
+          SizedBox(width: 5),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(color: Colors.black),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }

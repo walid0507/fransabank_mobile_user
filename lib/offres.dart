@@ -8,57 +8,62 @@ class OffresScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return CommonHeader(
       title: 'Nos Offres',
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          SizedBox(height: 50),
-          _buildOfferCard(
-            "Compte Épargne",
-            "Taux d'intérêt avantageux.",
-            Icons.savings,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              SizedBox(height: 50),
+              _buildOfferCard(
+                "Compte Épargne",
+                "Taux d'intérêt avantageux.",
+                Icons.savings,
+              ),
+              _buildOfferCard(
+                "Crédit Immobilier",
+                "Financez votre logement.",
+                Icons.home,
+              ),
+              _buildOfferCard(
+                "Carte Premium",
+                "Services exclusifs.",
+                Icons.credit_card,
+              ),
+              _buildOfferCard(
+                "Assurance Vie",
+                "Protégez votre avenir.",
+                Icons.security,
+              ),
+              _buildOfferCard(
+                "Crédit Auto",
+                "Achetez votre véhicule.",
+                Icons.directions_car,
+              ),
+              _buildOfferCard(
+                  "Compte Jeune", "Spécial 18-25 ans.", Icons.school),
+              _buildOfferCard(
+                "Compte Pro",
+                "Pour entrepreneurs.",
+                Icons.business,
+              ),
+              _buildOfferCard(
+                "Épargne Retraite",
+                "Préparez votre futur.",
+                Icons.account_balance_wallet,
+              ),
+              _buildOfferCard(
+                "Prêt Personnel",
+                "Financer vos projets.",
+                Icons.attach_money,
+              ),
+              _buildOfferCard(
+                "Pack Familial",
+                "Gérez les comptes famille.",
+                Icons.family_restroom,
+              ),
+            ],
           ),
-          _buildOfferCard(
-            "Crédit Immobilier",
-            "Financez votre logement.",
-            Icons.home,
-          ),
-          _buildOfferCard(
-            "Carte Premium",
-            "Services exclusifs.",
-            Icons.credit_card,
-          ),
-          _buildOfferCard(
-            "Assurance Vie",
-            "Protégez votre avenir.",
-            Icons.security,
-          ),
-          _buildOfferCard(
-            "Crédit Auto",
-            "Achetez votre véhicule.",
-            Icons.directions_car,
-          ),
-          _buildOfferCard("Compte Jeune", "Spécial 18-25 ans.", Icons.school),
-          _buildOfferCard(
-            "Compte Pro",
-            "Pour entrepreneurs.",
-            Icons.business,
-          ),
-          _buildOfferCard(
-            "Épargne Retraite",
-            "Préparez votre futur.",
-            Icons.account_balance_wallet,
-          ),
-          _buildOfferCard(
-            "Prêt Personnel",
-            "Financer vos projets.",
-            Icons.attach_money,
-          ),
-          _buildOfferCard(
-            "Pack Familial",
-            "Gérez les comptes famille.",
-            Icons.family_restroom,
-          ),
-        ],
+        ),
       ),
     );
   }
