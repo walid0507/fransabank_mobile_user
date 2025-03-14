@@ -3,6 +3,9 @@ import 'package:http/http.dart' as http;
 import 'dart:io';
 
 class ApiService {
+  static const String clientBaseUrl =
+      "https://e564-197-204-252-224.ngrok-free.app/api/client/";
+
   static const String baseUrl =
       "https://e564-197-204-252-224.ngrok-free.app/api/demandecompte/"; // Remplacez par l'URL de votre API
 
@@ -76,6 +79,34 @@ class ApiService {
       print("Le token est valide ✅");
     } else {
       print("Token invalide ❌ : ${response.statusCode} - ${response.body}");
+    }
+  }
+
+  static Future<Map<String, dynamic>> demanderCarte(
+      String clientId, String typeCarte, String token) async {
+    if (token.isEmpty) {
+      throw Exception("Token manquant !");
+    }
+
+    final url = Uri.parse('$clientBaseUrl$clientId/demande-carte/');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({"type_carte": typeCarte}),
+    );
+
+    print("Code réponse: ${response.statusCode}");
+    print("Réponse API: ${response.body}");
+
+    if (response.statusCode == 201) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception(
+          'Erreur ${response.statusCode}: ${jsonDecode(response.body)["error"] ?? response.body}');
     }
   }
 }
