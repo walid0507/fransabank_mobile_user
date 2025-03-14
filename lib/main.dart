@@ -68,7 +68,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (!emailVerifie) {
           _showMessage(
-              "Veuillez vérifier votre email avant de vous connecter.");
+            "Veuillez vérifier votre email avant de vous connecter.",
+          );
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -78,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
           return;
         }
 
-        String token = data['access']; // Récupération du token JWT
+        String token = data['access'];
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token);
 
@@ -88,8 +89,8 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (context) =>
-                  ComptesPage(nomClient: email.split('@')[0])),
+            builder: (context) => ComptesPage(nomClient: email.split('@')[0]),
+          ),
         );
       } else {
         _showMessage(data['error'] ?? "Identifiants incorrects");
@@ -110,42 +111,57 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _navigateToForgotPassword() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => ChangerMotDePasse()),
-    );
-  }
-
-  void _navigateToCreateAccount() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Inscription()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    Color primaryBlue = Color(0xFF024DA2);
+
     return Scaffold(
-      resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.blue.shade300, Colors.blue.shade900],
+      body: Column(
+        children: [
+          // Partie supérieure (50%)
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: primaryBlue,
+                image: DecorationImage(
+                  image: AssetImage('assets/images/etoile.jpg'),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    primaryBlue.withOpacity(0.9),
+                    BlendMode.srcOver,
+                  ),
+                ),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Welcome to Fransabank!',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Image.asset(
+                      'assets/images/fransa2.png',
+                      width: 225,
+                      height: 225,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            AppHeader(),
-            Expanded(
+
+          // Partie inférieure (50%)
+          Expanded(
+            child: Container(
+              color: Colors.white,
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.symmetric(horizontal: 40),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -154,80 +170,121 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextFormField(
                         controller: _emailController,
                         decoration: InputDecoration(
-                          labelText: 'Email',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30.0),
+                          hintText: 'Username or Email',
+                          hintStyle: TextStyle(color: Colors.grey),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
                           ),
-                          filled: true,
-                          fillColor: Colors.white,
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 15, vertical: 15),
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez entrer votre email';
-                          }
-                          if (!value.contains('@')) {
-                            return 'Veuillez entrer un email valide';
-                          }
-                          return null;
-                        },
                       ),
-                      SizedBox(height: 16.0),
+                      SizedBox(height: 16),
                       TextFormField(
                         controller: _passwordController,
-                        decoration: InputDecoration(
-                          labelText: 'Mot de passe',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                        ),
                         obscureText: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Veuillez entrer votre mot de passe';
-                          }
-                          if (value.length < 8) {
-                            return 'Le mot de passe doit contenir au moins 8 caractères';
-                          }
-                          return null;
-                        },
+                        decoration: InputDecoration(
+                          hintText: 'Password',
+                          hintStyle: TextStyle(color: Colors.grey),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 15, vertical: 15),
+                        ),
                       ),
-                      SizedBox(height: 8.0),
+                      SizedBox(height: 24),
+                      Container(
+                        width: 180,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue.shade800,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 12),
+                          ),
+                          onPressed: _isLoading ? null : _submit,
+                          child: _isLoading
+                              ? SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  "LOG IN",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 2,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      SizedBox(height: 16),
                       TextButton(
-                        onPressed: _navigateToForgotPassword,
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ChangerMotDePasse()),
+                        ),
                         child: Text(
-                          'Mot de passe oublié ?',
+                          'Forgot Password?',
                           style: TextStyle(
-                            color: Colors.white,
-                            decoration: TextDecoration.underline,
+                            color: primaryBlue,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ),
-                      TextButton(
-                        onPressed: _navigateToCreateAccount,
-                        child: Text(
-                          'Créer un compte',
-                          style: TextStyle(
-                            color: Colors.white,
-                            decoration: TextDecoration.underline,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'New to Bank Apps? ',
+                            style: TextStyle(color: Colors.grey.shade700),
                           ),
-                        ),
-                      ),
-                      SizedBox(height: 24.0),
-                      ElevatedButton(
-                        onPressed: _isLoading ? null : _submit,
-                        child: _isLoading
-                            ? CircularProgressIndicator(color: Colors.white)
-                            : Text('Se connecter'),
+                          TextButton(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Inscription()),
+                            ),
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size(0, 0),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: Text(
+                              'Sign Up',
+                              style: TextStyle(
+                                color: primaryBlue,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
