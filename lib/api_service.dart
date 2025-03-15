@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String clientBaseUrl =
@@ -88,7 +89,8 @@ class ApiService {
       throw Exception("Token manquant !");
     }
 
-    final url = Uri.parse('$clientBaseUrl$clientId/demande-carte/');
+    final url = Uri.parse(
+        'https://e564-197-204-252-224.ngrok-free.app/api/client/demande-carte/');
 
     final response = await http.post(
       url,
@@ -105,8 +107,41 @@ class ApiService {
     if (response.statusCode == 201) {
       return jsonDecode(response.body);
     } else {
-      throw Exception(
-          'Erreur ${response.statusCode}: ${jsonDecode(response.body)["error"] ?? response.body}');
+      try {
+        final errorBody = jsonDecode(response.body);
+        throw Exception('Erreur ${response.statusCode}: ${errorBody["error"]}');
+      } catch (e) {
+        throw Exception('Erreur ${response.statusCode}: ${response.body}');
+      }
+    }
+  }
+
+  // 🔑 Fonction pour la connexion et récupération du client_id
+  static Future<Map<String, dynamic>> clientSec(
+      String clientId, String password) async {
+    final url = Uri.parse(
+        'https://e564-197-204-252-224.ngrok-free.app/api/client/login/'); // URL de ton endpoint Django
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"client_id": clientId, "password": password}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        // Stocker le client_id dans SharedPreferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString("client_id", data["client_id"]);
+
+        return data;
+      } else {
+        return {"error": "Identifiant ou mot de passe incorrect."};
+      }
+    } catch (e) {
+      return {"error": "Erreur de connexion: ${e.toString()}"};
     }
   }
 }
