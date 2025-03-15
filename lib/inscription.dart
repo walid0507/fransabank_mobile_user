@@ -3,6 +3,34 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'verif_mail.dart';
 import 'header.dart';
+import 'main.dart';
+
+class InvertedCurvedClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    Path path = Path();
+
+    // Point de départ
+    path.lineTo(0, size.height * 0.90);
+
+    // Première courbe
+    path.quadraticBezierTo(size.width * 0.10, size.height * 0.95,
+        size.width * 0.25, size.height * 0.95);
+
+    // Deuxième courbe
+    path.quadraticBezierTo(
+        size.width * 0.75, size.height * 0.95, size.width, size.height * 0.85);
+
+    // Compléter le chemin
+    path.lineTo(size.width, 0);
+    path.lineTo(0, 0);
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => true;
+}
 
 class Inscription extends StatefulWidget {
   const Inscription({super.key});
@@ -19,6 +47,42 @@ class _InscriptionState extends State<Inscription> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  bool _areFieldsFilled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Ajouter des listeners à tous les contrôleurs
+    _usernameController.addListener(_checkFields);
+    _nomController.addListener(_checkFields);
+    _prenomController.addListener(_checkFields);
+    _emailController.addListener(_checkFields);
+    _passwordController.addListener(_checkFields);
+    _confirmPasswordController.addListener(_checkFields);
+  }
+
+  @override
+  void dispose() {
+    // Nettoyer les listeners
+    _usernameController.removeListener(_checkFields);
+    _nomController.removeListener(_checkFields);
+    _prenomController.removeListener(_checkFields);
+    _emailController.removeListener(_checkFields);
+    _passwordController.removeListener(_checkFields);
+    _confirmPasswordController.removeListener(_checkFields);
+    super.dispose();
+  }
+
+  void _checkFields() {
+    setState(() {
+      _areFieldsFilled = _usernameController.text.isNotEmpty &&
+          _nomController.text.isNotEmpty &&
+          _prenomController.text.isNotEmpty &&
+          _emailController.text.isNotEmpty &&
+          _passwordController.text.isNotEmpty &&
+          _confirmPasswordController.text.isNotEmpty;
+    });
+  }
 
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -71,105 +135,186 @@ class _InscriptionState extends State<Inscription> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.blue.shade300, Colors.blue.shade900],
-          ),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              AppHeader(),
-              Padding(
-                padding: EdgeInsets.all(30),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      _buildTextField(Icons.person, "Nom d'utilisateur",
-                          _usernameController),
-                      SizedBox(height: 16.0),
-                      _buildTextField(
-                          Icons.account_circle, "Nom", _nomController),
-                      SizedBox(height: 20),
-                      _buildTextField(
-                          Icons.account_circle, "Prénom", _prenomController),
-                      SizedBox(height: 20),
-                      _buildTextField(Icons.mail, "E-mail", _emailController),
-                      SizedBox(height: 20),
-                      _buildTextField(Icons.lock, "Créer un mot de passe",
-                          _passwordController,
-                          isPassword: true),
-                      SizedBox(height: 20),
-                      _buildTextField(
-                          Icons.lock,
-                          "Confirmez votre mot de passe",
-                          _confirmPasswordController,
-                          isPassword: true),
-                      SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _submit,
-                          child: Text("S'inscrire"),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(
-      IconData icon, String labelText, TextEditingController controller,
+  Widget _buildTextField(String hintText, TextEditingController controller,
       {bool isPassword = false}) {
     return TextFormField(
       controller: controller,
       obscureText: isPassword,
       decoration: InputDecoration(
-        prefixIcon: Icon(icon),
-        labelText: labelText,
+        hintText: hintText,
+        hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
         filled: true,
-        fillColor: Colors.blue.shade50,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(100),
-          borderSide: BorderSide.none,
+        fillColor: Colors.white,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 8,
         ),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Ce champ est obligatoire';
         }
-        if (labelText.contains("mail") && !value.contains('@')) {
+        if (hintText.contains("mail") && !value.contains('@')) {
           return 'Veuillez entrer un email valide';
         }
-        if (labelText.contains("mot de passe") && value.length < 8) {
+        if (hintText.contains("mot de passe") && value.length < 8) {
           return 'Le mot de passe doit contenir au moins 8 caractères';
         }
         return null;
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Color primaryBlue = Color(0xFF024DA2);
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Bouton retour en haut à gauche
+          Positioned(
+            top: 40,
+            left: 20,
+            child: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      LoginScreen(),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(-1.0, 0.0),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: child,
+                    );
+                  },
+                  transitionDuration: Duration(milliseconds: 300),
+                ),
+              ),
+            ),
+          ),
+
+          // Partie supérieure avec découpage inversé
+          ClipPath(
+            clipper: _areFieldsFilled ? InvertedCurvedClipper() : null,
+            child: Container(
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height,
+              decoration: BoxDecoration(
+                color: primaryBlue,
+                image: DecorationImage(
+                  image: AssetImage('assets/images/stars.jpg'),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    primaryBlue.withOpacity(0.9),
+                    BlendMode.srcOver,
+                  ),
+                ),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 40),
+                child: Form(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        SizedBox(height: 60),
+                        Image.asset(
+                          'assets/images/fransa2bk.png',
+                          width: 130,
+                          height: 130,
+                        ),
+                        SizedBox(height: 5),
+                        Text(
+                          'Création de compte',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(height: 15),
+                        Container(
+                          width: MediaQuery.of(context).size.width * 0.85,
+                          child: Column(
+                            children: [
+                              _buildTextField(
+                                  "Nom d'utilisateur", _usernameController),
+                              SizedBox(height: 12),
+                              _buildTextField("Nom", _nomController),
+                              SizedBox(height: 12),
+                              _buildTextField("Prénom", _prenomController),
+                              SizedBox(height: 12),
+                              _buildTextField("Email", _emailController),
+                              SizedBox(height: 12),
+                              _buildTextField(
+                                  "Mot de passe", _passwordController,
+                                  isPassword: true),
+                              SizedBox(height: 12),
+                              _buildTextField("Confirmer le mot de passe",
+                                  _confirmPasswordController,
+                                  isPassword: true),
+                              SizedBox(height: 20),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Bouton d'inscription en bas à droite avec animation
+          AnimatedPositioned(
+            duration: Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+            bottom: _areFieldsFilled
+                ? 20
+                : -100, // Cache le bouton s'il n'est pas visible
+            right: 20,
+            child: AnimatedOpacity(
+              duration: Duration(milliseconds: 500),
+              opacity: _areFieldsFilled ? 1.0 : 0.0,
+              child: Container(
+                width: 150,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade800,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                  onPressed: _areFieldsFilled ? _submit : null,
+                  child: Text(
+                    "S'INSCRIRE",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
