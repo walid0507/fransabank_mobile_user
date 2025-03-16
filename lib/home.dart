@@ -26,7 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (clientId.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Veuillez remplir tous les champs")),
+        const SnackBar(content: Text("Veuillez remplir tous les champs")),
       );
       return;
     }
@@ -36,23 +36,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     try {
+      print("Tentative de connexion avec ID: $clientId");
       final response = await ApiService.clientSec(clientId, password);
+      print("Réponse reçue: $response");
+
       if (response["error"] != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response["error"])),
+          SnackBar(content: Text("Erreur: ${response["error"]}")),
         );
       } else {
-        // Stocker le token et client_id dans SharedPreferences
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString("token", response["token"]);
         await prefs.setString("client_id", response["client_id"]);
 
+        if (!mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Connexion réussie !")),
+          const SnackBar(content: Text("Connexion réussie !")),
         );
 
-        // Redirection vers ClientScreen après connexion
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => ClientScreen(nomClient: widget.nomClient),
@@ -60,8 +63,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
     } catch (e) {
+      print("Erreur de connexion détaillée: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erreur: ${e.toString()}")),
+        SnackBar(content: Text("Erreur de connexion: ${e.toString()}")),
       );
     } finally {
       setState(() {
@@ -111,12 +115,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    ClientScreen(nomClient: widget.nomClient)),
-                          );
+                          loginUser(); // Appel de la méthode de connexion
                         },
                         child: const Text(
                           "Se connecter",
@@ -138,6 +137,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildTextField(String label, {bool obscureText = false}) {
     return TextField(
+      controller: label == "Numéro du compte"
+          ? _clientIdController
+          : _passwordController,
       obscureText: obscureText,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
