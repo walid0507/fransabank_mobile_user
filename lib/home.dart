@@ -26,7 +26,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (clientId.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Veuillez remplir tous les champs")),
+        const SnackBar(
+          content: Text("Veuillez remplir tous les champs"),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -42,35 +45,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (response["error"] != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Erreur: ${response["error"]}")),
+          SnackBar(
+            content: Text("Erreur: ${response["error"]}"),
+            backgroundColor: Colors.red,
+          ),
         );
       } else {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString("token", response["token"]);
-        await prefs.setString("client_id", response["client_id"]);
+
+        // Sauvegarder uniquement le client_id car il n'y a pas de token
+        if (response["client_id"] != null) {
+          await prefs.setString("client_id", response["client_id"]);
+          print("Client ID sauvegardé: ${response["client_id"]}");
+        }
 
         if (!mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Connexion réussie !")),
+          const SnackBar(
+            content: Text("Connexion réussie !"),
+            backgroundColor: Colors.green,
+          ),
         );
 
+        // Attendre un court instant pour que l'utilisateur voie le message de succès
+        await Future.delayed(const Duration(seconds: 1));
+
+        if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => ClientScreen(nomClient: widget.nomClient),
+            builder: (context) => ClientScreen(
+              nomClient: "Client ${response["client_id"]}",
+            ),
           ),
         );
       }
     } catch (e) {
       print("Erreur de connexion détaillée: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erreur de connexion: ${e.toString()}")),
+        SnackBar(
+          content: Text("Erreur de connexion: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 

@@ -5,13 +5,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String clientBaseUrl =
-      "https://5497-105-101-35-157.ngrok-free.app/api/client/";
+      "https://05e3-105-235-131-236.ngrok-free.app/api/client/";
 
   static const String baseUrl =
-      "https://8c45-41-220-151-61.ngrok-free.app/api/demandecompte/"; // Remplacez par l'URL de votre API
+      "https://05e3-105-235-131-236.ngrok-free.app/api/demandecompte/"; // Remplacez par l'URL de votre API
 
   static const String refreshTokenEndpoint =
-      "https://8c45-41-220-151-61.ngrok-free.app/api/token/refresh/";
+      "https://05e3-105-235-131-236.ngrok-free.app/api/token/refresh/";
 
   static Future<String?> refreshToken() async {
     try {
@@ -46,6 +46,7 @@ class ApiService {
       return null;
     }
   }
+
   static Future<Map<String, dynamic>> createDemande(
       Map<String, dynamic> formData, String token) async {
     try {
@@ -120,7 +121,7 @@ class ApiService {
 
     final response = await http.get(
       Uri.parse(
-          'https://8c45-41-220-151-61.ngrok-free.app/api/protected-endpoint/'), // Un endpoint nécessitant un token
+          'https://05e3-105-235-131-236.ngrok-free.app/api/protected-endpoint/'), // Un endpoint nécessitant un token
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -140,7 +141,7 @@ class ApiService {
     }
 
     final url = Uri.parse(
-        'https://8c45-41-220-151-61.ngrok-free.app/api/client/demande-carte/');
+        'https://05e3-105-235-131-236.ngrok-free.app/api/client/demande-carte/');
 
     final response = await http.post(
       url,
@@ -170,7 +171,7 @@ class ApiService {
   static Future<Map<String, dynamic>> clientSec(
       String clientId, String password) async {
     final url = Uri.parse(
-        'https://8c45-41-220-151-61.ngrok-free.app/api/client/login/');
+        'https://05e3-105-235-131-236.ngrok-free.app/api/client/login/');
 
     try {
       print("=== DÉBUT DE LA CONNEXION ===");
