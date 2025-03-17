@@ -5,6 +5,7 @@ import 'package:projet1/main.dart'; // Importation de la page de connexion
 import 'package:projet1/agences_gab.dart'; // Importation de la page Agences & GAB
 import 'package:projet1/parametres.dart'; // Importation de la page Paramètres
 import 'package:projet1/offres.dart'; // Importation de la page Offres
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ClientScreen extends StatelessWidget {
   final String nomClient;
@@ -76,11 +77,7 @@ class ClientScreen extends StatelessWidget {
                     _onParametresPressed(context); // Action pour "Paramètres"
                   }),
                   _buildMenuItem(Icons.credit_card, 'Demande carte', () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => DemCarte(nomClient: nomClient)),
-                    );
+                    _onDemandeCartePressed(context);
                   }),
                   _buildMenuItem(Icons.video_call, 'Vidéo conférence', () {
                     // Action à définir pour la vidéo conférence
@@ -245,6 +242,31 @@ class ClientScreen extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => ParametresScreen()),
+    );
+  }
+
+  void _onDemandeCartePressed(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token") ?? prefs.getString("access_token");
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Erreur: Token non trouvé"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DemandeCarteScreen(
+          clientId: nomClient,
+          token: token,
+        ),
+      ),
     );
   }
 }

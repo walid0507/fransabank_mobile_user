@@ -140,30 +140,47 @@ class ApiService {
       throw Exception("Token manquant !");
     }
 
-    final url = Uri.parse(
-        'https://05e3-105-235-131-236.ngrok-free.app/api/client/demande-carte/');
+    // Nettoyer l'ID du client (enlever "Client" et les espaces)
+    String cleanClientId = clientId.replaceAll('Client', '').trim();
 
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({"type_carte": typeCarte}),
-    );
+    // Construire l'URL avec l'ID du client nettoyé
+    final url = Uri.parse('${clientBaseUrl}${cleanClientId}/demande-carte/');
 
-    print("Code réponse: ${response.statusCode}");
-    print("Réponse API: ${response.body}");
+    try {
+      print("🚀 Début de la demande de carte");
+      print("📍 URL: $url");
+      print("🔑 Token utilisé: $token");
+      print("📦 Données envoyées: ${jsonEncode({"type_carte": typeCarte})}");
 
-    if (response.statusCode == 201) {
-      return jsonDecode(response.body);
-    } else {
-      try {
-        final errorBody = jsonDecode(response.body);
-        throw Exception('Erreur ${response.statusCode}: ${errorBody["error"]}');
-      } catch (e) {
-        throw Exception('Erreur ${response.statusCode}: ${response.body}');
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({"type_carte": typeCarte}),
+      );
+
+      print("📥 Réponse reçue:");
+      print("  → Code de statut: ${response.statusCode}");
+      print("  → Corps: ${response.body}");
+      print("  → Headers: ${response.headers}");
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        try {
+          final errorBody = jsonDecode(response.body);
+          throw Exception(
+              'Erreur ${response.statusCode}: ${errorBody["error"] ?? errorBody["detail"] ?? response.body}');
+        } catch (e) {
+          throw Exception('Erreur ${response.statusCode}: ${response.body}');
+        }
       }
+    } catch (e) {
+      print("❌ Erreur lors de la demande de carte: $e");
+      rethrow;
     }
   }
 

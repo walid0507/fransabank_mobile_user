@@ -3,33 +3,105 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import 'header.dart'; // Importation du header commun
 
-class DemCarte extends StatefulWidget {
-  final String nomClient;
+class DemandeCarteScreen extends StatefulWidget {
+  final String clientId;
+  final String token;
 
-  const DemCarte({Key? key, required this.nomClient}) : super(key: key);
+  const DemandeCarteScreen({
+    Key? key,
+    required this.clientId,
+    required this.token,
+  }) : super(key: key);
 
   @override
-  _DemCarteState createState() => _DemCarteState();
+  _DemandeCarteScreenState createState() => _DemandeCarteScreenState();
 }
 
-class _DemCarteState extends State<DemCarte> {
+class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
   String? selectedCarteType;
   bool isLoading = false;
   bool fraisPayes = false;
+  late final String _clientId;
+  late final String _token;
+
+  final Map<String, Map<String, dynamic>> cartesInfo = {
+    "VISA": {
+      "nom": "Visa",
+      "plafond_paiement": 5000.00,
+      "plafond_retrait": 2000.00,
+      "solde_minimum": 0,
+      "frais": 50.00
+    },
+    "MASTERCARD": {
+      "nom": "MasterCard",
+      "plafond_paiement": 5000.00,
+      "plafond_retrait": 2000.00,
+      "solde_minimum": 50000.00,
+      "frais": 50.00
+    },
+    "VISA_PLATINUM": {
+      "nom": "Visa Platinum",
+      "plafond_paiement": 10000.00,
+      "plafond_retrait": 5000.00,
+      "solde_minimum": 100000.00,
+      "frais": 100.00
+    },
+    "MASTERCARD_ELITE": {
+      "nom": "MasterCard World Elite",
+      "plafond_paiement": 15000.00,
+      "plafond_retrait": 7500.00,
+      "solde_minimum": 150000.00,
+      "frais": 150.00
+    },
+    "AMEX": {
+      "nom": "American Express",
+      "plafond_paiement": 20000.00,
+      "plafond_retrait": 10000.00,
+      "solde_minimum": 200000.00,
+      "frais": 200.00
+    },
+    "AMEX_GOLD": {
+      "nom": "American Express Gold",
+      "plafond_paiement": 25000.00,
+      "plafond_retrait": 12500.00,
+      "solde_minimum": 250000.00,
+      "frais": 250.00
+    }
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _clientId = widget.clientId;
+    _token = widget.token;
+  }
 
   final List<String> typesDeCartes = [
-    "Visa",
-    "MasterCard",
-    "Visa Platinum",
-    "MasterCard World Elite",
-    "American Express",
-    "American Express Gold"
+    "VISA",
+    "MASTERCARD",
+    "VISA_PLATINUM",
+    "MASTERCARD_ELITE",
+    "AMEX",
+    "AMEX_GOLD"
   ];
+
+  // Map pour afficher les noms plus lisibles dans l'interface
+  final Map<String, String> typeCartesAffichage = {
+    "VISA": "Visa",
+    "MASTERCARD": "MasterCard",
+    "VISA_PLATINUM": "Visa Platinum",
+    "MASTERCARD_ELITE": "MasterCard World Elite",
+    "AMEX": "American Express",
+    "AMEX_GOLD": "American Express Gold"
+  };
 
   Future<void> envoyerDemande() async {
     if (selectedCarteType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Veuillez sélectionner un type de carte.")),
+        const SnackBar(
+          content: Text("Veuillez sélectionner un type de carte"),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -46,28 +118,62 @@ class _DemCarteState extends State<DemCarte> {
     });
 
     try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString("token");
-      String? clientId = prefs.getString("client_id");
+      print("🚀 Début de l'envoi de la demande de carte");
+      print("📱 Type de carte sélectionné: $selectedCarteType");
+      print("🔑 Client ID: $_clientId");
+      print("🔑 Token: $_token");
 
-      if (token == null || clientId == null) {
-        throw Exception("Token ou ID client manquant.");
+      final response = await ApiService.demanderCarte(
+        _clientId,
+        selectedCarteType!,
+        _token,
+      );
+
+      print("✅ Réponse reçue: $response");
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Demande de carte envoyée avec succès !"),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Attendre un court instant pour que l'utilisateur voie le message de succès
+      await Future.delayed(const Duration(seconds: 1));
+
+      if (!mounted) return;
+      Navigator.pop(context);
+    } catch (e) {
+      print("❌ Erreur détaillée lors de l'envoi de la demande:");
+      print("Type d'erreur: ${e.runtimeType}");
+      print("Message d'erreur: $e");
+
+      if (!mounted) return;
+
+      String messageErreur =
+          "Une erreur est survenue lors de l'envoi de la demande.";
+      if (e.toString().contains("401")) {
+        messageErreur = "Session expirée. Veuillez vous reconnecter.";
+      } else if (e.toString().contains("404")) {
+        messageErreur = "Client non trouvé.";
+      } else if (e.toString().contains("400")) {
+        messageErreur = "Données invalides. Veuillez réessayer.";
       }
 
-      final response =
-          await ApiService.demanderCarte(clientId, selectedCarteType!, token);
-
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Carte demandée avec succès ! 📩")),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erreur : ${e.toString()}")),
+        SnackBar(
+          content: Text(messageErreur),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -132,31 +238,70 @@ class _DemCarteState extends State<DemCarte> {
   }
 
   Widget _buildDropdownField(String label, List<String> options) {
-    return DropdownButtonFormField<String>(
-      dropdownColor: Colors.blue.shade900,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.2),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DropdownButtonFormField<String>(
+          dropdownColor: Colors.blue.shade900,
+          decoration: InputDecoration(
+            labelText: label,
+            labelStyle: const TextStyle(color: Colors.white70),
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.2),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          items: options.map((option) {
+            final info = cartesInfo[option]!;
+            return DropdownMenuItem(
+              value: option,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(info["nom"],
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
+                  Text(
+                    "Plafonds: ${info["plafond_paiement"]}€ / ${info["plafond_retrait"]}€",
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                  Text(
+                    "Solde minimum: ${info["solde_minimum"]}€",
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              selectedCarteType = value;
+              if (value != null) {
+                _updateFraisCard(value);
+              }
+            });
+          },
         ),
-      ),
-      items: options.map((option) {
-        return DropdownMenuItem(
-          value: option,
-          child: Text(option, style: const TextStyle(color: Colors.white)),
-        );
-      }).toList(),
-      onChanged: (value) {
-        setState(() {
-          selectedCarteType = value;
-        });
-      },
+        if (selectedCarteType != null) ...[
+          const SizedBox(height: 10),
+          Text(
+            "⚠️ Cette carte nécessite un solde minimum de ${cartesInfo[selectedCarteType]!["solde_minimum"]}€",
+            style: const TextStyle(color: Colors.orange, fontSize: 12),
+          ),
+        ],
+      ],
     );
   }
+
+  void _updateFraisCard(String cardType) {
+    setState(() {
+      _fraisCarteText = "Frais de la carte: ${cartesInfo[cardType]!["frais"]}€";
+    });
+  }
+
+  String _fraisCarteText = "Frais de la carte: 50.00€";
 
   Widget _buildReadOnlyField(String text) {
     return Container(
@@ -166,7 +311,7 @@ class _DemCarteState extends State<DemCarte> {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
-        text,
+        _fraisCarteText,
         style: const TextStyle(color: Colors.white70),
       ),
     );
