@@ -94,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     String email = _emailController.text.trim();
     String password = _passwordController.text;
-    const String API_BASE_URL = "https://87a5-105-100-214-164.ngrok-free.app";
+    const String API_BASE_URL = "https://8c45-41-220-151-61.ngrok-free.app";
 
     final url = Uri.parse('$API_BASE_URL/api/login/');
 
@@ -125,8 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         String token = data['access'];
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('auth_token', token);
-
+        await prefs.setString('access_token', token);
         print("✅ Connexion réussie, Token JWT : $token");
         _showMessage("Connexion réussie", isError: false);
 

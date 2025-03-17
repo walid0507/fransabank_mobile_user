@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Ajout de SharedPreferences
+import 'dart:convert';
 
 class CreateAccountStep3 extends StatefulWidget {
   final Map<String, dynamic> formData;
@@ -43,62 +44,125 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
   }
 
   Future<String?> _getToken() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('auth_token'); // Corrige le nom de la clé
- // Récupère le token
-    print("Token récupéré depuis SharedPreferences : $token"); // Affiche le token récupéré
-    return token;
-  }
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('access_token'); // Vérification du token
+      String? refreshToken = prefs.getString('refresh_token');
 
-  void _submitFinal() async {
-    if (_formKey.currentState!.validate()) {
-      // Récupérer le token depuis SharedPreferences
-      String? token = await _getToken();
-      print("Token utilisé pour la requête : $token"); // Affiche le token utilisé
+      print("Token récupéré depuis SharedPreferences : $token");
 
-      if (token == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur : Token non trouvé. Veuillez vous reconnecter.')),
-        );
-        return; // Arrête l'exécution si le token est null
+      if (token != null) {
+        return token; // Retourne le token s'il existe
       }
 
-      // Ajout des données des champs à formData
-      widget.formData.addAll({
-        "address": _addressController.text,
-        "Pays_naissance": _countryOfBirthController.text,
-        "employer_name": _employerNameController.text,
-        "client_type": _clientTypeController.text,
-      });
+      if (refreshToken == null) {
+        print(
+            "Aucun refresh token trouvé, impossible de récupérer un nouveau token.");
+        return null;
+      }
 
+      // Essayer de rafraîchir le token
+      token = await ApiService.refreshToken();
+      if (token != null) {
+        print("Token rafraîchi avec succès");
+        return token;
+      } else {
+        print("Impossible de rafraîchir le token");
+      }
+
+      return null;
+    } catch (e) {
+      print("Erreur lors de la récupération du token: $e");
+      return null;
+    }
+  }
+  void _submitFinal() async {
+    if (_formKey.currentState!.validate()) {
       try {
-        // Envoyer les données à l'API
-        var response = await ApiService.createDemande(widget.formData, token);
-        int demandeId = response["id"];
+        String? token = await _getToken();
+        print("Token utilisé pour la requête : $token");
 
-        // Upload de la photo et de la signature si elles existent
-        if (photo != null) {
-          await ApiService.uploadFile(
-              "${ApiService.baseUrl}demandecompte/$demandeId/upload_photo/",
-              photo!,
-              token);
-        }
-        if (signature != null) {
-          await ApiService.uploadFile(
-              "${ApiService.baseUrl}demandecompte/$demandeId/upload_signature/",
-              signature!,
-              token);
+        if (token == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:
+                  Text('Erreur : Token non trouvé. Veuillez vous reconnecter.'),
+              duration: Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'OK',
+                onPressed: () {
+                  // Rediriger vers la page de connexion
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                },
+              ),
+            ),
+          );
+          return;
         }
 
-        // Afficher un message de succès
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Demande créée avec succès')),
-        );
+        // Afficher les données avant envoi pour debug
+        print("FormData existant : ${widget.formData}");
+
+        // Structurer les données selon le modèle Django
+        final formDataToSend = {
+          ...widget.formData,
+          "address": _addressController.text,
+          "Pays_naissance": _countryOfBirthController.text,
+          "nom_employeur": _employerNameController.text,
+          "type_client": _clientTypeController.text == 'Particulier'
+              ? 1
+              : _clientTypeController.text == 'Entreprise'
+                  ? 2
+                  : 3,
+        };
+
+        print("Données à envoyer : $formDataToSend");
+
+        // Envoyer les données principales
+        var response = await ApiService.authenticatedRequest(
+            ApiService.baseUrl, 'POST',
+            body: formDataToSend);
+
+        print("Code de réponse : ${response.statusCode}");
+        print("Corps de la réponse : ${response.body}");
+
+        if (response.statusCode == 201 || response.statusCode == 200) {
+          var responseData = jsonDecode(response.body);
+          int demandeId = responseData["id"];
+
+          // Upload de la photo
+          if (photo != null) {
+            await ApiService.uploadFile(
+                "${ApiService.baseUrl}${demandeId}/upload_photo/",
+                photo!,
+                token);
+          }
+
+          // Upload de la signature
+          if (signature != null) {
+            await ApiService.uploadFile(
+                "${ApiService.baseUrl}${demandeId}/upload_signature/",
+                signature!,
+                token);
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Demande créée avec succès')),
+          );
+
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        } else {
+          throw Exception(
+              'Erreur lors de la création de la demande: ${response.body}');
+        }
       } catch (e) {
-        // Gérer les erreurs
-        print("Erreur : $e");
+        print("Erreur détaillée : $e");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors de la création de la demande')),
+          SnackBar(
+            content: Text(
+                'Erreur lors de la création de la demande: ${e.toString()}'),
+            duration: Duration(seconds: 5),
+          ),
         );
       }
     }
