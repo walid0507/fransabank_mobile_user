@@ -5,13 +5,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String clientBaseUrl =
-      "https://05e3-105-235-131-236.ngrok-free.app/api/client/";
+      "https://86f1-105-99-16-247.ngrok-free.app/api/client/";
 
   static const String baseUrl =
-      "https://05e3-105-235-131-236.ngrok-free.app/api/demandecompte/"; // Remplacez par l'URL de votre API
+      "https://86f1-105-99-16-247.ngrok-free.app/api/demandecompte/"; // Remplacez par l'URL de votre API
 
   static const String refreshTokenEndpoint =
-      "https://05e3-105-235-131-236.ngrok-free.app/api/token/refresh/";
+      "https://86f1-105-99-16-247.ngrok-free.app/api/token/refresh/";
 
   static Future<String?> refreshToken() async {
     try {
@@ -121,7 +121,7 @@ class ApiService {
 
     final response = await http.get(
       Uri.parse(
-          'https://05e3-105-235-131-236.ngrok-free.app/api/protected-endpoint/'), // Un endpoint nécessitant un token
+          'https://86f1-105-99-16-247.ngrok-free.app/api/protected-endpoint/'), // Un endpoint nécessitant un token
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -188,7 +188,7 @@ class ApiService {
   static Future<Map<String, dynamic>> clientSec(
       String clientId, String password) async {
     final url = Uri.parse(
-        'https://05e3-105-235-131-236.ngrok-free.app/api/client/login/');
+        'https://86f1-105-99-16-247.ngrok-free.app/api/client/login/');
 
     try {
       print("=== DÉBUT DE LA CONNEXION ===");
@@ -296,5 +296,43 @@ class ApiService {
     }
 
     return response;
+  }
+
+  static Future<Map<String, dynamic>> changePassword(
+    String clientId,
+    String oldPassword,
+    String newPassword,
+    String confirmPassword,
+    String token,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse(
+            'https://86f1-105-99-16-247.ngrok-free.app/api/change-password/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'old_password': oldPassword,
+          'new_password': newPassword,
+          'confirm_password': confirmPassword,
+        }),
+      );
+
+      print("=== RÉPONSE DU SERVEUR ===");
+      print("Code de réponse: ${response.statusCode}");
+      print("Corps de la réponse: ${response.body}");
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error'] ?? 'Une erreur est survenue');
+      }
+    } catch (e) {
+      print('Erreur lors du changement de mot de passe: $e');
+      rethrow;
+    }
   }
 }
