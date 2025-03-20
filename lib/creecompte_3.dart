@@ -5,6 +5,7 @@ import 'api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Ajout de SharedPreferences
 import 'dart:convert';
 import 'package:projet1/configngrok.dart';
+import 'denvoyé.dart';
 
 class CreateAccountStep3 extends StatefulWidget {
   final Map<String, dynamic> formData;
@@ -77,6 +78,7 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
       return null;
     }
   }
+
   void _submitFinal() async {
     if (_formKey.currentState!.validate()) {
       try {
@@ -151,7 +153,12 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
             SnackBar(content: Text('Demande créée avec succès')),
           );
 
-          Navigator.of(context).popUntil((route) => route.isFirst);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const DenvoyeScreen(),
+            ),
+          );
         } else {
           throw Exception(
               'Erreur lors de la création de la demande: ${response.body}');
