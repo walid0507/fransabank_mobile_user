@@ -6,209 +6,453 @@ import 'package:projet1/agences_gab.dart'; // Importation de la page Agences & G
 import 'package:projet1/parametres.dart'; // Importation de la page Paramètres
 import 'package:projet1/offres.dart'; // Importation de la page Offres
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:projet1/configngrok.dart';
+import 'package:projet1/video_conference.dart';
 
-class ClientScreen extends StatelessWidget {
+class ClientScreen extends StatefulWidget {
   final String nomClient;
-
   const ClientScreen({Key? key, required this.nomClient}) : super(key: key);
+
+  @override
+  _ClientScreenState createState() => _ClientScreenState();
+}
+
+class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMixin {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+  final Map<String, AnimationController> _animationControllers = {};
+  final Map<String, Animation<double>> _scaleAnimations = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialiser les contrôleurs d'animation pour chaque service
+    _initializeAnimationControllers();
+  }
+
+  void _initializeAnimationControllers() {
+    // Services
+    _createAnimationController('password');
+    _createAnimationController('offres');
+    _createAnimationController('agences');
+    _createAnimationController('parametres');
+    _createAnimationController('carte');
+    _createAnimationController('video');
+    
+    // Transactions
+    _createAnimationController('netflix');
+    _createAnimationController('psplus');
+    _createAnimationController('yassir');
+  }
+
+  void _createAnimationController(String key) {
+    final controller = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    
+    final animation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(
+        parent: controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _animationControllers[key] = controller;
+    _scaleAnimations[key] = animation;
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _animationControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        // Permet le défilement si le contenu dépasse
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.blue.shade300, Colors.blue.shade900],
-            ),
-          ),
-          child: Column(
-            children: [
-              const SizedBox(height: 10), // Espace réduit
-              _buildFrontCard(), // Carte réduite
-              const SizedBox(height: 10), // Espace réduit
-              Text(
-                "Bonjour $nomClient",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 5), // Espace réduit
-              const Text(
-                "Bienvenue dans votre espace client",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 10), // Espace réduit
-              // Section des icônes
-              GridView.count(
-                crossAxisCount: 3, // 3 icônes par ligne
-                shrinkWrap: true,
-                physics:
-                    NeverScrollableScrollPhysics(), // Désactive le défilement
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                childAspectRatio: 1.5, // Ajuste la taille des carreaux
-                mainAxisSpacing: 10, // Espace vertical entre les carreaux
-                crossAxisSpacing: 10, // Espace horizontal entre les carreaux
-                children: [
-                  _buildMenuItem(Icons.vpn_key, 'Mots de passes', () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              MotDePasse(nomClient: nomClient)),
-                    );
-                  }),
-                  _buildMenuItem(Icons.local_offer, 'Offres', () {
-                    _onOffresPressed(context);
-                  }),
-                  _buildMenuItem(Icons.location_on, 'Agences & GAB', () {
-                    _onAgencesPressed(context);
-                  }),
-                  _buildMenuItem(Icons.settings, 'Paramètres', () {
-                    _onParametresPressed(context); // Action pour "Paramètres"
-                  }),
-                  _buildMenuItem(Icons.credit_card, 'Demande carte', () {
-                    _onDemandeCartePressed(context);
-                  }),
-                  _buildMenuItem(Icons.video_call, 'Vidéo conférence', () {
-                    // Action à définir pour la vidéo conférence
-                  }),
+      body: Column(
+        children: [
+          // Header avec dégradé
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.blue[900]!,
+                  Colors.blue[700]!,
                 ],
               ),
-              const SizedBox(height: 10), // Espace réduit
-              Text(
-                'Transactions',
-                style: TextStyle(
-                  fontSize: 18, // Taille de police réduite
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 5), // Espace réduit
-              _buildTransactionList(),
-              const SizedBox(height: 10), // Espace réduit
-              // Bouton de déconnexion
-              Padding(
-                padding: const EdgeInsets.all(8.0), // Padding réduit
-                child: ElevatedButton.icon(
-                  onPressed: () => _onLogoutPressed(context),
-                  icon: const Icon(Icons.logout),
-                  label: const Text('Déconnexion'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                    foregroundColor: Colors.white,
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // Barre de navigation
+                  Padding(
                     padding: const EdgeInsets.symmetric(
-                        vertical: 2, horizontal: 1), // Padding réduit
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      horizontal: 20,
+                      vertical: 15,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const Text(
+                          'Accueil',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 40), // Pour équilibrer avec la flèche retour
+                      ],
                     ),
                   ),
-                ),
+                  // Section solde
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Solde disponible',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        const Text(
+                          '\$4,180.20',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(
-                  height: 10), // Espace en bas pour éviter le débordement
-            ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuItem(IconData icon, String label, VoidCallback onPressed) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white, // Fond blanc
-        foregroundColor: Colors.blue.shade900, // Couleur du texte et de l'icône
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10), // Bordures arrondies
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 3),
-        minimumSize: Size(35,
-            35), // Réduit la largeur (ajuste selon ton besoin) // Padding réduit
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 20), // Icône plus petite (taille réduite)
-          const SizedBox(height: 5), // Espace réduit
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 10), // Texte plus petit
+          
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  // Section des icônes avec slide
+                  SizedBox(
+                    height: 130,
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: (int page) {
+                        setState(() {
+                          _currentPage = page;
+                        });
+                      },
+                      children: [
+                        // Première page d'icônes
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildServiceItem(
+                                icon: Icons.password_rounded,
+                                color: Colors.blue[700]!,
+                                label: 'Mots de passe',
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MotDePasse(nomClient: widget.nomClient),
+                                  ),
+                                ),
+                              ),
+                              _buildServiceItem(
+                                icon: Icons.local_offer_rounded,
+                                color: Colors.orange,
+                                label: 'Offres',
+                                onTap: () => _onOffresPressed(context),
+                              ),
+                              _buildServiceItem(
+                                icon: Icons.location_on_rounded,
+                                color: Colors.red,
+                                label: 'Agences',
+                                onTap: () => _onAgencesPressed(context),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Deuxième page d'icônes
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildServiceItem(
+                                icon: Icons.settings_rounded,
+                                color: Colors.grey[700]!,
+                                label: 'Paramètres',
+                                onTap: () => _onParametresPressed(context),
+                              ),
+                              _buildServiceItem(
+                                icon: Icons.credit_card_rounded,
+                                color: Colors.green,
+                                label: 'Carte',
+                                onTap: () => _onDemandeCartePressed(context),
+                              ),
+                              _buildServiceItem(
+                                icon: Icons.video_camera_front_rounded,
+                                color: Colors.purple,
+                                label: 'Vidéo',
+                                onTap: () => _onVideoConferencePressed(context),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Indicateurs de page
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      for (int i = 0; i < 2; i++)
+                        Container(
+                          width: 8,
+                          height: 8,
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: i == _currentPage ? Colors.blue[900] : Colors.grey[300],
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
+                  // Section Transactions
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Transactions récentes',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {},
+                              child: Text(
+                                'Voir tout',
+                                style: TextStyle(
+                                  color: Colors.blue[900],
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 15),
+                        _buildTransactionList(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFrontCard() {
-    return Container(
-      width: 350,
-      height: 120, // Hauteur encore réduite
-      margin: EdgeInsets.all(10), // Marge réduite
-      padding: EdgeInsets.all(10), // Padding réduit
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue.shade800, Colors.blue.shade500],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 10,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildServiceItem({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(30),
+        child: Container(
+          padding: EdgeInsets.all(8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Fransabank',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16, // Taille de police réduite
-                  fontWeight: FontWeight.bold,
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: color,
+                  size: 30,
                 ),
               ),
-              Icon(Icons.credit_card,
-                  color: Colors.white, size: 20), // Icône plus petite
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[800],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
-          SizedBox(height: 10), // Espace réduit
-          Text(
-            '6501 0702 1205 5051',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14, // Taille de police réduite
-              letterSpacing: 2,
-            ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTransactionList() {
+    final List<Map<String, dynamic>> transactions = [
+      {
+        'icon': Icons.shopping_bag_rounded,
+        'title': 'Netflix',
+        'amount': '-570 da',
+        'status': 'Payé',
+        'date': '14 Juillet 2025',
+        'key': 'netflix',
+      },
+      {
+        'icon': Icons.sports_esports_rounded,
+        'title': 'PS Plus',
+        'amount': '-205 da',
+        'status': 'Échoué',
+        'date': '02 Juillet 2025',
+        'key': 'psplus',
+      },
+      {
+        'icon': Icons.directions_car_rounded,
+        'title': 'Yassir',
+        'amount': '-398 da',
+        'status': 'Échoué',
+        'date': '10 juin 2025',
+        'key': 'yassir',
+      },
+    ];
+
+    return Column(
+      children: transactions.map((transaction) {
+        return _buildTransactionItem(
+          transaction['icon'],
+          transaction['title'],
+          transaction['amount'],
+          transaction['status'],
+          transaction['date'],
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildTransactionItem(
+    IconData icon,
+    String title,
+    String amount,
+    String status,
+    String date,
+  ) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {},
+        borderRadius: BorderRadius.circular(15),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 15),
+          padding: const EdgeInsets.all(15),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          SizedBox(height: 5), // Espace réduit
-          Text(
-            'Exp: 12/20',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 12, // Taille de police réduite
-            ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: Colors.blue[800], size: 24),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      date,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    amount,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: status == 'Échoué' ? Colors.red : Colors.green,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: (status == 'Échoué' ? Colors.red : Colors.green).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      status,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: status == 'Échoué' ? Colors.red : Colors.green,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -227,6 +471,15 @@ class ClientScreen extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => AgencesScreen()),
+    );
+  }
+
+  void _onVideoConferencePressed(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VideoConferencePage(),
+      ),
     );
   }
 
@@ -264,95 +517,10 @@ class ClientScreen extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (context) => DemandeCarteScreen(
-          clientId: nomClient,
+          clientId: widget.nomClient,
           token: token,
         ),
       ),
     );
   }
-}
-
-Widget _buildTransactionList() {
-  final List<Map<String, dynamic>> transactions = [
-    {
-      'icon': Icons.payment,
-      'title': 'netflix',
-      'amount': '-570 da',
-      'status': 'Paid',
-      'date': '14 Juillet 2025',
-    },
-    {
-      'icon': Icons.shopping_cart,
-      'title': 'psplus',
-      'amount': '-205 da',
-      'status': 'Failed',
-      'date': '02 Juillet 2025',
-    },
-    {
-      'icon': Icons.directions_car,
-      'title': 'yassir',
-      'amount': '-398 da',
-      'status': 'Failed',
-      'date': '10 juin 2025',
-    },
-  ];
-
-  return ListView.builder(
-    shrinkWrap: true,
-    physics: NeverScrollableScrollPhysics(), // Désactive le défilement
-    padding: EdgeInsets.symmetric(horizontal: 10), // Padding réduit
-    itemCount: transactions.length,
-    itemBuilder: (context, index) {
-      final transaction = transactions[index];
-      return _buildTransactionItem(
-        transaction['icon'],
-        transaction['title'],
-        transaction['amount'],
-        transaction['status'],
-        transaction['date'],
-      );
-    },
-  );
-}
-
-Widget _buildTransactionItem(
-    IconData icon, String title, String amount, String status, String date) {
-  return Card(
-    margin: EdgeInsets.only(bottom: 5), // Marge réduite
-    elevation: 2, // Élévation réduite
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: ListTile(
-      leading: Icon(icon,
-          size: 18, color: Colors.blue.shade900), // Icône plus petite
-      title: Text(
-        title,
-        style: TextStyle(
-            fontSize: 12, fontWeight: FontWeight.bold), // Texte plus petit
-      ),
-      subtitle: Text(date, style: TextStyle(fontSize: 10)), // Texte plus petit
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            amount,
-            style: TextStyle(
-              fontSize: 12, // Texte plus petit
-              color: status == 'Failed' ? Colors.red : Colors.green,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            status,
-            style: TextStyle(
-              fontSize: 10, // Texte plus petit
-              color: status == 'Failed' ? Colors.red : Colors.green,
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
 }
