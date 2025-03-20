@@ -5,13 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String clientBaseUrl =
-      "https://86f1-105-99-16-247.ngrok-free.app/api/client/";
-
+      "https://0376-105-100-44-252.ngrok-free.app/api/client/";
   static const String baseUrl =
-      "https://86f1-105-99-16-247.ngrok-free.app/api/demandecompte/"; // Remplacez par l'URL de votre API
-
+      "https://0376-105-100-44-252.ngrok-free.app/api/demandecompte/";
   static const String refreshTokenEndpoint =
-      "https://86f1-105-99-16-247.ngrok-free.app/api/token/refresh/";
+      "https://0376-105-100-44-252.ngrok-free.app/api/token/refresh/";
 
   static Future<String?> refreshToken() async {
     try {
@@ -33,7 +31,6 @@ class ApiService {
         final data = jsonDecode(response.body);
         final newToken = data['access'];
 
-        // Sauvegarder le nouveau token
         await prefs.setString('access_token', newToken);
         print("✅ Nouveau token sauvegardé avec succès");
         return newToken;
@@ -47,14 +44,36 @@ class ApiService {
     }
   }
 
+  Future<List<dynamic>?> getComptes() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('access_token');
+
+      if (token == null) {
+        throw Exception("Token non trouvé");
+      }
+
+      final response = await authenticatedRequest(
+        "https://0376-105-100-44-252.ngrok-free.app/api/mes-comptes/",
+        'GET',
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['comptes'];
+      }
+      return null;
+    } catch (e) {
+      print("Erreur dans getComptes: $e");
+      return null;
+    }
+  }
+
   static Future<Map<String, dynamic>> createDemande(
       Map<String, dynamic> formData, String token) async {
     try {
-      final response = await authenticatedRequest(
-        baseUrl,
-        'POST',
-        body: formData,
-      );
+      final response =
+          await authenticatedRequest(baseUrl, 'POST', body: formData);
 
       print("Code réponse: ${response.statusCode}");
       print("Réponse : ${response.body}");
@@ -70,12 +89,10 @@ class ApiService {
     }
   }
 
-  // Méthode pour uploader des fichiers (photo, signature)
   static Future<void> uploadFile(String url, File file, String token) async {
     try {
       var request = http.MultipartRequest('POST', Uri.parse(url));
 
-      // Obtenir le token actuel ou rafraîchi
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? currentToken = prefs.getString('token');
 
@@ -90,10 +107,8 @@ class ApiService {
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 401) {
-        // Si le token est expiré, essayer de le rafraîchir
         String? newToken = await refreshToken();
         if (newToken != null) {
-          // Réessayer avec le nouveau token
           request = http.MultipartRequest('POST', Uri.parse(url));
           request.headers['Authorization'] = 'Bearer $newToken';
           request.files
@@ -113,7 +128,6 @@ class ApiService {
     }
   }
 
-  // Vérifier si le token est valide
   static Future<void> checkToken(String token) async {
     if (token == null || token.isEmpty) {
       throw Exception("Token manquant !");
@@ -121,7 +135,7 @@ class ApiService {
 
     final response = await http.get(
       Uri.parse(
-          'https://86f1-105-99-16-247.ngrok-free.app/api/protected-endpoint/'), // Un endpoint nécessitant un token
+          'https://0376-105-100-44-252.ngrok-free.app/api/protected-endpoint/'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -140,10 +154,7 @@ class ApiService {
       throw Exception("Token manquant !");
     }
 
-    // Nettoyer l'ID du client (enlever "Client" et les espaces)
     String cleanClientId = clientId.replaceAll('Client', '').trim();
-
-    // Construire l'URL avec l'ID du client nettoyé
     final url = Uri.parse('${clientBaseUrl}${cleanClientId}/demande-carte/');
 
     try {
@@ -184,11 +195,10 @@ class ApiService {
     }
   }
 
-  // 🔑 Fonction pour la connexion et récupération du client_id
   static Future<Map<String, dynamic>> clientSec(
       String clientId, String password) async {
     final url = Uri.parse(
-        'https://86f1-105-99-16-247.ngrok-free.app/api/client/login/');
+        'https://0376-105-100-44-252.ngrok-free.app/api/client/login/');
 
     try {
       print("=== DÉBUT DE LA CONNEXION ===");
@@ -209,21 +219,13 @@ class ApiService {
         print("\n=== DONNÉES DÉCODÉES ===");
         print(data);
 
-        // Stocker les tokens et le client_id
         SharedPreferences prefs = await SharedPreferences.getInstance();
-
-        if (data["token"] != null) {
-          await prefs.setString("access_token", data["token"]);
-          print("\n=== TOKEN SAUVEGARDÉ (format token) ===");
-          print(data["token"]);
-        } else if (data["access"] != null) {
+        if (data["access"] != null && data["refresh"] != null) {
           await prefs.setString("access_token", data["access"]);
           await prefs.setString("refresh_token", data["refresh"]);
-          print("\n=== TOKEN SAUVEGARDÉ (format access) ===");
-          print(data["access"]);
+          print("✅ Token et refresh_token sauvegardés !");
         }
 
-        // Vérification
         String? savedToken = await prefs.getString('access_token');
         print("\n=== VÉRIFICATION DU TOKEN SAUVEGARDÉ ===");
         print("Token récupéré: $savedToken");
@@ -276,13 +278,11 @@ class ApiService {
       throw Exception('Méthode HTTP non supportée');
     }
 
-    // Si le token est expiré (401), essayer de le rafraîchir
     if (response.statusCode == 401) {
       String? newToken = await refreshToken();
       if (newToken != null) {
         headers['Authorization'] = 'Bearer $newToken';
 
-        // Réessayer la requête avec le nouveau token
         if (method.toUpperCase() == 'GET') {
           response = await http.get(Uri.parse(url), headers: headers);
         } else if (method.toUpperCase() == 'POST') {
@@ -308,7 +308,7 @@ class ApiService {
     try {
       final response = await http.post(
         Uri.parse(
-            'https://86f1-105-99-16-247.ngrok-free.app/api/change-password/'),
+            'https://0376-105-100-44-252.ngrok-free.app/api/change-password/'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

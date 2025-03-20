@@ -4,6 +4,8 @@ import 'package:projet1/home.dart';
 import 'dart:convert';
 import 'header.dart';
 import 'creecompte.dart'; // Importation du header commun
+import 'api_service.dart'; // Importer l'API Service
+import 'package:shared_preferences/shared_preferences.dart'; // Importer SharedPreferences
 
 class ComptesPage extends StatefulWidget {
   final String nomClient;
@@ -15,32 +17,49 @@ class ComptesPage extends StatefulWidget {
 }
 
 class _ComptesPageState extends State<ComptesPage> {
-  List<String> comptes = [
-    "Compte 1",
-    "Compte 2",
-    "Compte 3"
-  ]; // Liste statique temporaire
+  List<Map<String, dynamic>> comptes = []; // Liste dynamique des comptes
+  bool _isLoading = true; // Pour gérer l'affichage du chargement
+  String? _errorMessage; // Message d'erreur si échec
 
-  /*
   Future<void> _fetchComptes() async {
-    const String API_BASE_URL = "https://example.com"; // Remplace par ton URL
-    final url = Uri.parse('$API_BASE_URL/api/comptes?client=${widget.nomClient}');
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
     try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
+      // Vérifier le token
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      print('Token utilisé: $token'); // Pour déboguer
+
+      List<dynamic>? data = await ApiService().getComptes();
+      if (data != null) {
         setState(() {
-          comptes = data.map((compte) => compte['nom']).toList();
+          comptes = List<Map<String, dynamic>>.from(data);
+          _isLoading = false;
         });
       } else {
-        print("Erreur lors du chargement des comptes");
+        setState(() {
+          _errorMessage = "Aucune donnée reçue du serveur";
+          _isLoading = false;
+        });
       }
-    } catch (error) {
-      print("Erreur de connexion au serveur : $error");
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Erreur: ${e.toString()}";
+        _isLoading = false;
+      });
+      print('Erreur complète: $e');
+      print('Stack trace: ${StackTrace.current}');
     }
   }
-  */
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchComptes();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,40 +90,50 @@ class _ComptesPageState extends State<ComptesPage> {
               ),
             ),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: ListView.builder(
-                  itemCount: comptes.length,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                ProfileScreen(nomClient: widget.nomClient),
+              child: _isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : _errorMessage != null
+                      ? Center(
+                          child: Text(
+                            _errorMessage!,
+                            style: TextStyle(color: Colors.red),
                           ),
-                        );
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(16.0),
-                        margin: EdgeInsets.symmetric(vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          comptes[index],
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: ListView.builder(
+                            itemCount: comptes.length,
+                            itemBuilder: (context, index) {
+                              final compte = comptes[index];
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProfileScreen(
+                                          nomClient: widget.nomClient),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.all(16.0),
+                                  margin: EdgeInsets.symmetric(vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    "${compte['type_compte']} - ${compte['solde']} DA",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-              ),
             ),
             Padding(
               padding: const EdgeInsets.all(20.0),
@@ -117,7 +146,8 @@ class _ComptesPageState extends State<ComptesPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => CreateAccountScreen()),
+                          builder: (context) => CreateAccountScreen(),
+                        ),
                       );
                     },
                     style: ElevatedButton.styleFrom(
