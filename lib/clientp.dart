@@ -8,6 +8,8 @@ import 'package:projet1/offres.dart'; // Importation de la page Offres
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projet1/video_conference.dart';
 import 'package:projet1/virements.dart';
+import 'dart:async';
+import 'api_service.dart';
 
 class ClientScreen extends StatefulWidget {
   final String nomClient;
@@ -17,17 +19,42 @@ class ClientScreen extends StatefulWidget {
   _ClientScreenState createState() => _ClientScreenState();
 }
 
-class _ClientScreenState extends State<ClientScreen>
-    with TickerProviderStateMixin {
+class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   final Map<String, AnimationController> _animationControllers = {};
   final Map<String, Animation<double>> _scaleAnimations = {};
+  double? _solde;
+  Timer? _timer;
+
+  Future<void> _fetchSolde() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString("token") ?? prefs.getString("access_token");
+
+      if (token == null) {
+        throw Exception("Token non trouvé");
+      }
+
+      double? solde = await ApiService.getSolde();
+
+      setState(() {
+        _solde = solde;
+      });
+    } catch (e) {
+      print("Erreur lors du chargement du solde: $e");
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    // Initialiser les contrôleurs d'animation pour chaque service
+    _fetchSolde(); // Charger le solde au démarrage
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _fetchSolde();
+    });
+
+    // Initialiser les contrôleurs d'animation
     _initializeAnimationControllers();
   }
 
@@ -65,6 +92,7 @@ class _ClientScreenState extends State<ClientScreen>
 
   @override
   void dispose() {
+    _timer?.cancel(); // Arrêter le timer quand l'écran est détruit
     for (var controller in _animationControllers.values) {
       controller.dispose();
     }
@@ -101,8 +129,7 @@ class _ClientScreenState extends State<ClientScreen>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios,
-                              color: Colors.white),
+                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
                           onPressed: () => Navigator.pop(context),
                         ),
                         const Text(
@@ -113,11 +140,11 @@ class _ClientScreenState extends State<ClientScreen>
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(
-                            width: 40), // Pour équilibrer avec la flèche retour
+                        const SizedBox(width: 40), // Pour équilibrer avec la flèche retour
                       ],
                     ),
                   ),
+
                   // Section solde
                   Padding(
                     padding: const EdgeInsets.all(20),
@@ -131,14 +158,18 @@ class _ClientScreenState extends State<ClientScreen>
                           ),
                         ),
                         const SizedBox(height: 10),
-                        const Text(
-                          '\$4,180.20',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        _solde == null
+                            ? const CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              )
+                            : Text(
+                                '\$${_solde!.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ],
                     ),
                   ),
@@ -176,8 +207,7 @@ class _ClientScreenState extends State<ClientScreen>
                                 onTap: () => Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        MotDePasse(nomClient: widget.nomClient),
+                                    builder: (context) => MotDePasse(nomClient: widget.nomClient),
                                   ),
                                 ),
                               ),
@@ -237,9 +267,7 @@ class _ClientScreenState extends State<ClientScreen>
                           margin: const EdgeInsets.symmetric(horizontal: 4),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: i == _currentPage
-                                ? Colors.blue[900]
-                                : Colors.grey[300],
+                            color: i == _currentPage ? Colors.blue[900] : Colors.grey[300],
                           ),
                         ),
                     ],
@@ -266,8 +294,7 @@ class _ClientScreenState extends State<ClientScreen>
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        const VirementsScreen(),
+                                    builder: (context) => const VirementsScreen(),
                                   ),
                                 );
                               },
@@ -319,7 +346,7 @@ class _ClientScreenState extends State<ClientScreen>
         onTap: onTap,
         borderRadius: BorderRadius.circular(30),
         child: Container(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -463,11 +490,9 @@ class _ClientScreenState extends State<ClientScreen>
                     ),
                   ),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: (status == 'Échoué' ? Colors.red : Colors.green)
-                          .withOpacity(0.1),
+                      color: (status == 'Échoué' ? Colors.red : Colors.green).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(

@@ -46,6 +46,31 @@ class ApiService {
     }
   }
 
+   // Fonction pour récupérer le solde d'un client
+  static Future<double?> getSolde() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('access_token'); // Récupérer le token
+
+    if (token == null) return null;
+
+    final response = await http.get(
+      Uri.parse("${Config.baseApiUrl}/api/client/consulter_solde_da/"), // Ajuste l'URL selon ton API
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+    print("Code HTTP: ${response.statusCode}");
+print("Réponse: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return double.parse(data['solde'].toString()); // Retourner le solde
+    } else {
+      return null; // Gérer l'erreur
+    }
+  }
+
   Future<List<dynamic>?> getComptes() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
