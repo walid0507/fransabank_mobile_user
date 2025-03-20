@@ -7,6 +7,7 @@ import 'package:projet1/parametres.dart'; // Importation de la page Paramètres
 import 'package:projet1/offres.dart'; // Importation de la page Offres
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projet1/video_conference.dart';
+import 'package:projet1/virements.dart';
 
 class ClientScreen extends StatefulWidget {
   final String nomClient;
@@ -16,7 +17,8 @@ class ClientScreen extends StatefulWidget {
   _ClientScreenState createState() => _ClientScreenState();
 }
 
-class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMixin {
+class _ClientScreenState extends State<ClientScreen>
+    with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   final Map<String, AnimationController> _animationControllers = {};
@@ -37,7 +39,7 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
     _createAnimationController('parametres');
     _createAnimationController('carte');
     _createAnimationController('video');
-    
+
     // Transactions
     _createAnimationController('netflix');
     _createAnimationController('psplus');
@@ -49,7 +51,7 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
       duration: const Duration(milliseconds: 150),
       vsync: this,
     );
-    
+
     final animation = Tween<double>(begin: 1.0, end: 0.95).animate(
       CurvedAnimation(
         parent: controller,
@@ -99,7 +101,8 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                          icon: const Icon(Icons.arrow_back_ios,
+                              color: Colors.white),
                           onPressed: () => Navigator.pop(context),
                         ),
                         const Text(
@@ -110,7 +113,8 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 40), // Pour équilibrer avec la flèche retour
+                        const SizedBox(
+                            width: 40), // Pour équilibrer avec la flèche retour
                       ],
                     ),
                   ),
@@ -142,7 +146,7 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
               ),
             ),
           ),
-          
+
           Expanded(
             child: SingleChildScrollView(
               child: Column(
@@ -172,7 +176,8 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
                                 onTap: () => Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => MotDePasse(nomClient: widget.nomClient),
+                                    builder: (context) =>
+                                        MotDePasse(nomClient: widget.nomClient),
                                   ),
                                 ),
                               ),
@@ -232,7 +237,9 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
                           margin: const EdgeInsets.symmetric(horizontal: 4),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: i == _currentPage ? Colors.blue[900] : Colors.grey[300],
+                            color: i == _currentPage
+                                ? Colors.blue[900]
+                                : Colors.grey[300],
                           ),
                         ),
                     ],
@@ -244,7 +251,7 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
                     child: Column(
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             const Text(
                               'Transactions récentes',
@@ -253,6 +260,27 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
+                            const SizedBox(width: 15),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const VirementsScreen(),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'Virements',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                            const Spacer(),
                             TextButton(
                               onPressed: () {},
                               child: Text(
@@ -435,9 +463,11 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: (status == 'Échoué' ? Colors.red : Colors.green).withOpacity(0.1),
+                      color: (status == 'Échoué' ? Colors.red : Colors.green)
+                          .withOpacity(0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
