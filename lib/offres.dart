@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'header2.dart'; // Importation du header commun
-
+import 'package:projet1/configngrok.dart';
 class OffresScreen extends StatelessWidget {
   const OffresScreen({Key? key}) : super(key: key);
 

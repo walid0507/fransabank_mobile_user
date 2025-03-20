@@ -10,6 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'verif_mail.dart';
 import 'clientp.dart'; // Page de vérification d'email
 import 'package:flutter/widgets.dart';
+import 'package:projet1/configngrok.dart';
+import 'package:projet1/configngrok.dart';
 
 void main() {
   runApp(MyApp());
@@ -94,9 +96,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     String email = _emailController.text.trim();
     String password = _passwordController.text;
-    const String API_BASE_URL = "https://0376-105-100-44-252.ngrok-free.app";
+    
 
-    final url = Uri.parse('$API_BASE_URL/api/login/');
+    final url = Uri.parse('${Config.baseApiUrl}/api/login/');
 
     try {
       final response = await http.post(

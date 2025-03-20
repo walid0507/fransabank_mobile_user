@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'verif_mail.dart';
 import 'header.dart';
 import 'main.dart';
-
+import 'package:projet1/configngrok.dart';
 class InvertedCurvedClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
@@ -97,8 +97,8 @@ class _InscriptionState extends State<Inscription> {
         return;
       }
 
-      const String API_BASE_URL = "https://0376-105-100-44-252.ngrok-free.app";
-      final url = Uri.parse('$API_BASE_URL/api/register/');
+
+      final url = Uri.parse('${Config.baseApiUrl}/api/register/');
 
       final body = jsonEncode({
         'username': _usernameController.text,

@@ -2,14 +2,16 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:projet1/configngrok.dart';
 
 class ApiService {
+
   static const String clientBaseUrl =
-      "https://0376-105-100-44-252.ngrok-free.app/api/client/";
+      "${Config.baseApiUrl}/api/client/";
   static const String baseUrl =
-      "https://0376-105-100-44-252.ngrok-free.app/api/demandecompte/";
+      "${Config.baseApiUrl}/api/demandecompte/";
   static const String refreshTokenEndpoint =
-      "https://0376-105-100-44-252.ngrok-free.app/api/token/refresh/";
+      "${Config.baseApiUrl}/api/token/refresh/";
 
   static Future<String?> refreshToken() async {
     try {
@@ -48,15 +50,22 @@ class ApiService {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('access_token');
+      print("🔑 Token envoyé : $token");
 
       if (token == null) {
         throw Exception("Token non trouvé");
+
       }
+      print("🔗 URL appelée : ${Config.baseApiUrl}/api/client/mes-comptes/");
 
       final response = await authenticatedRequest(
-        "https://0376-105-100-44-252.ngrok-free.app/api/mes-comptes/",
+        
+        "${Config.baseApiUrl}/api/client/mes-comptes/",
         'GET',
+
       );
+       print("🔗 URL appelée : ${response.request?.url}"); // URL finale après redirections
+    print("📊 Statut HTTP : ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -135,7 +144,7 @@ class ApiService {
 
     final response = await http.get(
       Uri.parse(
-          'https://0376-105-100-44-252.ngrok-free.app/api/protected-endpoint/'),
+          '${Config.baseApiUrl}/api/protected-endpoint/'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -198,7 +207,7 @@ class ApiService {
   static Future<Map<String, dynamic>> clientSec(
       String clientId, String password) async {
     final url = Uri.parse(
-        'https://0376-105-100-44-252.ngrok-free.app/api/client/login/');
+        '${Config.baseApiUrl}/api/client/login/');
 
     try {
       print("=== DÉBUT DE LA CONNEXION ===");
@@ -258,6 +267,7 @@ class ApiService {
     Map<String, String> headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
     };
 
     if (additionalHeaders != null) {
@@ -308,7 +318,7 @@ class ApiService {
     try {
       final response = await http.post(
         Uri.parse(
-            'https://0376-105-100-44-252.ngrok-free.app/api/change-password/'),
+            '${Config.baseApiUrl}/api/change-password/'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

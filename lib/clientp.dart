@@ -6,6 +6,7 @@ import 'package:projet1/agences_gab.dart'; // Importation de la page Agences & G
 import 'package:projet1/parametres.dart'; // Importation de la page Paramètres
 import 'package:projet1/offres.dart'; // Importation de la page Offres
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:projet1/configngrok.dart';
 
 class ClientScreen extends StatelessWidget {
   final String nomClient;
