@@ -5,11 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projet1/configngrok.dart';
 
 class ApiService {
-
-  static const String clientBaseUrl =
-      "${Config.baseApiUrl}/api/client/";
-  static const String baseUrl =
-      "${Config.baseApiUrl}/api/demandecompte/";
+  static const String clientBaseUrl = "${Config.baseApiUrl}/api/client/";
+  static const String baseUrl = "${Config.baseApiUrl}/api/demandecompte/";
   static const String refreshTokenEndpoint =
       "${Config.baseApiUrl}/api/token/refresh/";
 
@@ -46,7 +43,7 @@ class ApiService {
     }
   }
 
-   // Fonction pour récupérer le solde d'un client
+  // Fonction pour récupérer le solde d'un client
   static Future<double?> getSolde() async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('access_token'); // Récupérer le token
@@ -54,14 +51,15 @@ class ApiService {
     if (token == null) return null;
 
     final response = await http.get(
-      Uri.parse("${Config.baseApiUrl}/api/client/consulter_solde_da/"), // Ajuste l'URL selon ton API
+      Uri.parse(
+          "${Config.baseApiUrl}/api/client/consulter_solde_da/"), // Ajuste l'URL selon ton API
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
     );
     print("Code HTTP: ${response.statusCode}");
-print("Réponse: ${response.body}");
+    print("Réponse: ${response.body}");
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -79,18 +77,16 @@ print("Réponse: ${response.body}");
 
       if (token == null) {
         throw Exception("Token non trouvé");
-
       }
       print("🔗 URL appelée : ${Config.baseApiUrl}/api/client/mes-comptes/");
 
       final response = await authenticatedRequest(
-        
         "${Config.baseApiUrl}/api/client/mes-comptes/",
         'GET',
-
       );
-       print("🔗 URL appelée : ${response.request?.url}"); // URL finale après redirections
-    print("📊 Statut HTTP : ${response.statusCode}");
+      print(
+          "🔗 URL appelée : ${response.request?.url}"); // URL finale après redirections
+      print("📊 Statut HTTP : ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -168,8 +164,7 @@ print("Réponse: ${response.body}");
     }
 
     final response = await http.get(
-      Uri.parse(
-          '${Config.baseApiUrl}/api/protected-endpoint/'),
+      Uri.parse('${Config.baseApiUrl}/api/protected-endpoint/'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -231,8 +226,7 @@ print("Réponse: ${response.body}");
 
   static Future<Map<String, dynamic>> clientSec(
       String clientId, String password) async {
-    final url = Uri.parse(
-        '${Config.baseApiUrl}/api/client/login/');
+    final url = Uri.parse('${Config.baseApiUrl}/api/client/login/');
 
     try {
       print("=== DÉBUT DE LA CONNEXION ===");
@@ -342,8 +336,7 @@ print("Réponse: ${response.body}");
   ) async {
     try {
       final response = await http.post(
-        Uri.parse(
-            '${Config.baseApiUrl}/api/change-password/'),
+        Uri.parse('${Config.baseApiUrl}/api/change-password/'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -367,6 +360,44 @@ print("Réponse: ${response.body}");
       }
     } catch (e) {
       print('Erreur lors du changement de mot de passe: $e');
+      rethrow;
+    }
+  }
+
+  static Future<Map<String, dynamic>> effectuerVirement(
+    String clientId,
+    String compteDestination,
+    double montant,
+    String token,
+  ) async {
+    try {
+      // Nettoyer l'ID du client (enlever "Client" et les espaces)
+      String cleanClientId = clientId.replaceAll('Client', '').trim();
+
+      final response = await http.post(
+        Uri.parse('${clientBaseUrl}${cleanClientId}/virement/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'comptedes': compteDestination,
+          'montant': montant.toString(),
+        }),
+      );
+
+      print("=== RÉPONSE DU SERVEUR ===");
+      print("Code de réponse: ${response.statusCode}");
+      print("Corps de la réponse: ${response.body}");
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error'] ?? 'Une erreur est survenue');
+      }
+    } catch (e) {
+      print('Erreur lors du virement: $e');
       rethrow;
     }
   }

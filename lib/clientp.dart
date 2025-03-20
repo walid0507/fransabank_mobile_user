@@ -19,7 +19,8 @@ class ClientScreen extends StatefulWidget {
   _ClientScreenState createState() => _ClientScreenState();
 }
 
-class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMixin {
+class _ClientScreenState extends State<ClientScreen>
+    with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   final Map<String, AnimationController> _animationControllers = {};
@@ -30,7 +31,8 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
   Future<void> _fetchSolde() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString("token") ?? prefs.getString("access_token");
+      String? token =
+          prefs.getString("token") ?? prefs.getString("access_token");
 
       if (token == null) {
         throw Exception("Token non trouvé");
@@ -129,7 +131,8 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                          icon: const Icon(Icons.arrow_back_ios,
+                              color: Colors.white),
                           onPressed: () => Navigator.pop(context),
                         ),
                         const Text(
@@ -140,7 +143,8 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 40), // Pour équilibrer avec la flèche retour
+                        const SizedBox(
+                            width: 40), // Pour équilibrer avec la flèche retour
                       ],
                     ),
                   ),
@@ -160,7 +164,8 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
                         const SizedBox(height: 10),
                         _solde == null
                             ? const CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               )
                             : Text(
                                 '\$${_solde!.toStringAsFixed(2)}',
@@ -207,7 +212,8 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
                                 onTap: () => Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => MotDePasse(nomClient: widget.nomClient),
+                                    builder: (context) =>
+                                        MotDePasse(nomClient: widget.nomClient),
                                   ),
                                 ),
                               ),
@@ -267,7 +273,9 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
                           margin: const EdgeInsets.symmetric(horizontal: 4),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: i == _currentPage ? Colors.blue[900] : Colors.grey[300],
+                            color: i == _currentPage
+                                ? Colors.blue[900]
+                                : Colors.grey[300],
                           ),
                         ),
                     ],
@@ -294,7 +302,8 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const VirementsScreen(),
+                                    builder: (context) => VirementsScreen(
+                                        nomClient: widget.nomClient),
                                   ),
                                 );
                               },
@@ -490,9 +499,11 @@ class _ClientScreenState extends State<ClientScreen> with TickerProviderStateMix
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: (status == 'Échoué' ? Colors.red : Colors.green).withOpacity(0.1),
+                      color: (status == 'Échoué' ? Colors.red : Colors.green)
+                          .withOpacity(0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(

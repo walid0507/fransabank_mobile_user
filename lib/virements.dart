@@ -1,19 +1,87 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'api_service.dart';
 
 class VirementsScreen extends StatefulWidget {
-  const VirementsScreen({Key? key}) : super(key: key);
+  final String nomClient;
+
+  const VirementsScreen({Key? key, required this.nomClient}) : super(key: key);
 
   @override
   _VirementsScreenState createState() => _VirementsScreenState();
 }
 
 class _VirementsScreenState extends State<VirementsScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _compteDestinationController = TextEditingController();
+  final _montantController = TextEditingController();
+  final _messageController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _effectuerVirement() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('access_token');
+
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Erreur: Token non trouvé"),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      await ApiService.effectuerVirement(
+        widget.nomClient,
+        _compteDestinationController.text,
+        double.parse(_montantController.text),
+        token,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Virement effectué avec succès"),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Réinitialiser les champs
+      _compteDestinationController.clear();
+      _montantController.clear();
+      _messageController.clear();
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Erreur: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
-          // En-tête avec dégradé bleu
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -34,13 +102,11 @@ class _VirementsScreenState extends State<VirementsScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Flèche retour
                     IconButton(
                       icon:
                           const Icon(Icons.arrow_back_ios, color: Colors.white),
                       onPressed: () => Navigator.pop(context),
                     ),
-                    // Titre
                     const Text(
                       'TRANSACTION',
                       style: TextStyle(
@@ -49,248 +115,260 @@ class _VirementsScreenState extends State<VirementsScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    // Espace vide pour équilibrer le layout
                     const SizedBox(width: 40),
                   ],
                 ),
               ),
             ),
           ),
-          // Ici vous pouvez ajouter le reste du contenu de votre page
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  // Icône de transfert
-                  Container(
-                    width: 200,
-                    height: 120,
-                    child: Stack(
-                      alignment: Alignment.center,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    Container(
+                      width: 200,
+                      height: 120,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Positioned(
+                            top: 25,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 150,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue[700],
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.blue.withOpacity(0.3),
+                                        spreadRadius: 1,
+                                        blurRadius: 3,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                ClipPath(
+                                  clipper: ArrowClipper(),
+                                  child: Container(
+                                    width: 15,
+                                    height: 15,
+                                    color: Colors.blue[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 25,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ClipPath(
+                                  clipper: ArrowClipperLeft(),
+                                  child: Container(
+                                    width: 15,
+                                    height: 15,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                Container(
+                                  width: 150,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black87,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.3),
+                                        spreadRadius: 1,
+                                        blurRadius: 3,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: TextFormField(
+                        controller:
+                            TextEditingController(text: widget.nomClient),
+                        enabled: false,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          labelText: 'From Bank Account',
+                          labelStyle: TextStyle(color: Colors.grey[600]),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: TextFormField(
+                        controller: _compteDestinationController,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          labelText: 'To Bank Account',
+                          labelStyle: TextStyle(color: Colors.grey[600]),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Veuillez entrer le numéro de compte";
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
                       children: [
-                        // Flèche bleue vers la droite (en haut)
-                        Positioned(
-                          top: 25,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 150,
-                                height: 4,
-                                decoration: BoxDecoration(
-                                  color: Colors.blue[700],
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.blue.withOpacity(0.3),
-                                      spreadRadius: 1,
-                                      blurRadius: 3,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
+                        Expanded(
+                          flex: 7,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                            child: TextFormField(
+                              controller: _montantController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                labelText: 'Amount',
+                                labelStyle: TextStyle(color: Colors.grey[600]),
                               ),
-                              ClipPath(
-                                clipper: ArrowClipper(),
-                                child: Container(
-                                  width: 15,
-                                  height: 15,
-                                  color: Colors.blue[700],
-                                ),
-                              ),
-                            ],
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return "Veuillez entrer un montant";
+                                }
+                                if (double.tryParse(value) == null) {
+                                  return "Veuillez entrer un montant valide";
+                                }
+                                if (double.parse(value) <= 0) {
+                                  return "Le montant doit être supérieur à 0";
+                                }
+                                return null;
+                              },
+                            ),
                           ),
                         ),
-                        // Flèche noire vers la gauche (en bas)
-                        Positioned(
-                          bottom: 25,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              ClipPath(
-                                clipper: ArrowClipperLeft(),
-                                child: Container(
-                                  width: 15,
-                                  height: 15,
-                                  color: Colors.black87,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          flex: 3,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                            child: const Center(
+                              child: Text(
+                                'DA',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black54,
                                 ),
                               ),
-                              Container(
-                                width: 150,
-                                height: 4,
-                                decoration: BoxDecoration(
-                                  color: Colors.black87,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.3),
-                                      spreadRadius: 1,
-                                      blurRadius: 3,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 30),
-
-                  // Champ "From Bank Account"
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        labelText: 'From Bank Account',
-                        labelStyle: TextStyle(color: Colors.grey[600]),
+                    const SizedBox(height: 20),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Champ "To Bank Account"
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        labelText: 'To Bank Account',
-                        labelStyle: TextStyle(color: Colors.grey[600]),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Champ "Amount" avec devise
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 7,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 15),
-                          child: TextField(
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              labelText: 'Amount',
-                              labelStyle: TextStyle(color: Colors.grey[600]),
-                            ),
-                          ),
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: TextField(
+                        controller: _messageController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          labelText: 'Messages',
+                          labelStyle: TextStyle(color: Colors.grey[600]),
+                          hintText: 'Ajouter une note ou une description...',
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        flex: 3,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 15),
-                          child: Center(
-                            child: Text(
-                              'DA',
+                    ),
+                    const SizedBox(height: 40),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[300],
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text(
+                              'CANCEL',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.grey[800],
+                                color: Colors.black54,
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Champ "Messages"
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: TextField(
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        labelText: 'Messages',
-                        labelStyle: TextStyle(color: Colors.grey[600]),
-                        hintText: 'Ajouter une note ou une description...',
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  // Boutons Send et Cancel
-                  Row(
-                    children: [
-                      // Bouton Cancel
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[300],
-                            padding: const EdgeInsets.symmetric(vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _effectuerVirement,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue[900],
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                          ),
-                          child: const Text(
-                            'CANCEL',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black54,
-                            ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  )
+                                : const Text(
+                                    'SEND',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 20),
-                      // Bouton Send
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Action pour envoyer la transaction
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[900],
-                            padding: const EdgeInsets.symmetric(vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Text(
-                            'SEND',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -298,9 +376,16 @@ class _VirementsScreenState extends State<VirementsScreen> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _compteDestinationController.dispose();
+    _montantController.dispose();
+    _messageController.dispose();
+    super.dispose();
+  }
 }
 
-// Clipper pour la flèche droite
 class ArrowClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
@@ -316,7 +401,6 @@ class ArrowClipper extends CustomClipper<Path> {
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
-// Clipper pour la flèche gauche
 class ArrowClipperLeft extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
