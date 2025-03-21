@@ -383,13 +383,18 @@ print("URL utilisée: $apiUrl");
     String compteDestination,
     double montant,
     String token,
+    
   ) async {
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('access_token'); // Récupérer le token
+    String? clientId = prefs.getString('client_id');
+   
     try {
       // Nettoyer l'ID du client (enlever "Client" et les espaces)
-      String cleanClientId = clientId.replaceAll('Client', '').trim();
+     
 
       final response = await http.post(
-        Uri.parse('${clientBaseUrl}${cleanClientId}/virement/'),
+        Uri.parse('${Config.baseApiUrl}/api/client/$clientId/virement/'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
