@@ -168,7 +168,7 @@ class _ClientScreenState extends State<ClientScreen>
                                     AlwaysStoppedAnimation<Color>(Colors.white),
                               )
                             : Text(
-                                '\$${_solde!.toStringAsFixed(2)}',
+                                '${_solde!.toStringAsFixed(2)}DZD',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 32,
@@ -393,7 +393,7 @@ class _ClientScreenState extends State<ClientScreen>
       {
         'icon': Icons.shopping_bag_rounded,
         'title': 'Netflix',
-        'amount': '-570 da',
+        'amount': '-570 DZD',
         'status': 'Payé',
         'date': '14 Juillet 2025',
         'key': 'netflix',
@@ -401,7 +401,7 @@ class _ClientScreenState extends State<ClientScreen>
       {
         'icon': Icons.sports_esports_rounded,
         'title': 'PS Plus',
-        'amount': '-205 da',
+        'amount': '-205 DZD',
         'status': 'Échoué',
         'date': '02 Juillet 2025',
         'key': 'psplus',
@@ -409,7 +409,7 @@ class _ClientScreenState extends State<ClientScreen>
       {
         'icon': Icons.directions_car_rounded,
         'title': 'Yassir',
-        'amount': '-398 da',
+        'amount': '-398 DZD',
         'status': 'Échoué',
         'date': '10 juin 2025',
         'key': 'yassir',

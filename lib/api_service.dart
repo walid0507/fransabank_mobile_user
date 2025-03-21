@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projet1/configngrok.dart';
 
+
+
 class ApiService {
   static const String clientBaseUrl = "${Config.baseApiUrl}/api/client/";
   static const String baseUrl = "${Config.baseApiUrl}/api/demandecompte/";
@@ -47,15 +49,22 @@ class ApiService {
   static Future<double?> getSolde() async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('access_token'); // Récupérer le token
+    String? clientId = prefs.getString('client_id');
 
-    if (token == null) return null;
+    if (token == null|| clientId==null) return null;
+    print("Client ID utilisé: $clientId");
 
+final apiUrl = "${Config.baseApiUrl}/api/client/$clientId/consulter_solde_da/";
+print("URL utilisée: $apiUrl");
     final response = await http.get(
       Uri.parse(
-          "${Config.baseApiUrl}/api/client/consulter_solde_da/"), // Ajuste l'URL selon ton API
+          "${Config.baseApiUrl}/api/client/$clientId/consulter_solde_da/"), // Ajuste l'URL selon ton API
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
+       
+        
       },
     );
     print("Code HTTP: ${response.statusCode}");
@@ -63,7 +72,8 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return double.parse(data['solde'].toString()); // Retourner le solde
+      return double.parse(data['solde_da'].toString());
+
     } else {
       return null; // Gérer l'erreur
     }
@@ -253,6 +263,10 @@ class ApiService {
           await prefs.setString("refresh_token", data["refresh"]);
           print("✅ Token et refresh_token sauvegardés !");
         }
+        if (data["client_id"] != null) {
+        await prefs.setString("client_id", data["client_id"]);
+        print("✅ client_id sauvegardé : ${data["client_id"]}");
+      }
 
         String? savedToken = await prefs.getString('access_token');
         print("\n=== VÉRIFICATION DU TOKEN SAUVEGARDÉ ===");
