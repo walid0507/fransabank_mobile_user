@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projet1/configngrok.dart';
+import 'package:projet1/api_service.dart';
+import 'dart:ui'; // Pour ImageFilter
 
 class VideoConferencePage extends StatefulWidget {
   @override
@@ -8,6 +10,11 @@ class VideoConferencePage extends StatefulWidget {
 
 class _VideoConferencePageState extends State<VideoConferencePage>
     with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _pulseAnimation;
+  String _searchQuery = '';
+  String _selectedFilter = 'all';
+
   List<Map<String, dynamic>> conferences = [
     {
       'title': 'Demande de prêt',
@@ -35,15 +42,11 @@ class _VideoConferencePageState extends State<VideoConferencePage>
   Color getCardColor(String status) {
     switch (status) {
       case 'pending':
-        return Color(0xFF1976D2);
+        return Color(0xFF1976D2); // Bleu
       case 'accepted':
-        return Color(0xFF2E7D32);
-      case 'cancelled':
-        return Color(0xFFE57373);
-      case 'expired':
-        return Color(0xFF757575);
+        return Color(0xFF2E7D32); // Vert
       default:
-        return Color(0xFF1976D2);
+        return Color(0xFF757575); // Gris pour expiré et autres
     }
   }
 
@@ -65,12 +68,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
         return 'En attente';
       case 'accepted':
         return 'Acceptée';
-      case 'cancelled':
-        return 'Annulée';
-      case 'expired':
-        return 'Expirée';
       default:
-        return 'En attente';
+        return 'Expirée';
     }
   }
 
@@ -80,12 +79,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
         return Icons.schedule;
       case 'accepted':
         return Icons.check_circle_outline;
-      case 'cancelled':
-        return Icons.cancel_outlined;
-      case 'expired':
-        return Icons.event_busy;
       default:
-        return Icons.schedule;
+        return Icons.event_busy;
     }
   }
 
@@ -361,6 +356,9 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                         children: [
                           TextField(
                             controller: titleController,
+                            onChanged: (value) {
+                              setState(() {});
+                            },
                             decoration: InputDecoration(
                               labelText: 'Nature de la demande',
                               prefixIcon: Icon(Icons.title),
@@ -383,6 +381,9 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                           SizedBox(height: 20),
                           TextField(
                             controller: subtitleController,
+                            onChanged: (value) {
+                              setState(() {});
+                            },
                             maxLines: 3,
                             decoration: InputDecoration(
                               labelText: 'Détailler votre demande',
@@ -423,19 +424,39 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                     ),
                     ElevatedButton(
                       onPressed: titleController.text.isNotEmpty
-                          ? () {
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Votre demande a été envoyée'),
-                                  backgroundColor: Colors.green,
-                                  behavior: SnackBarBehavior.floating,
-                                  margin: EdgeInsets.all(10),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
+                          ? () async {
+                              try {
+                                await ApiService.demanderVisio(
+                                  titleController.text,
+                                  subtitleController.text,
+                                );
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content:
+                                        Text('Votre demande a été envoyée'),
+                                    backgroundColor: Colors.green,
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: EdgeInsets.all(10),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
-                                ),
-                              );
+                                );
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        'Erreur lors de l\'envoi de la demande: ${e.toString()}'),
+                                    backgroundColor: Colors.red,
+                                    behavior: SnackBarBehavior.floating,
+                                    margin: EdgeInsets.all(10),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                );
+                              }
                             }
                           : null,
                       style: ElevatedButton.styleFrom(
@@ -468,238 +489,188 @@ class _VideoConferencePageState extends State<VideoConferencePage>
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Visioconférences'),
-        actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 10),
-            child: Hero(
-              tag: 'demander-visio',
-              child: ElevatedButton(
-                onPressed: showAddConferenceDialog,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  elevation: 3,
-                  shadowColor: Theme.of(context).primaryColor.withOpacity(0.5),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.video_call, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'Demander Visio',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+  Widget _buildSearchBar() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: Offset(0, 5),
           ),
         ],
       ),
-      body: conferences.isNotEmpty
-          ? Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ListView.builder(
-                itemCount: conferences.length,
-                itemBuilder: (context, index) {
-                  final conf = conferences[index];
-                  final String status = conf['status'];
-                  final Color cardColor = getCardColor(status);
-                  final Color gradientColor = getGradientColor(cardColor);
+      child: TextField(
+        onChanged: (value) => setState(() => _searchQuery = value),
+        decoration: InputDecoration(
+          hintText: 'Rechercher une conférence...',
+          prefixIcon: Icon(Icons.search, color: Colors.blue[900]),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        ),
+      ),
+    );
+  }
 
-                  return Hero(
-                    tag: 'conference-${conf['title']}',
-                    child: Container(
-                      margin: EdgeInsets.only(bottom: 16),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () => showConferenceDetails(conf),
-                          borderRadius: BorderRadius.circular(25),
-                          child: Container(
-                            padding: EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [cardColor, gradientColor],
-                              ),
-                              borderRadius: BorderRadius.circular(25),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: cardColor.withOpacity(0.3),
-                                  spreadRadius: 2,
-                                  blurRadius: 15,
-                                  offset: Offset(0, 6),
-                                ),
-                              ],
-                            ),
+  Widget _buildFilterChips() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          _buildFilterChip('Tout', 'all'),
+          _buildFilterChip('En attente', 'pending'),
+          _buildFilterChip('Acceptée', 'accepted'),
+          _buildFilterChip('Expirée', 'expired'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, String value) {
+    final bool isSelected = _selectedFilter == value;
+    return Padding(
+      padding: EdgeInsets.only(right: 8),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [Colors.blue[900]!, Colors.blue[700]!],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.blue[900]!.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: FilterChip(
+          label: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : Colors.grey[800],
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          selected: isSelected,
+          onSelected: (selected) {
+            setState(() => _selectedFilter = value);
+          },
+          backgroundColor: isSelected ? Colors.transparent : Colors.grey[200],
+          selectedColor: Colors.transparent,
+          checkmarkColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: isSelected ? Colors.transparent : Colors.grey[300]!,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConferenceCard(Map<String, dynamic> conf) {
+    final String status = conf['status'];
+    final String displayStatus =
+        (status != 'pending' && status != 'accepted') ? 'expired' : status;
+    final Color cardColor = getCardColor(displayStatus);
+    final Color gradientColor = getGradientColor(cardColor);
+    final bool isSelected =
+        _selectedFilter == 'all' || displayStatus == _selectedFilter;
+
+    return Hero(
+      tag: 'conference-${conf['title']}',
+      child: Container(
+        margin: EdgeInsets.only(bottom: 16),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => showConferenceDetails(conf),
+            borderRadius: BorderRadius.circular(25),
+            child: Stack(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        cardColor.withOpacity(0.9),
+                        gradientColor.withOpacity(0.9),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: cardColor.withOpacity(0.3),
+                        spreadRadius: 2,
+                        blurRadius: 15,
+                        offset: Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            conf['title'],
-                                            style: TextStyle(
-                                              fontSize: 22,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                              letterSpacing: 0.3,
-                                            ),
-                                          ),
-                                          SizedBox(height: 4),
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white
-                                                  .withOpacity(0.15),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  getStatusIcon(status),
-                                                  color: Colors.white,
-                                                  size: 16,
-                                                ),
-                                                SizedBox(width: 4),
-                                                Text(
-                                                  getStatusText(status),
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    if (status == 'pending' ||
-                                        status == 'accepted')
-                                      Container(
-                                        padding: EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(15),
-                                          border: Border.all(
-                                            color:
-                                                Colors.white.withOpacity(0.2),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          Icons.videocam,
-                                          color: Colors.white,
-                                          size: 22,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                                SizedBox(height: 12),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.15),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    conf['subtitle'],
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.95),
-                                      fontSize: 15,
-                                      height: 1.4,
-                                    ),
+                                Text(
+                                  conf['title'],
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: 0.3,
                                   ),
                                 ),
-                                SizedBox(height: 15),
+                                SizedBox(height: 4),
                                 Container(
                                   padding: EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
+                                      horizontal: 12, vertical: 6),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.15),
+                                      color: Colors.white.withOpacity(0.3),
                                       width: 1,
                                     ),
                                   ),
                                   child: Row(
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
-                                        Icons.person_outline,
-                                        color: Colors.white.withOpacity(0.95),
-                                        size: 20,
+                                        getStatusIcon(displayStatus),
+                                        color: Colors.white,
+                                        size: 16,
                                       ),
-                                      SizedBox(width: 8),
+                                      SizedBox(width: 6),
                                       Text(
-                                        conf['employee'],
+                                        getStatusText(displayStatus),
                                         style: TextStyle(
-                                          color: Colors.white.withOpacity(0.95),
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      Spacer(),
-                                      Container(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Icon(
-                                              Icons.calendar_today_outlined,
-                                              color: Colors.white
-                                                  .withOpacity(0.95),
-                                              size: 16,
-                                            ),
-                                            SizedBox(width: 6),
-                                            Text(
-                                              "${conf['date'].toLocal()}"
-                                                  .split(' ')[0],
-                                              style: TextStyle(
-                                                color: Colors.white
-                                                    .withOpacity(0.95),
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ],
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                     ],
@@ -708,15 +679,341 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                               ],
                             ),
                           ),
+                          if (displayStatus == 'pending' ||
+                              displayStatus == 'accepted')
+                            Container(
+                              padding: EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.videocam,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                        ],
+                      ),
+                      SizedBox(height: 16),
+                      Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          conf['subtitle'],
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.95),
+                            fontSize: 15,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Colors.white.withOpacity(0.2),
+                              child: Icon(
+                                Icons.person,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    conf['employee'],
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.95),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_today_outlined,
+                                        color: Colors.white.withOpacity(0.8),
+                                        size: 16,
+                                      ),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        "${conf['date'].toLocal()}"
+                                            .split(' ')[0],
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.8),
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (!isSelected)
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(25),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                        child: Container(
+                          color: Colors.transparent,
                         ),
                       ),
                     ),
-                  );
-                },
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  List<Map<String, dynamic>> get filteredConferences {
+    // Afficher toutes les conférences, le flou sera géré dans le widget
+    return conferences.where((conf) {
+      final matchesSearch = conf['title']
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase()) ||
+          conf['subtitle'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          conf['employee'].toLowerCase().contains(_searchQuery.toLowerCase());
+
+      return matchesSearch;
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          // Header avec dégradé et motif
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.blue[900]!,
+                  Colors.blue[700]!,
+                ],
               ),
-            )
-          : Center(child: Text('Aucune visioconférence disponible')),
+            ),
+            child: Stack(
+              children: [
+                // Motif géométrique
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: GeometricPatternPainter(),
+                  ),
+                ),
+                SafeArea(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Barre de navigation
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 15,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.arrow_back_ios,
+                                  color: Colors.white),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                            const Text(
+                              'Vidéoconferences',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 40),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Barre de recherche et filtres
+          _buildSearchBar(),
+          _buildFilterChips(),
+          // Liste des conférences avec défilement
+          Expanded(
+            child: Stack(
+              children: [
+                RefreshIndicator(
+                  onRefresh: () async {
+                    // Simuler un chargement
+                    await Future.delayed(Duration(seconds: 1));
+                  },
+                  child: filteredConferences.isNotEmpty
+                      ? SingleChildScrollView(
+                          physics: AlwaysScrollableScrollPhysics(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              children: filteredConferences.map((conf) {
+                                return AnimatedContainer(
+                                  duration: Duration(milliseconds: 300),
+                                  child: _buildConferenceCard(conf),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.video_library_outlined,
+                                size: 64,
+                                color: Colors.grey[400],
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'Aucune visioconférence disponible',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                ),
+                // Bouton Demander Visio flottant avec animation
+                Positioned(
+                  bottom: 20,
+                  right: 20,
+                  child: ScaleTransition(
+                    scale: _pulseAnimation,
+                    child: ElevatedButton(
+                      onPressed: showAddConferenceDialog,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.blue[900],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        elevation: 5,
+                        shadowColor: Colors.blue[900]?.withOpacity(0.3),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.video_call, size: 24),
+                          SizedBox(width: 8),
+                          Text(
+                            'Demander Visio',
+                            style: TextStyle(
+                              color: Colors.blue[900],
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
+class GeometricPatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(0.05)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+
+    final spacing = 30.0;
+    for (var i = 0; i < size.width; i += spacing.toInt()) {
+      for (var j = 0; j < size.height; j += spacing.toInt()) {
+        canvas.drawCircle(
+          Offset(i.toDouble(), j.toDouble()),
+          2,
+          paint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+//cc

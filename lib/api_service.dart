@@ -4,8 +4,6 @@ import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projet1/configngrok.dart';
 
-
-
 class ApiService {
   static const String clientBaseUrl = "${Config.baseApiUrl}/api/client/";
   static const String baseUrl = "${Config.baseApiUrl}/api/demandecompte/";
@@ -51,11 +49,12 @@ class ApiService {
     String? token = prefs.getString('access_token'); // Récupérer le token
     String? clientId = prefs.getString('client_id');
 
-    if (token == null|| clientId==null) return null;
+    if (token == null || clientId == null) return null;
     print("Client ID utilisé: $clientId");
 
-final apiUrl = "${Config.baseApiUrl}/api/client/$clientId/consulter_solde_da/";
-print("URL utilisée: $apiUrl");
+    final apiUrl =
+        "${Config.baseApiUrl}/api/client/$clientId/consulter_solde_da/";
+    print("URL utilisée: $apiUrl");
     final response = await http.get(
       Uri.parse(
           "${Config.baseApiUrl}/api/client/$clientId/consulter_solde_da/"), // Ajuste l'URL selon ton API
@@ -63,8 +62,6 @@ print("URL utilisée: $apiUrl");
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-       
-        
       },
     );
     print("Code HTTP: ${response.statusCode}");
@@ -73,7 +70,6 @@ print("URL utilisée: $apiUrl");
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return double.parse(data['solde_da'].toString());
-
     } else {
       return null; // Gérer l'erreur
     }
@@ -106,6 +102,48 @@ print("URL utilisée: $apiUrl");
     } catch (e) {
       print("Erreur dans getComptes: $e");
       return null;
+    }
+  }
+
+  static Future<void> demanderVisio(String titre, String? details) async {
+
+
+    // Construire le body avec uniquement les champs nécessaires
+    Map<String, dynamic> body = {
+      "titre": titre,
+    };
+
+    if (details != null && details.isNotEmpty) {
+      body["details"] = details; // Ajouter "details" seulement s'il est rempli
+    }
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('access_token');
+      String? clientId = prefs.getString("client_id");
+
+      if (token == null) {
+        throw Exception("Token manquant !");
+      }
+
+      final response = await http.post(
+        Uri.parse("${Config.baseApiUrl}/api/client/$clientId/demandes-visio/"),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 201) {
+        print("✅ Demande de visio envoyée avec succès !");
+      } else {
+        final error = jsonDecode(response.body);
+        throw Exception("Erreur : ${error['error'] ?? response.body}");
+      }
+    } catch (e) {
+      print("❌ Erreur lors de la demande de visio: $e");
+      rethrow;
     }
   }
 
@@ -264,9 +302,9 @@ print("URL utilisée: $apiUrl");
           print("✅ Token et refresh_token sauvegardés !");
         }
         if (data["client_id"] != null) {
-        await prefs.setString("client_id", data["client_id"]);
-        print("✅ client_id sauvegardé : ${data["client_id"]}");
-      }
+          await prefs.setString("client_id", data["client_id"]);
+          print("✅ client_id sauvegardé : ${data["client_id"]}");
+        }
 
         String? savedToken = await prefs.getString('access_token');
         print("\n=== VÉRIFICATION DU TOKEN SAUVEGARDÉ ===");
@@ -383,15 +421,13 @@ print("URL utilisée: $apiUrl");
     String compteDestination,
     double montant,
     String token,
-    
   ) async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('access_token'); // Récupérer le token
     String? clientId = prefs.getString('client_id');
-   
+
     try {
       // Nettoyer l'ID du client (enlever "Client" et les espaces)
-     
 
       final response = await http.post(
         Uri.parse('${Config.baseApiUrl}/api/client/$clientId/virement/'),
