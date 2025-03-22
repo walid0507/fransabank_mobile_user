@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:projet1/configngrok.dart';
 import 'package:projet1/api_service.dart';
 import 'dart:ui'; // Pour ImageFilter
+import 'package:projet1/header3.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VideoConferencePage extends StatefulWidget {
   @override
@@ -14,6 +16,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
   late Animation<double> _pulseAnimation;
   String _searchQuery = '';
   String _selectedFilter = 'all';
+  bool isLoading = false;
+  String? errorMessage;
 
   List<Map<String, dynamic>> conferences = [
     {
@@ -842,152 +846,42 @@ class _VideoConferencePageState extends State<VideoConferencePage>
     return Scaffold(
       body: Column(
         children: [
-          // Header avec dégradé et motif
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.blue[900]!,
-                  Colors.blue[700]!,
-                ],
-              ),
-            ),
-            child: Stack(
-              children: [
-                // Motif géométrique
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: GeometricPatternPainter(),
-                  ),
-                ),
-                SafeArea(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Barre de navigation
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 15,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.arrow_back_ios,
-                                  color: Colors.white),
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                            const Text(
-                              'Vidéoconferences',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 40),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          Header3(
+            title: 'VIDÉO CONFÉRENCE',
+            onBackPressed: () => Navigator.pop(context),
           ),
-          // Barre de recherche et filtres
           _buildSearchBar(),
           _buildFilterChips(),
-          // Liste des conférences avec défilement
           Expanded(
-            child: Stack(
-              children: [
-                RefreshIndicator(
-                  onRefresh: () async {
-                    // Simuler un chargement
-                    await Future.delayed(Duration(seconds: 1));
-                  },
-                  child: filteredConferences.isNotEmpty
-                      ? SingleChildScrollView(
-                          physics: AlwaysScrollableScrollPhysics(),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              children: filteredConferences.map((conf) {
-                                return AnimatedContainer(
-                                  duration: Duration(milliseconds: 300),
-                                  child: _buildConferenceCard(conf),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        )
-                      : Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.video_library_outlined,
-                                size: 64,
-                                color: Colors.grey[400],
-                              ),
-                              SizedBox(height: 16),
-                              Text(
-                                'Aucune visioconférence disponible',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.blue.shade300, Colors.blue.shade900],
                 ),
-                // Bouton Demander Visio flottant avec animation
-                Positioned(
-                  bottom: 20,
-                  right: 20,
-                  child: ScaleTransition(
-                    scale: _pulseAnimation,
-                    child: ElevatedButton(
-                      onPressed: showAddConferenceDialog,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.blue[900],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        elevation: 5,
-                        shadowColor: Colors.blue[900]?.withOpacity(0.3),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.video_call, size: 24),
-                          SizedBox(width: 8),
-                          Text(
-                            'Demander Visio',
-                            style: TextStyle(
-                              color: Colors.blue[900],
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
+              child: ListView.builder(
+                padding: EdgeInsets.all(20),
+                itemCount: filteredConferences.length,
+                itemBuilder: (context, index) {
+                  return _buildConferenceCard(filteredConferences[index]);
+                },
+              ),
             ),
           ),
         ],
+      ),
+      floatingActionButton: ScaleTransition(
+        scale: _pulseAnimation,
+        child: FloatingActionButton.extended(
+          onPressed: showAddConferenceDialog,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.blue[900],
+          icon: Icon(Icons.video_call),
+          label: Text('Nouvelle Visio'),
+          elevation: 4,
+        ),
       ),
     );
   }
@@ -1016,4 +910,3 @@ class GeometricPatternPainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
-//cc

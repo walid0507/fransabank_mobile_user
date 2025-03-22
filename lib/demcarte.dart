@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import 'header.dart'; // Importation du header commun
 import 'package:projet1/configngrok.dart';
+import 'package:projet1/header3.dart';
 
 class DemandeCarteScreen extends StatefulWidget {
   final String clientId;
@@ -26,48 +27,27 @@ class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
   late final String _token;
 
   final Map<String, Map<String, dynamic>> cartesInfo = {
-    "VISA": {
-      "nom": "Visa",
-      "plafond_paiement": 5000.00,
-      "plafond_retrait": 2000.00,
-      "solde_minimum": 0,
-      "frais": 50.00
+    "Carte Classic": {
+      "nom": "Carte Classic",
+      "plafond_paiement": "1000",
+      "plafond_retrait": "500",
+      "solde_minimum": "100",
+      "frais": "50.00",
     },
-    "MASTERCARD": {
-      "nom": "MasterCard",
-      "plafond_paiement": 5000.00,
-      "plafond_retrait": 2000.00,
-      "solde_minimum": 50000.00,
-      "frais": 50.00
+    "Carte Gold": {
+      "nom": "Carte Gold",
+      "plafond_paiement": "3000",
+      "plafond_retrait": "1500",
+      "solde_minimum": "500",
+      "frais": "100.00",
     },
-    "VISA_PLATINUM": {
-      "nom": "Visa Platinum",
-      "plafond_paiement": 10000.00,
-      "plafond_retrait": 5000.00,
-      "solde_minimum": 100000.00,
-      "frais": 100.00
+    "Carte Platinum": {
+      "nom": "Carte Platinum",
+      "plafond_paiement": "5000",
+      "plafond_retrait": "2500",
+      "solde_minimum": "1000",
+      "frais": "200.00",
     },
-    "MASTERCARD_ELITE": {
-      "nom": "MasterCard World Elite",
-      "plafond_paiement": 15000.00,
-      "plafond_retrait": 7500.00,
-      "solde_minimum": 150000.00,
-      "frais": 150.00
-    },
-    "AMEX": {
-      "nom": "American Express",
-      "plafond_paiement": 20000.00,
-      "plafond_retrait": 10000.00,
-      "solde_minimum": 200000.00,
-      "frais": 200.00
-    },
-    "AMEX_GOLD": {
-      "nom": "American Express Gold",
-      "plafond_paiement": 25000.00,
-      "plafond_retrait": 12500.00,
-      "solde_minimum": 250000.00,
-      "frais": 250.00
-    }
   };
 
   @override
@@ -78,22 +58,16 @@ class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
   }
 
   final List<String> typesDeCartes = [
-    "VISA",
-    "MASTERCARD",
-    "VISA_PLATINUM",
-    "MASTERCARD_ELITE",
-    "AMEX",
-    "AMEX_GOLD"
+    "Carte Classic",
+    "Carte Gold",
+    "Carte Platinum",
   ];
 
   // Map pour afficher les noms plus lisibles dans l'interface
   final Map<String, String> typeCartesAffichage = {
-    "VISA": "Visa",
-    "MASTERCARD": "MasterCard",
-    "VISA_PLATINUM": "Visa Platinum",
-    "MASTERCARD_ELITE": "MasterCard World Elite",
-    "AMEX": "American Express",
-    "AMEX_GOLD": "American Express Gold"
+    "Carte Classic": "Carte Classic",
+    "Carte Gold": "Carte Gold",
+    "Carte Platinum": "Carte Platinum",
   };
 
   Future<void> envoyerDemande() async {
@@ -109,7 +83,10 @@ class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
 
     if (!fraisPayes) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Veuillez confirmer le paiement des frais.")),
+        const SnackBar(
+          content: Text("Veuillez confirmer le paiement des frais"),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -181,42 +158,47 @@ class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.blue.shade300, Colors.blue.shade900],
-            ),
+      body: Column(
+        children: [
+          Header3(
+            title: 'DEMANDE DE CARTE',
+            onBackPressed: () => Navigator.pop(context),
           ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppHeader(), // Affichage du header
-                  const SizedBox(height: 20),
-
-                  _buildDropdownField("Type de carte", typesDeCartes),
-                  const SizedBox(height: 15),
-                  _buildTextField("Plafond de paiement"),
-                  const SizedBox(height: 15),
-                  _buildTextField("Plafond de retrait"),
-                  const SizedBox(height: 15),
-                  _buildReadOnlyField("Frais de la carte: 50.00€"),
-                  const SizedBox(height: 15),
-                  _buildCheckbox("J'ai payé les frais de la carte"),
-                  const SizedBox(height: 30),
-                  _buildButton(context, "Valider la demande", envoyerDemande),
-                  const SizedBox(height: 20),
-                ],
+          Expanded(
+            child: SafeArea(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                ),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0, vertical: 30.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        _buildDropdownField("Type de carte", typesDeCartes),
+                        const SizedBox(height: 15),
+                        _buildTextField("Plafond de paiement"),
+                        const SizedBox(height: 15),
+                        _buildTextField("Plafond de retrait"),
+                        const SizedBox(height: 15),
+                        _buildReadOnlyField("Frais de la carte: 50.00€"),
+                        const SizedBox(height: 15),
+                        _buildCheckbox("J'ai payé les frais de la carte"),
+                        const SizedBox(height: 30),
+                        _buildButton(
+                            context, "Valider la demande", envoyerDemande),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -224,12 +206,12 @@ class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
   Widget _buildTextField(String label) {
     return TextField(
       keyboardType: TextInputType.number,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: Colors.black),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
+        labelStyle: TextStyle(color: Colors.grey[700]),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.2),
+        fillColor: Colors.grey[100],
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
@@ -243,12 +225,12 @@ class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DropdownButtonFormField<String>(
-          dropdownColor: Colors.blue.shade900,
+          dropdownColor: Colors.white,
           decoration: InputDecoration(
             labelText: label,
-            labelStyle: const TextStyle(color: Colors.white70),
+            labelStyle: TextStyle(color: Colors.grey[700]),
             filled: true,
-            fillColor: Colors.white.withOpacity(0.2),
+            fillColor: Colors.grey[100],
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide.none,
@@ -263,14 +245,14 @@ class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
                 children: [
                   Text(info["nom"],
                       style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold)),
+                          color: Colors.black, fontWeight: FontWeight.bold)),
                   Text(
                     "Plafonds: ${info["plafond_paiement"]}€ / ${info["plafond_retrait"]}€",
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    style: TextStyle(color: Colors.grey[700], fontSize: 12),
                   ),
                   Text(
                     "Solde minimum: ${info["solde_minimum"]}€",
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    style: TextStyle(color: Colors.grey[700], fontSize: 12),
                   ),
                 ],
               ),
@@ -308,12 +290,12 @@ class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.grey[100],
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         _fraisCarteText,
-        style: const TextStyle(color: Colors.white70),
+        style: TextStyle(color: Colors.grey[700]),
       ),
     );
   }
@@ -328,10 +310,10 @@ class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
               fraisPayes = newValue ?? false;
             });
           },
-          checkColor: Colors.blue.shade900,
-          fillColor: MaterialStateProperty.all(Colors.white),
+          checkColor: Colors.white,
+          fillColor: MaterialStateProperty.all(Colors.blue[900]),
         ),
-        Text(label, style: const TextStyle(color: Colors.white70)),
+        Text(label, style: TextStyle(color: Colors.grey[700])),
       ],
     );
   }
@@ -355,5 +337,10 @@ class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
             : Text(label, style: const TextStyle(fontSize: 16)),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }

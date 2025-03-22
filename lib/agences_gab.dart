@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'header2.dart'; // Importation du header commun
+import 'package:projet1/header3.dart';
 import 'package:projet1/configngrok.dart';
 
-class AgencesScreen extends StatefulWidget {
+class AgencesGab extends StatefulWidget {
+  const AgencesGab({Key? key}) : super(key: key);
+
   @override
-  _AgencesScreenState createState() => _AgencesScreenState();
+  State<AgencesGab> createState() => _AgencesGabState();
 }
 
-class _AgencesScreenState extends State<AgencesScreen> {
+class _AgencesGabState extends State<AgencesGab> {
   final Map<String, List<Map<String, String>>> agencesParRegion = {
     "Direction Générale": [
       {
@@ -44,7 +46,7 @@ class _AgencesScreenState extends State<AgencesScreen> {
       {
         "nom": "Bab Ezzouar",
         "adresse":
-            "Quartier des affaires d’Alger, lot 02 N°15 et 16, Immeuble CMA CGM,  Bab Ezzouar, Alger",
+            "Quartier des affaires d'Alger, lot 02 N°15 et 16, Immeuble CMA CGM,  Bab Ezzouar, Alger",
         "telephone": "(+213) 023 92 49 94",
         "fax": "(+213) 023 92 50 02"
       },
@@ -76,7 +78,7 @@ class _AgencesScreenState extends State<AgencesScreen> {
       },
       {
         "nom": "Ager centre",
-        "adresse": "N°18/20 Rue Ahmed Zabana, Commune Sidi M’Hammed, Alger.",
+        "adresse": "N°18/20 Rue Ahmed Zabana, Commune Sidi M'Hammed, Alger.",
         "telephone": "(+213) 021 74 15 42",
         "fax": "(+213) 021 73 08 02"
       },
@@ -136,7 +138,7 @@ class _AgencesScreenState extends State<AgencesScreen> {
       },
       {
         "nom": "Annaba",
-        "adresse": "07, avenue de l’ALN, Annaba. ",
+        "adresse": "07, avenue de l'ALN, Annaba. ",
         "telephone": "(+213)  038 43 32 77 ",
         "fax": "(+213)   031 73 27 44"
       },
@@ -163,7 +165,7 @@ class _AgencesScreenState extends State<AgencesScreen> {
       },
       {
         "nom": "Annaba",
-        "adresse": "07, avenue de l’ALN, Annaba. ",
+        "adresse": "07, avenue de l'ALN, Annaba. ",
         "telephone": "(+213)  038 43 32 77 ",
         "fax": "(+213)   031 73 27 44"
       }
@@ -181,17 +183,28 @@ class _AgencesScreenState extends State<AgencesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return CommonHeader(
-      title: 'Agences & GAB',
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: agencesParRegion.entries
-                .map((entry) => _buildRegionSection(entry.key, entry.value))
-                .toList(),
+    return Scaffold(
+      body: Column(
+        children: [
+          Header3(
+            title: 'Agences & GAB',
+            onBackPressed: () => Navigator.pop(context),
           ),
-        ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: agencesParRegion.entries
+                      .map((entry) =>
+                          _buildRegionSection(entry.key, entry.value))
+                      .toList(),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

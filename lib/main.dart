@@ -23,15 +23,15 @@ class InvertedCurvedClipper extends CustomClipper<Path> {
     Path path = Path();
 
     // Point de départ
-    path.lineTo(0, size.height * 0.80);
+    path.lineTo(0, size.height * 0.77);
 
     // Première courbe
-    path.quadraticBezierTo(size.width * 0.10, size.height * 0.85,
-        size.width * 0.25, size.height * 0.85);
+    path.quadraticBezierTo(size.width * 0.10, size.height * 0.82,
+        size.width * 0.25, size.height * 0.82);
 
     // Deuxième courbe
     path.quadraticBezierTo(
-        size.width * 0.75, size.height * 0.85, size.width, size.height * 0.60);
+        size.width * 0.75, size.height * 0.82, size.width, size.height * 0.57);
 
     // Compléter le chemin
     path.lineTo(size.width, 0);
@@ -72,7 +72,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // Déclencher l'animation après 2 secondes
     Future.delayed(Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
@@ -96,7 +95,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     String email = _emailController.text.trim();
     String password = _passwordController.text;
-    
 
     final url = Uri.parse('${Config.baseApiUrl}/api/login/');
 
@@ -156,236 +154,239 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    Color primaryBlue = Color(0xFF024DA2);
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Partie supérieure avec découpage inversé
-          ClipPath(
-            clipper: InvertedCurvedClipper(),
-            child: Container(
-              width: double.infinity,
-              height: MediaQuery.of(context).size.height * 0.9,
-              decoration: BoxDecoration(
-                color: primaryBlue,
-                image: DecorationImage(
-                  image: AssetImage('assets/images/stars.jpg'),
-                  fit: BoxFit.cover,
-                  colorFilter: ColorFilter.mode(
-                    primaryBlue.withOpacity(0.9),
-                    BlendMode.srcOver,
-                  ),
-                ),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 40),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.05),
-                      AnimatedCrossFade(
-                        duration: Duration(milliseconds: 1500),
-                        firstChild: Text(
-                          'Tomorrow Starts Now',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        secondChild: Text(
-                          'Welcome to Fransabank!',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        crossFadeState: _showWelcome
-                            ? CrossFadeState.showSecond
-                            : CrossFadeState.showFirst,
-                      ),
-                      SizedBox(height: 20),
-                      Image.asset(
-                        'assets/images/fransa2bk.png',
-                        width: 160,
-                        height: 160,
-                      ),
-                      SizedBox(height: 20),
-                      Container(
-                        width: MediaQuery.of(context).size.width * 0.5,
-                        child: Column(
-                          children: [
-                            TextFormField(
-                              controller: _emailController,
-                              decoration: InputDecoration(
-                                hintText: 'Username or Email',
-                                hintStyle:
-                                    TextStyle(color: Colors.grey, fontSize: 14),
-                                filled: true,
-                                fillColor: Colors.white,
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade300),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade300),
-                                ),
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 8,
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 10),
-                            TextFormField(
-                              controller: _passwordController,
-                              obscureText: true,
-                              decoration: InputDecoration(
-                                hintText: 'Password',
-                                hintStyle:
-                                    TextStyle(color: Colors.grey, fontSize: 14),
-                                filled: true,
-                                fillColor: Colors.white,
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade300),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade300),
-                                ),
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 8,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ChangerMotDePasse(),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          'Forgot Password?',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+  Widget _buildHeader() {
+    return ClipPath(
+      clipper: InvertedCurvedClipper(),
+      child: Container(
+        width: double.infinity,
+        height: MediaQuery.of(context).size.height * 0.9,
+        decoration: BoxDecoration(
+          color: Color(0xFF024DA2),
+          image: DecorationImage(
+            image: AssetImage('assets/images/stars.jpg'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Color(0xFF024DA2).withOpacity(0.9),
+              BlendMode.srcOver,
             ),
           ),
-
-          // Partie inférieure
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.15,
-              decoration: BoxDecoration(color: Colors.white),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 180,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade800,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      ),
-                      onPressed: _isLoading ? null : _submit,
-                      child: _isLoading
-                          ? SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Text(
-                              "LOG IN",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 2,
-                              ),
-                            ),
-                    ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.only(top: 40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              AnimatedCrossFade(
+                duration: Duration(milliseconds: 1500),
+                firstChild: Text(
+                  'Tomorrow Starts Now',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'New to Bank Apps? ',
-                        style: TextStyle(color: Colors.grey.shade700),
+                ),
+                secondChild: Text(
+                  'Welcome to Fransabank!',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                crossFadeState: _showWelcome
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              SizedBox(height: 5),
+              Image.asset(
+                'assets/images/fransa2bk.png',
+                width: 160,
+                height: 160,
+              ),
+              SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        hintText: 'Username or Email',
+                        hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.9),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder:
-                                  (context, animation, secondaryAnimation) =>
-                                      Inscription(),
-                              transitionsBuilder: (context, animation,
-                                  secondaryAnimation, child) {
-                                const begin = Offset(1.0, 0.0);
-                                const end = Offset.zero;
-                                const curve = Curves.easeInOutCubic;
-
-                                var tween = Tween(begin: begin, end: end)
-                                    .chain(CurveTween(curve: curve));
-                                var offsetAnimation = animation.drive(tween);
-
-                                return SlideTransition(
-                                  position: offsetAnimation,
-                                  child: child,
-                                );
-                              },
-                              transitionDuration: Duration(milliseconds: 500),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          'Sign Up',
+                    ),
+                    SizedBox(height: 10),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        hintText: 'Password',
+                        hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.9),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 10),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ChangerMotDePasse(),
+                    ),
+                  );
+                },
+                child: Text(
+                  'Forgot Password?',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.10),
+              Container(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                  onPressed: _isLoading ? null : _submit,
+                  child: _isLoading
+                      ? SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF024DA2),
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          "LOG IN",
                           style: TextStyle(
-                            color: primaryBlue,
-                            fontWeight: FontWeight.w400,
+                            color: Color(0xFF024DA2),
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2,
                           ),
                         ),
+                ),
+              ),
+              SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'New to Bank Apps? ',
+                    style: TextStyle(color: Color(0xFF024DA2)),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  Inscription(),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                            const begin = Offset(1.0, 0.0);
+                            const end = Offset.zero;
+                            const curve = Curves.easeInOutCubic;
+
+                            var tween = Tween(begin: begin, end: end)
+                                .chain(CurveTween(curve: curve));
+                            var offsetAnimation = animation.drive(tween);
+
+                            return SlideTransition(
+                              position: offsetAnimation,
+                              child: child,
+                            );
+                          },
+                          transitionDuration: Duration(milliseconds: 500),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'Sign Up',
+                      style: TextStyle(
+                        color: Color(0xFF024DA2),
+                        fontWeight: FontWeight.w400,
                       ),
-                    ],
+                    ),
                   ),
                 ],
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      body: Stack(
+        children: [
+          _buildHeader(),
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.15,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              color: Colors.transparent,
+              child: _buildBody(),
             ),
           ),
         ],

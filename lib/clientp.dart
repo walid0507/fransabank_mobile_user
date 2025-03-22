@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projet1/header3.dart';
 import 'package:projet1/demcarte.dart';
 import 'package:projet1/motdepasse.dart';
 import 'package:projet1/main.dart'; // Importation de la page de connexion
@@ -106,83 +107,36 @@ class _ClientScreenState extends State<ClientScreen>
     return Scaffold(
       body: Column(
         children: [
-          // Header avec dégradé
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.blue[900]!,
-                  Colors.blue[700]!,
-                ],
-              ),
-            ),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  // Barre de navigation
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 15,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back_ios,
-                              color: Colors.white),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                        const Text(
-                          'Accueil',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(
-                            width: 40), // Pour équilibrer avec la flèche retour
-                      ],
-                    ),
+          Header3(
+            title: "Home Page",
+            onBackPressed: () => Navigator.pop(context),
+          ),
+          // Section solde
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Text(
+                  'Solde disponible',
+                  style: TextStyle(
+                    color: Colors.grey[800],
+                    fontSize: 16,
                   ),
-
-                  // Section solde
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        Text(
-                          'Solde disponible',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 16,
-                          ),
+                ),
+                const SizedBox(height: 10),
+                _solde == null
+                    ? const CircularProgressIndicator()
+                    : Text(
+                        '${_solde!.toStringAsFixed(2)}DZD',
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(height: 10),
-                        _solde == null
-                            ? const CircularProgressIndicator(
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              )
-                            : Text(
-                                '${_solde!.toStringAsFixed(2)}DZD',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                      ),
+              ],
             ),
           ),
-
           Expanded(
             child: SingleChildScrollView(
               child: Column(
@@ -212,8 +166,8 @@ class _ClientScreenState extends State<ClientScreen>
                                 onTap: () => Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        MotDePasse(nomClient: widget.nomClient),
+                                    builder: (context) => MotDePasseScreen(
+                                        nomClient: widget.nomClient),
                                   ),
                                 ),
                               ),
@@ -523,7 +477,7 @@ class _ClientScreenState extends State<ClientScreen>
   void _onAgencesPressed(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AgencesScreen()),
+      MaterialPageRoute(builder: (context) => AgencesGab()),
     );
   }
 

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'api_service.dart';
-import 'header.dart'; // Importation du header commun
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:projet1/configngrok.dart';
+import 'package:projet1/header3.dart';
+import 'package:projet1/api_service.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   final String clientId;
@@ -15,25 +16,113 @@ class ChangePasswordScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _ChangePasswordScreenState createState() => _ChangePasswordScreenState();
+  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
 }
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _oldPasswordController = TextEditingController();
+  final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
-  bool _obscureOldPassword = true;
-  bool _obscureNewPassword = true;
-  bool _obscureConfirmPassword = true;
 
   @override
-  void dispose() {
-    _oldPasswordController.dispose();
-    _newPasswordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          Header3(
+            title: 'Changer mot de passe',
+            onBackPressed: () => Navigator.pop(context),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _currentPasswordController,
+                        decoration: const InputDecoration(
+                          labelText: 'Mot de passe actuel',
+                          border: OutlineInputBorder(),
+                        ),
+                        obscureText: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez entrer votre mot de passe actuel';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _newPasswordController,
+                        decoration: const InputDecoration(
+                          labelText: 'Nouveau mot de passe',
+                          border: OutlineInputBorder(),
+                        ),
+                        obscureText: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez entrer un nouveau mot de passe';
+                          }
+                          if (value.length < 8) {
+                            return 'Le mot de passe doit contenir au moins 8 caractères';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        decoration: const InputDecoration(
+                          labelText: 'Confirmer le nouveau mot de passe',
+                          border: OutlineInputBorder(),
+                        ),
+                        obscureText: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Veuillez confirmer le nouveau mot de passe';
+                          }
+                          if (value != _newPasswordController.text) {
+                            return 'Les mots de passe ne correspondent pas';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _changePassword,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade700,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: _isLoading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white)
+                            : const Text(
+                                'Changer le mot de passe',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _changePassword() async {
@@ -44,54 +133,50 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     });
 
     try {
-      final response = await ApiService.changePassword(
-        widget.clientId,
-        _oldPasswordController.text,
-        _newPasswordController.text,
-        _confirmPasswordController.text,
-        widget.token,
+      final response = await http.post(
+        Uri.parse(
+            '${ApiService.baseUrl}/api/client/${widget.clientId}/change-password/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+        body: jsonEncode({
+          'current_password': _currentPasswordController.text,
+          'new_password': _newPasswordController.text,
+        }),
       );
 
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              "Un email de confirmation a été envoyé. Veuillez vérifier votre boîte de réception."),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      // Attendre un court instant pour que l'utilisateur voie le message
-      await Future.delayed(const Duration(seconds: 2));
-
-      if (!mounted) return;
-      Navigator.pop(context);
-    } catch (e) {
-      if (!mounted) return;
-
-      String messageErreur =
-          "Une erreur est survenue lors du changement de mot de passe.";
-      if (e.toString().contains("400")) {
-        if (e.toString().contains("ancien mot de passe")) {
-          messageErreur = "Ancien mot de passe incorrect.";
-        } else if (e.toString().contains("ne correspondent pas")) {
-          messageErreur =
-              "Le nouveau mot de passe et la confirmation ne correspondent pas.";
-        } else if (e.toString().contains("8 caractères")) {
-          messageErreur =
-              "Le nouveau mot de passe doit contenir au moins 8 caractères.";
-        } else {
-          messageErreur = "Veuillez fournir tous les champs requis.";
+      if (response.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Mot de passe changé avec succès'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context);
+        }
+      } else {
+        final data = jsonDecode(response.body);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data['message'] ??
+                  'Erreur lors du changement de mot de passe'),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(messageErreur),
-          backgroundColor: Colors.red,
-        ),
-      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erreur de connexion'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -102,144 +187,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.blue.shade300, Colors.blue.shade900],
-            ),
-          ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppHeader(),
-                    const SizedBox(height: 20),
-                    Text(
-                      "Changement de mot de passe",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    _buildPasswordField(
-                      controller: _oldPasswordController,
-                      label: "Ancien mot de passe",
-                      obscureText: _obscureOldPassword,
-                      onToggleVisibility: () {
-                        setState(() {
-                          _obscureOldPassword = !_obscureOldPassword;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 15),
-                    _buildPasswordField(
-                      controller: _newPasswordController,
-                      label: "Nouveau mot de passe",
-                      obscureText: _obscureNewPassword,
-                      onToggleVisibility: () {
-                        setState(() {
-                          _obscureNewPassword = !_obscureNewPassword;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 15),
-                    _buildPasswordField(
-                      controller: _confirmPasswordController,
-                      label: "Confirmer le nouveau mot de passe",
-                      obscureText: _obscureConfirmPassword,
-                      onToggleVisibility: () {
-                        setState(() {
-                          _obscureConfirmPassword = !_obscureConfirmPassword;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 30),
-                    _buildButton(
-                        context, "Changer le mot de passe", _changePassword),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPasswordField({
-    required TextEditingController controller,
-    required String label,
-    required bool obscureText,
-    required VoidCallback onToggleVisibility,
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.2),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(
-            obscureText ? Icons.visibility_off : Icons.visibility,
-            color: Colors.white70,
-          ),
-          onPressed: onToggleVisibility,
-        ),
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return "Ce champ est obligatoire";
-        }
-        if (label.contains("Nouveau") && value.length < 8) {
-          return "Le mot de passe doit contenir au moins 8 caractères";
-        }
-        if (label.contains("Confirmer") &&
-            value != _newPasswordController.text) {
-          return "Les mots de passe ne correspondent pas";
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildButton(
-      BuildContext context, String label, VoidCallback onPressed) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: _isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.blue.shade700,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
-        ),
-        child: _isLoading
-            ? const CircularProgressIndicator()
-            : Text(label, style: const TextStyle(fontSize: 16)),
-      ),
-    );
+  void dispose() {
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
   }
 }

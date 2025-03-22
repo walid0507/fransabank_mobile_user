@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projet1/header3.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 
@@ -18,108 +19,14 @@ class _VirementsScreenState extends State<VirementsScreen> {
   final _messageController = TextEditingController();
   bool _isLoading = false;
 
-  Future<void> _effectuerVirement() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString('access_token');
-
-      if (token == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Erreur: Token non trouvé"),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
-      await ApiService.effectuerVirement(
-        widget.nomClient,
-        _compteDestinationController.text,
-        double.parse(_montantController.text),
-        token,
-      );
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Virement effectué avec succès"),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      // Réinitialiser les champs
-      _compteDestinationController.clear();
-      _montantController.clear();
-      _messageController.clear();
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Erreur: ${e.toString()}"),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.blue[900]!,
-                  Colors.blue[700]!,
-                ],
-              ),
-            ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 15,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon:
-                          const Icon(Icons.arrow_back_ios, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const Text(
-                      'TRANSACTION',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 40),
-                  ],
-                ),
-              ),
-            ),
+          Header3(
+            title: 'TRANSACTION',
+            onBackPressed: () => Navigator.pop(context),
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -375,6 +282,67 @@ class _VirementsScreenState extends State<VirementsScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _effectuerVirement() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('access_token');
+
+      if (token == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Erreur: Token non trouvé"),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      await ApiService.effectuerVirement(
+        widget.nomClient,
+        _compteDestinationController.text,
+        double.parse(_montantController.text),
+        token,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Virement effectué avec succès"),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Réinitialiser les champs
+      _compteDestinationController.clear();
+      _montantController.clear();
+      _messageController.clear();
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Erreur: ${e.toString()}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
