@@ -75,6 +75,40 @@ class ApiService {
     }
   }
 
+//fonction upload document
+  static Future<void> uploadDocument(int demandeId, String typeDocumentId, File file, String token) async {
+  try {
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse('${Config.baseApiUrl}/api/demandecompte/$demandeId/upload_document/'),
+    );
+
+    // Ajouter le token d'authentification
+    request.headers['Authorization'] = 'Bearer $token';
+
+    // Ajouter les champs de formulaire
+    request.fields['type_document_id'] = typeDocumentId;
+
+    // Ajouter le fichier
+    request.files.add(await http.MultipartFile.fromPath('document', file.path));
+
+    // Envoyer la requête
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print('Document uploadé avec succès !');
+      print('Réponse: ${response.body}');
+    } else {
+      print('Erreur lors de l\'upload du document: ${response.body}');
+      throw Exception('Erreur ${response.statusCode}: ${response.body}');
+    }
+  } catch (e) {
+    print('Erreur lors de l\'upload du document: $e');
+    rethrow;
+  }
+}
+
   Future<List<dynamic>?> getComptes() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();

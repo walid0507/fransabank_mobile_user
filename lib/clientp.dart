@@ -239,10 +239,16 @@ class _ClientScreenState extends State<ClientScreen>
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               _buildServiceItem(
-                                icon: Icons.settings_rounded,
-                                color: Colors.grey[700]!,
-                                label: 'Paramètres',
-                                onTap: () => _onParametresPressed(context),
+                                icon: Icons.sync_alt_rounded,
+                                color: Colors.blue[700]!,
+                                label: 'Virements',
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => VirementsScreen(
+                                        nomClient: widget.nomClient),
+                                  ),
+                                ),
                               ),
                               _buildServiceItem(
                                 icon: Icons.credit_card_rounded,
@@ -298,32 +304,13 @@ class _ClientScreenState extends State<ClientScreen>
                             ),
                             const SizedBox(width: 15),
                             TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => VirementsScreen(
-                                        nomClient: widget.nomClient),
-                                  ),
-                                );
-                              },
-                              child: const Text(
-                                'Virements',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ),
-                            const Spacer(),
-                            TextButton(
                               onPressed: () {},
                               child: Text(
                                 'Voir tout',
                                 style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                   color: Colors.blue[900],
-                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),

@@ -563,7 +563,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
           label: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey[800],
+              color: isSelected ? Colors.black : Colors.grey[800],
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),
@@ -573,7 +573,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
           },
           backgroundColor: isSelected ? Colors.transparent : Colors.grey[200],
           selectedColor: Colors.transparent,
-          checkmarkColor: Colors.white,
+          checkmarkColor: Colors.black,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
             side: BorderSide(

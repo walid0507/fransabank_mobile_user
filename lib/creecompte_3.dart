@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart'; // Ajout de SharedP
 import 'dart:convert';
 import 'package:projet1/configngrok.dart';
 import 'denvoyé.dart';
+import 'documents.dart';
 
 class CreateAccountStep3 extends StatefulWidget {
   final Map<String, dynamic> formData;
@@ -94,7 +95,6 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
               action: SnackBarAction(
                 label: 'OK',
                 onPressed: () {
-                  // Rediriger vers la page de connexion
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 },
               ),
@@ -121,55 +121,80 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
 
         print("Données à envoyer : $formDataToSend");
 
-        // Envoyer les données principales
-        var response = await ApiService.authenticatedRequest(
-            ApiService.baseUrl, 'POST',
-            body: formDataToSend);
+        // Modification ici : Ajouter une gestion d'erreur plus robuste
+        try {
+          var response = await ApiService.authenticatedRequest(
+              ApiService.baseUrl, 'POST',
+              body: formDataToSend);
 
-        print("Code de réponse : ${response.statusCode}");
-        print("Corps de la réponse : ${response.body}");
+          print("Code de réponse : ${response.statusCode}");
+          print("Corps de la réponse : ${response.body}");
 
-        if (response.statusCode == 201 || response.statusCode == 200) {
-          var responseData = jsonDecode(response.body);
-          int demandeId = responseData["id"];
+          if (response.statusCode == 201 || response.statusCode == 200) {
+            var responseData = jsonDecode(response.body);
+            int demandeId = responseData["id"];
 
-          // Upload de la photo
-          if (photo != null) {
-            await ApiService.uploadFile(
-                "${ApiService.baseUrl}${demandeId}/upload_photo/",
-                photo!,
-                token);
+            // Upload de la photo
+            if (photo != null) {
+              await ApiService.uploadFile(
+                  "${ApiService.baseUrl}${demandeId}/upload_photo/",
+                  photo!,
+                  token);
+            }
+
+            // Upload de la signature
+            if (signature != null) {
+              await ApiService.uploadFile(
+                  "${ApiService.baseUrl}${demandeId}/upload_signature/",
+                  signature!,
+                  token);
+            }
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Demande créée avec succès')),
+            );
+
+            // Naviguer vers Documents même en cas d'échec d'upload des fichiers
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const Documents(),
+              ),
+            );
+          } else {
+            throw Exception('Erreur serveur: ${response.statusCode}');
           }
-
-          // Upload de la signature
-          if (signature != null) {
-            await ApiService.uploadFile(
-                "${ApiService.baseUrl}${demandeId}/upload_signature/",
-                signature!,
-                token);
-          }
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Demande créée avec succès')),
-          );
-
+        } catch (networkError) {
+          print("Erreur réseau : $networkError");
+          // Naviguer vers Documents même en cas d'erreur réseau
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => const DenvoyeScreen(),
+              builder: (context) => const Documents(),
             ),
           );
-        } else {
-          throw Exception(
-              'Erreur lors de la création de la demande: ${response.body}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:
+                  Text('Problème de connexion, mais vous pouvez continuer'),
+              duration: Duration(seconds: 3),
+            ),
+          );
         }
       } catch (e) {
         print("Erreur détaillée : $e");
+        // Naviguer vers Documents même en cas d'erreur générale
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const Documents(),
+          ),
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                'Erreur lors de la création de la demande: ${e.toString()}'),
-            duration: Duration(seconds: 5),
+            content:
+                Text('Une erreur est survenue, mais vous pouvez continuer'),
+            duration: Duration(seconds: 3),
           ),
         );
       }
