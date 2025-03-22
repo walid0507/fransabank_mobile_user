@@ -1,5 +1,5 @@
 class Config {
   //Lien ngrok ici
   static const String baseApiUrl =
-      "https://funeral-simple-emotions-protection.trycloudflare.com";
+      "https://wv-turkey-liabilities-til.trycloudflare.com";
 }
