@@ -132,23 +132,24 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
 
           if (response.statusCode == 201 || response.statusCode == 200) {
             var responseData = jsonDecode(response.body);
-            int demandeId = responseData["id"];
+             SharedPreferences prefs = await SharedPreferences.getInstance();
+             await prefs.setString('demande_id', responseData['id'].toString());
 
             // Upload de la photo
-            if (photo != null) {
-              await ApiService.uploadFile(
-                  "${ApiService.baseUrl}${demandeId}/upload_photo/",
-                  photo!,
-                  token);
-            }
+            // if (photo != null) {
+            //   await ApiService.uploadFile(
+            //       "${ApiService.baseUrl}${demandeId}/upload_photo/",
+            //       photo!,
+            //       token);
+            // }
 
-            // Upload de la signature
-            if (signature != null) {
-              await ApiService.uploadFile(
-                  "${ApiService.baseUrl}${demandeId}/upload_signature/",
-                  signature!,
-                  token);
-            }
+            // // Upload de la signature
+            // if (signature != null) {
+            //   await ApiService.uploadFile(
+            //       "${ApiService.baseUrl}${demandeId}/upload_signature/",
+            //       signature!,
+            //       token);
+            // }
 
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Demande créée avec succès')),

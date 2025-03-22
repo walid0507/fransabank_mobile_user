@@ -44,7 +44,11 @@ class Documents extends StatefulWidget {
 }
 
 class _DocumentsState extends State<Documents> {
+  
   // Ajouter les variables d'état pour suivre les uploads
+  Map<String, List<File>> selectedDocuments =
+      {}; // Stocke les fichiers par type de document
+
   Map<String, bool> documentStates = {
     "Extrait de naissance": false,
     "Certificat de résidence": false,
@@ -54,10 +58,11 @@ class _DocumentsState extends State<Documents> {
 
   // Calculer le progrès total
   double get uploadProgress {
-    int uploadedCount =
-        documentStates.values.where((uploaded) => uploaded).length;
-    return uploadedCount / documentStates.length;
-  }
+  int selectedCount = selectedDocuments.values.fold(0, (sum, files) => sum + files.length);
+  int totalRequired = documentStates.length; // Nombre total de documents requis
+  return (selectedCount / totalRequired).clamp(0.0, 1.0); // ✅ Limite entre 0 et 1
+}
+
 
   // Mettre à jour l'état d'un document
   void _updateDocumentState(String documentTitle, bool uploaded) {
@@ -188,17 +193,67 @@ class _DocumentsState extends State<Documents> {
                       ),
                     ),
                     onPressed: () async {
-                      if (uploadProgress == 1.0) {
+                      SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                      String? token = prefs.getString('access_token');
+                      String? demandeId = prefs.getString('demande_id');
+                      print(demandeId);
+                      print(token);
+
+                      if (token == null || demandeId == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(
+                                  'Erreur : Token ou ID de demande manquant')),
+                        );
+                        return;
+                      }
+
+                      List<String> typeDocumentIds = [];
+                      List<File> filesToUpload = [];
+
+                      // Récupérer tous les fichiers sélectionnés et leurs types
+                      selectedDocuments.forEach((title, files) {
+                        String typeDocumentId = _getTypeDocumentId(title);
+                        for (File file in files) {
+                          typeDocumentIds.add(typeDocumentId);
+                          filesToUpload.add(file);
+                        }
+                      });
+                      print("📂 Documents sélectionnés avant l'envoi : ${filesToUpload.map((f) => f.path).toList()}");
+
+                      if (filesToUpload.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(
+                                  'Veuillez sélectionner au moins un document.')),
+                        );
+                        return;
+                      }
+
+                      try {
+                        await ApiService.uploadMultipleDocuments(
+                          int.parse(demandeId),
+                          typeDocumentIds,
+                          filesToUpload,
+                          token,
+                        );
+
+                        setState(() {
+                          documentStates.updateAll((key, value) => true);
+                        });
+
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                               content: Text(
                                   'Tous les documents ont été téléversés avec succès !')),
                         );
-                      } else {
+                      } catch (e) {
+                        print("❌ Erreur lors de l'upload: $e");
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                               content: Text(
-                                  'Veuillez téléverser tous les documents requis.')),
+                                  'Erreur lors du téléversement des documents.')),
                         );
                       }
                     },
@@ -255,49 +310,37 @@ class _DocumentsState extends State<Documents> {
                 size: 30,
               ),
         onTap: () async {
-          // Remplacer la simulation par un vrai upload
-          final file =
-              await _pickFile(); // Méthode pour sélectionner un fichier
-          if (file != null) {
-            try {
-              // Récupérer le token et l'ID de la demande
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              String? token = prefs.getString('access_token');
-              String? demandeId = prefs.getString('demande_id');
-              String? typeDocumentId = _getTypeDocumentId(
-                  title); // Méthode pour mapper le titre au type_document_id
+  final files = await _pickFiles(); // Sélectionner plusieurs fichiers ✅
 
-              if (token != null &&
-                  demandeId != null &&
-                  typeDocumentId != null) {
-                await ApiService.uploadDocument(
-                  int.parse(demandeId),
-                  typeDocumentId,
-                  file,
-                  token,
-                );
-                _updateDocumentState(title, true);
-              } else {
-                throw Exception('Token ou ID de demande manquant');
-              }
-            } catch (e) {
-              print('Erreur lors de l\'upload: $e');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Erreur lors de l\'upload: $e')),
-              );
-            }
-          }
-        },
+  if (files != null && files.isNotEmpty) {
+    setState(() {
+      if (selectedDocuments.containsKey(title)) {
+        selectedDocuments[title]!.addAll(files); // Ajouter à la liste existante ✅
+      } else {
+        selectedDocuments[title] = files; // Créer une nouvelle liste ✅
+      }
+    });
+
+    print("📂 Fichiers ajoutés pour $title: ${files.map((f) => f.path).toList()}");
+    print("📊 Nouvelle progression : ${(uploadProgress * 100).toInt()}%");
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${files.length} fichier(s) ajouté(s) pour $title')),
+    );
+  }
+},
+
       ),
     );
   }
 
-  Future<File?> _pickFile() async {
-    // Utiliser un package comme file_picker pour sélectionner un fichier
-    // Exemple avec file_picker :
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+  Future<List<File>?> _pickFiles() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      allowMultiple: true, // Permet de sélectionner plusieurs fichiers
+    );
+
     if (result != null) {
-      return File(result.files.single.path!);
+      return result.files.map((file) => File(file.path!)).toList();
     }
     return null;
   }

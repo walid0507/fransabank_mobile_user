@@ -76,38 +76,48 @@ class ApiService {
   }
 
 //fonction upload document
-  static Future<void> uploadDocument(int demandeId, String typeDocumentId, File file, String token) async {
-  try {
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('${Config.baseApiUrl}/api/demandecompte/$demandeId/upload_document/'),
-    );
+  static Future<void> uploadMultipleDocuments(int demandeId,
+      List<String> typeDocumentIds, List<File> files, String token) async {
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse(
+            '${Config.baseApiUrl}/api/demandecompte/$demandeId/upload_document/'),
+      );
 
-    // Ajouter le token d'authentification
-    request.headers['Authorization'] = 'Bearer $token';
+      request.headers['Authorization'] = 'Bearer $token';
 
-    // Ajouter les champs de formulaire
-    request.fields['type_document_id'] = typeDocumentId;
-
-    // Ajouter le fichier
-    request.files.add(await http.MultipartFile.fromPath('document', file.path));
-
-    // Envoyer la requête
-    var streamedResponse = await request.send();
-    var response = await http.Response.fromStream(streamedResponse);
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      print('Document uploadé avec succès !');
-      print('Réponse: ${response.body}');
-    } else {
-      print('Erreur lors de l\'upload du document: ${response.body}');
-      throw Exception('Erreur ${response.statusCode}: ${response.body}');
-    }
-  } catch (e) {
-    print('Erreur lors de l\'upload du document: $e');
-    rethrow;
-  }
+      // Ajouter plusieurs `type_document_id` (répétition de la clé)
+      for (int i = 0; i < typeDocumentIds.length; i++) {
+  request.fields['type_document_id[$i]'] = typeDocumentIds[i]; // ✅ Envoie chaque ID séparément
 }
+
+
+      // Ajouter plusieurs fichiers sous `documents[]`
+      for (File file in files) {
+        request.files
+            .add(await http.MultipartFile.fromPath('documents[]', file.path));
+      }
+
+      print("📤 Envoi des fichiers avec :");
+      print("🆔 type_document_id: $typeDocumentIds");
+      print("📂 documents: ${files.map((f) => f.path).toList()}");
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('✅ Documents uploadés avec succès !');
+        print('Réponse : ${response.body}');
+      } else {
+        print('❌ Erreur lors de l\'upload : ${response.body}');
+        throw Exception('Erreur ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      print('❌ Erreur lors de l\'upload : $e');
+      rethrow;
+    }
+  }
 
   Future<List<dynamic>?> getComptes() async {
     try {
@@ -140,8 +150,6 @@ class ApiService {
   }
 
   static Future<void> demanderVisio(String titre, String? details) async {
-
-
     // Construire le body avec uniquement les champs nécessaires
     Map<String, dynamic> body = {
       "titre": titre,
@@ -191,6 +199,8 @@ class ApiService {
       print("Réponse : ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+     
+        
         return jsonDecode(response.body);
       } else {
         throw Exception('Erreur ${response.statusCode}: ${response.body}');
@@ -201,44 +211,53 @@ class ApiService {
     }
   }
 
-  static Future<void> uploadFile(String url, File file, String token) async {
-    try {
-      var request = http.MultipartRequest('POST', Uri.parse(url));
+  static Future<void> uploadFile(String url, File file, String token, String demandeId) async {
+  try {
+    var request = http.MultipartRequest('POST', Uri.parse(url));
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? currentToken = prefs.getString('token');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? currentToken = prefs.getString('token');
 
-      if (currentToken == null) {
-        throw Exception("Token manquant !");
-      }
-
-      request.headers['Authorization'] = 'Bearer $currentToken';
-      request.files.add(await http.MultipartFile.fromPath('file', file.path));
-
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
-
-      if (response.statusCode == 401) {
-        String? newToken = await refreshToken();
-        if (newToken != null) {
-          request = http.MultipartRequest('POST', Uri.parse(url));
-          request.headers['Authorization'] = 'Bearer $newToken';
-          request.files
-              .add(await http.MultipartFile.fromPath('file', file.path));
-          streamedResponse = await request.send();
-          response = await http.Response.fromStream(streamedResponse);
-        }
-      }
-
-      if (response.statusCode != 200 && response.statusCode != 201) {
-        throw Exception(
-            'Échec de l\'upload du fichier. Code: ${response.statusCode}, Message: ${response.body}');
-      }
-    } catch (e) {
-      print("Erreur lors de l'upload du fichier: $e");
-      throw e;
+    if (currentToken == null) {
+      throw Exception("Token manquant !");
     }
+
+    request.headers['Authorization'] = 'Bearer $currentToken';
+
+    // Ajouter `demande_id` dans le body de la requête
+    request.fields['demande_id'] = demandeId;
+
+    // Ajouter le fichier
+    request.files.add(await http.MultipartFile.fromPath('file', file.path));
+
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
+
+    // Vérifier si le token a expiré et essayer de le rafraîchir
+    if (response.statusCode == 401) {
+      String? newToken = await refreshToken();
+      if (newToken != null) {
+        request = http.MultipartRequest('POST', Uri.parse(url));
+        request.headers['Authorization'] = 'Bearer $newToken';
+        request.fields['demande_id'] = demandeId; // Réajouter `demande_id`
+        request.files.add(await http.MultipartFile.fromPath('file', file.path));
+        streamedResponse = await request.send();
+        response = await http.Response.fromStream(streamedResponse);
+      }
+    }
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception(
+          'Échec de l\'upload du fichier. Code: ${response.statusCode}, Message: ${response.body}');
+    }
+
+    print("✅ Fichier uploadé avec succès !");
+  } catch (e) {
+    print("❌ Erreur lors de l'upload du fichier: $e");
+    throw e;
   }
+}
+
 
   static Future<void> checkToken(String token) async {
     if (token == null || token.isEmpty) {
