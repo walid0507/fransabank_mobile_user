@@ -495,7 +495,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
 
   Widget _buildSearchBar() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      margin: EdgeInsets.fromLTRB(20, 5, 20, 5),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
@@ -525,16 +525,19 @@ class _VideoConferencePageState extends State<VideoConferencePage>
   }
 
   Widget _buildFilterChips() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          _buildFilterChip('Tout', 'all'),
-          _buildFilterChip('En attente', 'pending'),
-          _buildFilterChip('Acceptée', 'accepted'),
-          _buildFilterChip('Expirée', 'expired'),
-        ],
+    return Container(
+      margin: EdgeInsets.only(bottom: 10),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: [
+            _buildFilterChip('Tout', 'all'),
+            _buildFilterChip('En attente', 'pending'),
+            _buildFilterChip('Acceptée', 'accepted'),
+            _buildFilterChip('Expirée', 'expired'),
+          ],
+        ),
       ),
     );
   }
@@ -543,45 +546,59 @@ class _VideoConferencePageState extends State<VideoConferencePage>
     final bool isSelected = _selectedFilter == value;
     return Padding(
       padding: EdgeInsets.only(right: 8),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(
-                  colors: [Colors.blue[900]!, Colors.blue[700]!],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.blue[900]!.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: FilterChip(
-          label: Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Colors.black : Colors.grey[800],
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-          selected: isSelected,
-          onSelected: (selected) {
-            setState(() => _selectedFilter = value);
-          },
-          backgroundColor: isSelected ? Colors.transparent : Colors.grey[200],
-          selectedColor: Colors.transparent,
-          checkmarkColor: Colors.black,
-          shape: RoundedRectangleBorder(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: 200),
+          transform: Matrix4.identity()..scale(isSelected ? 1.05 : 1.0),
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? LinearGradient(
+                    colors: [Colors.blue[900]!, Colors.blue[700]!],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(
-              color: isSelected ? Colors.transparent : Colors.grey[300]!,
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.blue[900]!.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                setState(() => _selectedFilter = value);
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: AnimatedContainer(
+                duration: Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isSelected ? Icons.check_circle : Icons.circle_outlined,
+                      size: 16,
+                      color: isSelected ? Colors.white : Colors.grey[800],
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.grey[800],
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -844,43 +861,42 @@ class _VideoConferencePageState extends State<VideoConferencePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Header3(
-            title: 'VIDÉO CONFÉRENCE',
-            onBackPressed: () => Navigator.pop(context),
-          ),
-          _buildSearchBar(),
-          _buildFilterChips(),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.blue.shade300, Colors.blue.shade900],
-                ),
-              ),
+      backgroundColor: Colors.white,
+      body: Container(
+        color: Colors.white,
+        child: Column(
+          children: [
+            Header3(
+              title: 'VIDÉO CONFÉRENCE',
+              onBackPressed: () => Navigator.pop(context),
+            ),
+            _buildSearchBar(),
+            _buildFilterChips(),
+            Expanded(
               child: ListView.builder(
-                padding: EdgeInsets.all(20),
+                padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
                 itemCount: filteredConferences.length,
                 itemBuilder: (context, index) {
                   return _buildConferenceCard(filteredConferences[index]);
                 },
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: ScaleTransition(
         scale: _pulseAnimation,
         child: FloatingActionButton.extended(
           onPressed: showAddConferenceDialog,
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.blue[900],
-          icon: Icon(Icons.video_call),
-          label: Text('Nouvelle Visio'),
-          elevation: 4,
+          backgroundColor: Colors.blue.shade900,
+          foregroundColor: Colors.white,
+          icon: Icon(Icons.video_call, size: 28),
+          label: Text('Nouvelle Visio', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          extendedPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         ),
       ),
     );
