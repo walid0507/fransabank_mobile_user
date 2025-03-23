@@ -509,4 +509,39 @@ class ApiService {
       rethrow;
     }
   }
+  static Future<List<Map<String, dynamic>>> getVideoConferences() async {
+  try {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('access_token');
+    String? clientId = prefs.getString('client_id');
+
+    if (token == null || clientId == null) {
+      throw Exception("Token ou client ID manquant !");
+    }
+
+    final response = await http.get(
+      Uri.parse("${Config.baseApiUrl}/api/client/$clientId/video-conference/"),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    print("Code HTTP: ${response.statusCode}");
+    print("Réponse: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.cast<Map<String, dynamic>>(); // Convertir en List<Map>
+    } else {
+      throw Exception("Erreur ${response.statusCode}: ${response.body}");
+    }
+  } catch (e) {
+    print("❌ Erreur lors de la récupération des visioconférences: $e");
+    return [];
+  }
 }
+
+}
+

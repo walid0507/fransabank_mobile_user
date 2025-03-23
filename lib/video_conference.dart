@@ -4,6 +4,7 @@ import 'package:projet1/api_service.dart';
 import 'dart:ui'; // Pour ImageFilter
 import 'package:projet1/header3.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class VideoConferencePage extends StatefulWidget {
   @override
@@ -12,6 +13,7 @@ class VideoConferencePage extends StatefulWidget {
 
 class _VideoConferencePageState extends State<VideoConferencePage>
     with SingleTickerProviderStateMixin {
+    
   late AnimationController _controller;
   late Animation<double> _pulseAnimation;
   String _searchQuery = '';
@@ -19,29 +21,27 @@ class _VideoConferencePageState extends State<VideoConferencePage>
   bool isLoading = false;
   String? errorMessage;
 
-  List<Map<String, dynamic>> conferences = [
-    {
-      'title': 'Demande de prêt',
-      'subtitle': 'Discussion sur les conditions du prêt immobilier',
-      'date': DateTime.now(),
-      'employee': 'M. Dupont',
-      'status': 'pending'
-    },
-    {
-      'title': 'Ouverture de compte',
-      'subtitle': 'Vérification des documents et validation',
-      'date': DateTime.now().add(Duration(days: 1)),
-      'employee': 'Mme Durand',
-      'status': 'accepted'
-    },
-    {
-      'title': 'Problème de transaction',
-      'subtitle': "Analyse d'une transaction suspecte",
-      'date': DateTime.now().subtract(Duration(days: 1)),
-      'employee': 'M. Leroy',
-      'status': 'cancelled'
-    },
-  ];
+  List<Map<String, dynamic>> conferences = [];
+
+  Future<void> loadConferences() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final confs = await ApiService.getVideoConferences();
+      setState(() {
+        conferences = confs;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Erreur lors du chargement des conférences: ${e.toString()}';
+        isLoading = false;
+      });
+    }
+  }
 
   Color getCardColor(String status) {
     switch (status) {
@@ -97,25 +97,18 @@ class _VideoConferencePageState extends State<VideoConferencePage>
       }
     });
   }
+  void _launchURL(String url) async {
+  Uri uri = Uri.parse(url);
+  if (await canLaunchUrl(uri)) {
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  } else {
+    throw "Impossible d'ouvrir le lien : $url";
+  }
+}
+
 
   void showConferenceDetails(Map<String, dynamic> conf) {
-    final bool isExpired = conf['status'] == 'expired' ||
-        conf['date'].isBefore(DateTime.now().subtract(Duration(hours: 24)));
-
-    if (isExpired) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Cette réunion est expirée'),
-          backgroundColor: Colors.grey,
-          behavior: SnackBarBehavior.floating,
-          margin: EdgeInsets.all(10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
-      return;
-    }
+    final DateTime scheduledDate = DateTime.parse(conf['scheduled_at']);
 
     showDialog(
       context: context,
@@ -125,115 +118,102 @@ class _VideoConferencePageState extends State<VideoConferencePage>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: Text(
-            conf['title'],
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).primaryColor,
-            ),
-          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.person_outline,
-                            size: 20, color: Colors.grey[600]),
-                        SizedBox(width: 8),
-                        Text(
-                          'Employé: ${conf['employee']}',
-                          style:
-                              TextStyle(fontSize: 16, color: Colors.grey[800]),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(Icons.calendar_today_outlined,
-                            size: 20, color: Colors.grey[600]),
-                        SizedBox(width: 8),
-                        Text(
-                          'Date: ${conf['date'].toLocal()}'.split(' ')[0],
-                          style:
-                              TextStyle(fontSize: 16, color: Colors.grey[800]),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(Icons.access_time,
-                            size: 20, color: Colors.grey[600]),
-                        SizedBox(width: 8),
-                        Text(
-                          'Heure: ${TimeOfDay.fromDateTime(conf['date']).format(context)}',
-                          style:
-                              TextStyle(fontSize: 16, color: Colors.grey[800]),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              // Informations principales
+              Text(
+                "Date: ${scheduledDate.toLocal()}".split(' ')[0],
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
+              SizedBox(height: 8),
+              Text(
+                "Employé: ${conf['employe_prenom']} ${conf['employe_nom']}",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              SizedBox(height: 8),
+              Text(
+                "Statut visioconférence: ${getStatusText(conf['status'] ?? 'pending')}",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              SizedBox(height: 8),
+              Text(
+                "Décision client: ${getStatusText(conf['client_decision'] ?? 'pending')}",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              SizedBox(height: 16),
+              
+              // Lien du meet dans un rectangle
+              if (conf['meeting_url'] != null)
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Lien de la réunion:",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade900,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      InkWell(
+                        onTap: () => _launchURL(conf['meeting_url']),
+                        child: Text(
+                          conf['meeting_url'],
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.blue.shade700,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
             ],
           ),
           actions: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                showReprogramOrCancelDialog(conf);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 2,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              ),
-              child: Text('Refuser'),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Fermer'),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content:
-                        Text("Le lien s'affichera à l'heure de la réunion"),
-                    backgroundColor: Colors.green,
-                    behavior: SnackBarBehavior.floating,
-                    margin: EdgeInsets.all(10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+            if (conf['meeting_url'] != null)
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  // TODO: Ouvrir l'URL de la réunion
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Redirection vers la réunion..."),
+                      backgroundColor: Colors.green,
+                      behavior: SnackBarBehavior.floating,
+                      margin: EdgeInsets.all(10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade900,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.greenAccent.shade700,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 2,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Text('Rejoindre'),
               ),
-              child: Text('Accepter'),
-            ),
           ],
         );
       },
@@ -607,16 +587,15 @@ class _VideoConferencePageState extends State<VideoConferencePage>
   }
 
   Widget _buildConferenceCard(Map<String, dynamic> conf) {
-    final String status = conf['status'];
-    final String displayStatus =
-        (status != 'pending' && status != 'accepted') ? 'expired' : status;
-    final Color cardColor = getCardColor(displayStatus);
+    final String status = conf['status'] ?? 'pending';
+    final Color cardColor = getCardColor(status);
     final Color gradientColor = getGradientColor(cardColor);
-    final bool isSelected =
-        _selectedFilter == 'all' || displayStatus == _selectedFilter;
+    
+    // Convertir la date de string à DateTime
+    final DateTime scheduledDate = DateTime.parse(conf['scheduled_at']);
 
     return Hero(
-      tag: 'conference-${conf['title']}',
+      tag: 'conference-${conf['id']}',
       child: Container(
         margin: EdgeInsets.only(bottom: 16),
         child: Material(
@@ -657,7 +636,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  conf['title'],
+                                  conf['titre_demande'] ?? 'Sans titre',
                                   style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
@@ -681,13 +660,13 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
-                                        getStatusIcon(displayStatus),
+                                        getStatusIcon(status),
                                         color: Colors.white,
                                         size: 16,
                                       ),
                                       SizedBox(width: 6),
                                       Text(
-                                        getStatusText(displayStatus),
+                                        getStatusText(status),
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 12,
@@ -700,8 +679,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                               ],
                             ),
                           ),
-                          if (displayStatus == 'pending' ||
-                              displayStatus == 'accepted')
+                          if (status == 'pending' ||
+                              status == 'accepted')
                             Container(
                               padding: EdgeInsets.all(12),
                               decoration: BoxDecoration(
@@ -731,26 +710,6 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                             width: 1,
                           ),
                         ),
-                        child: Text(
-                          conf['subtitle'],
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.95),
-                            fontSize: 15,
-                            height: 1.5,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      Container(
-                        padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
-                            width: 1,
-                          ),
-                        ),
                         child: Row(
                           children: [
                             CircleAvatar(
@@ -768,7 +727,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    conf['employee'],
+                                    "${conf['employe_prenom']} ${conf['employe_nom']}",
                                     style: TextStyle(
                                       color: Colors.white.withOpacity(0.95),
                                       fontSize: 16,
@@ -785,8 +744,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                                       ),
                                       SizedBox(width: 6),
                                       Text(
-                                        "${conf['date'].toLocal()}"
-                                            .split(' ')[0],
+                                        "${scheduledDate.toLocal()}".split(' ')[0],
                                         style: TextStyle(
                                           color: Colors.white.withOpacity(0.8),
                                           fontSize: 14,
@@ -803,14 +761,17 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                     ],
                   ),
                 ),
-                if (!isSelected)
+                if (_selectedFilter != 'all' && status != _selectedFilter)
                   Positioned.fill(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(25),
                       child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                        filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
                         child: Container(
-                          color: Colors.transparent,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(25),
+                          ),
                         ),
                       ),
                     ),
@@ -837,6 +798,9 @@ class _VideoConferencePageState extends State<VideoConferencePage>
         curve: Curves.easeInOut,
       ),
     );
+
+    // Charger les conférences au démarrage
+    loadConferences();
   }
 
   @override
@@ -846,14 +810,16 @@ class _VideoConferencePageState extends State<VideoConferencePage>
   }
 
   List<Map<String, dynamic>> get filteredConferences {
-    // Afficher toutes les conférences, le flou sera géré dans le widget
+    // D'abord, filtrer par recherche
     return conferences.where((conf) {
-      final matchesSearch = conf['title']
+      final matchesSearch = conf['titre_demande']?.toLowerCase()
+              .contains(_searchQuery.toLowerCase()) ?? false ||
+          "${conf['employe_prenom']} ${conf['employe_nom']}"
               .toLowerCase()
-              .contains(_searchQuery.toLowerCase()) ||
-          conf['subtitle'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          conf['employee'].toLowerCase().contains(_searchQuery.toLowerCase());
+              .contains(_searchQuery.toLowerCase());
 
+      // On retourne toutes les conférences qui correspondent à la recherche
+      // Le filtre sera géré visuellement avec l'effet de flou
       return matchesSearch;
     }).toList();
   }
@@ -873,13 +839,50 @@ class _VideoConferencePageState extends State<VideoConferencePage>
             _buildSearchBar(),
             _buildFilterChips(),
             Expanded(
-              child: ListView.builder(
-                padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
-                itemCount: filteredConferences.length,
-                itemBuilder: (context, index) {
-                  return _buildConferenceCard(filteredConferences[index]);
-                },
-              ),
+              child: isLoading 
+                ? Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[900]!),
+                    ),
+                  )
+                : errorMessage != null
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            errorMessage!,
+                            style: TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: loadConferences,
+                            child: Text('Réessayer'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue[900],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : conferences.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Aucune vidéoconférence disponible',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
+                        itemCount: filteredConferences.length,
+                        itemBuilder: (context, index) {
+                          return _buildConferenceCard(filteredConferences[index]);
+                        },
+                      ),
             ),
           ],
         ),
