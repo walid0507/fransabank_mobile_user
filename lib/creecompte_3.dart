@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:projet1/configngrok.dart';
 import 'denvoyé.dart';
 import 'documents.dart';
+import 'curved_header.dart';
 
 class CreateAccountStep3 extends StatefulWidget {
   final Map<String, dynamic> formData;
@@ -19,9 +20,6 @@ class CreateAccountStep3 extends StatefulWidget {
 
 class _CreateAccountStep3State extends State<CreateAccountStep3> {
   final _formKey = GlobalKey<FormState>();
-  final ImagePicker _picker = ImagePicker();
-  File? photo;
-  File? signature;
   String? address;
   String? countryOfBirth;
   String? employerName;
@@ -33,17 +31,33 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
   final _employerNameController = TextEditingController();
   final _clientTypeController = TextEditingController();
 
-  Future<void> _pickImage(bool isPhoto) async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        if (isPhoto) {
-          photo = File(image.path);
-        } else {
-          signature = File(image.path);
-        }
-      });
-    }
+  bool _areFieldsFilled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _addressController.addListener(_checkFields);
+    _countryOfBirthController.addListener(_checkFields);
+    _employerNameController.addListener(_checkFields);
+    _clientTypeController.addListener(_checkFields);
+  }
+
+  @override
+  void dispose() {
+    _addressController.removeListener(_checkFields);
+    _countryOfBirthController.removeListener(_checkFields);
+    _employerNameController.removeListener(_checkFields);
+    _clientTypeController.removeListener(_checkFields);
+    super.dispose();
+  }
+
+  void _checkFields() {
+    setState(() {
+      _areFieldsFilled = _addressController.text.isNotEmpty &&
+          _countryOfBirthController.text.isNotEmpty &&
+          _employerNameController.text.isNotEmpty &&
+          _clientTypeController.text.isNotEmpty;
+    });
   }
 
   Future<String?> _getToken() async {
@@ -132,8 +146,8 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
 
           if (response.statusCode == 201 || response.statusCode == 200) {
             var responseData = jsonDecode(response.body);
-             SharedPreferences prefs = await SharedPreferences.getInstance();
-             await prefs.setString('demande_id', responseData['id'].toString());
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.setString('demande_id', responseData['id'].toString());
 
             // Upload de la photo
             // if (photo != null) {
@@ -205,123 +219,170 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Étape 3 - Informations complémentaires')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Champ Adresse
-                TextFormField(
-                  controller: _addressController,
-                  decoration: InputDecoration(
-                    labelText: 'Adresse',
-                    border: OutlineInputBorder(),
+      body: Stack(
+        children: [
+          CurvedHeader(
+            height: 0.3,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 20),
+                  Center(
+                    child: Text(
+                      'Demande compte bancaire',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer votre adresse';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 20),
-
-                // Champ Pays de naissance
-                TextFormField(
-                  controller: _countryOfBirthController,
-                  decoration: InputDecoration(
-                    labelText: 'Pays de naissance',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer votre pays de naissance';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 20),
-
-                // Champ Photo
-                Text('Photo', style: TextStyle(fontSize: 16)),
-                SizedBox(height: 10),
-                photo == null
-                    ? ElevatedButton(
-                        onPressed: () => _pickImage(true),
-                        child: Text('Uploader une photo'),
-                      )
-                    : Image.file(photo!, height: 100),
-                SizedBox(height: 20),
-
-                // Champ Signature
-                Text('Signature', style: TextStyle(fontSize: 16)),
-                SizedBox(height: 10),
-                signature == null
-                    ? ElevatedButton(
-                        onPressed: () => _pickImage(false),
-                        child: Text('Uploader une signature'),
-                      )
-                    : Image.file(signature!, height: 100),
-                SizedBox(height: 20),
-
-                // Champ Nom de l'employeur
-                TextFormField(
-                  controller: _employerNameController,
-                  decoration: InputDecoration(
-                    labelText: "Nom de l'employeur",
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer le nom de votre employeur';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 20),
-
-                // Champ Type de client
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    labelText: 'Type de client',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: ['Particulier', 'Entreprise', 'Autre']
-                      .map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _clientTypeController.text = value!;
-                    });
-                  },
-                  validator: (value) {
-                    if (value == null) {
-                      return 'Veuillez sélectionner un type de client';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 20),
-
-                // Bouton de soumission
-                Center(
-                  child: ElevatedButton(
-                    onPressed: _submitFinal,
-                    child: Text('Soumettre'),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 100),
+                      Container(
+                        padding: EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 15,
+                              offset: Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              controller: _addressController,
+                              decoration: InputDecoration(
+                                labelText: 'Adresse',
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Veuillez entrer votre adresse';
+                                }
+                                return null;
+                              },
+                            ),
+                            SizedBox(height: 20),
+                            TextFormField(
+                              controller: _countryOfBirthController,
+                              decoration: InputDecoration(
+                                labelText: 'Pays de naissance',
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Veuillez entrer votre pays de naissance';
+                                }
+                                return null;
+                              },
+                            ),
+                            SizedBox(height: 20),
+                            TextFormField(
+                              controller: _employerNameController,
+                              decoration: InputDecoration(
+                                labelText: "Nom de l'employeur",
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Veuillez entrer le nom de votre employeur';
+                                }
+                                return null;
+                              },
+                            ),
+                            SizedBox(height: 20),
+                            DropdownButtonFormField<String>(
+                              decoration: InputDecoration(
+                                labelText: 'Type de client',
+                                border: OutlineInputBorder(),
+                              ),
+                              items: ['Particulier', 'Entreprise', 'Autre']
+                                  .map((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _clientTypeController.text = value!;
+                                });
+                              },
+                              validator: (value) {
+                                if (value == null) {
+                                  return 'Veuillez sélectionner un type de client';
+                                }
+                                return null;
+                              },
+                            ),
+                            SizedBox(height: 20),
+                            AnimatedOpacity(
+                              duration: Duration(milliseconds: 500),
+                              opacity: _areFieldsFilled ? 1.0 : 0.0,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                width: double.infinity,
+                                height: 50,
+                                child: ElevatedButton(
+                                  onPressed:
+                                      _areFieldsFilled ? _submitFinal : null,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Soumettre',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

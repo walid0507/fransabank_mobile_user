@@ -1,5 +1,5 @@
 class Config {
   //Lien ngrok ici
   static const String baseApiUrl =
-      "https://enlargement-developments-operation-video.trycloudflare.com";
+      "https://usually-repository-gear-chain.trycloudflare.com";
 }

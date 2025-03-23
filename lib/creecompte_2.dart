@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'creecompte_3.dart';
 import 'fatca_page.dart'; // Assurez-vous que cette importation est correcte
 import 'package:projet1/configngrok.dart';
+import 'curved_header.dart';
 
 class CreateAccountStep2 extends StatefulWidget {
   final String? civility;
@@ -25,6 +26,46 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
   final _motherFirstNameController = TextEditingController();
   final _phoneNumberController = TextEditingController();
   final _maidenNameController = TextEditingController();
+
+  bool _areFieldsFilled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fatherFirstNameController.addListener(_checkFields);
+    _motherLastNameController.addListener(_checkFields);
+    _motherFirstNameController.addListener(_checkFields);
+    _phoneNumberController.addListener(_checkFields);
+    if (widget.civility == 'Madame') {
+      _maidenNameController.addListener(_checkFields);
+    }
+  }
+
+  @override
+  void dispose() {
+    _fatherFirstNameController.removeListener(_checkFields);
+    _motherLastNameController.removeListener(_checkFields);
+    _motherFirstNameController.removeListener(_checkFields);
+    _phoneNumberController.removeListener(_checkFields);
+    if (widget.civility == 'Madame') {
+      _maidenNameController.removeListener(_checkFields);
+    }
+    super.dispose();
+  }
+
+  void _checkFields() {
+    setState(() {
+      _areFieldsFilled = _fatherFirstNameController.text.isNotEmpty &&
+          _motherLastNameController.text.isNotEmpty &&
+          _motherFirstNameController.text.isNotEmpty &&
+          _phoneNumberController.text.isNotEmpty &&
+          nationality1 != null &&
+          nationality2 != null &&
+          situationFamiliale != null &&
+          (widget.civility != 'Madame' ||
+              _maidenNameController.text.isNotEmpty);
+    });
+  }
 
   void _navigateToNextPage() {
     if (_formKey.currentState!.validate()) {
@@ -60,63 +101,141 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Informations complémentaires')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (widget.civility == 'Madame')
-                  _buildTextField('Nom de jeune fille', _maidenNameController),
-                _buildTextField('Prénom du père', _fatherFirstNameController),
-                _buildTextField('Nom de la mère', _motherLastNameController),
-                _buildTextField(
-                    'Prénom de la mère', _motherFirstNameController),
-                _buildTextField('Numéro de téléphone', _phoneNumberController),
-                _buildDropdownField(
-                    'Nationalité 1', ['Française', 'Américaine', 'Autre'],
-                    (value) {
-                  setState(() {
-                    nationality1 = value;
-                  });
-                }),
-                _buildDropdownField('Nationalité 2',
-                    ['Aucune', 'Française', 'Américaine', 'Autre'], (value) {
-                  setState(() {
-                    nationality2 = value;
-                  });
-                }),
-                _buildDropdownField('Situation familiale',
-                    ['Célibataire', 'Marié(e)', 'Divorcé(e)'], (value) {setState(() {
-    situationFamiliale = value; 
-  });}),
-                SizedBox(height: 20),
-                Center(
-                  child: ElevatedButton(
-                    onPressed: _navigateToNextPage,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.blue.shade700,
-                      padding:
-                          EdgeInsets.symmetric(vertical: 15, horizontal: 40),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+      body: Stack(
+        children: [
+          CurvedHeader(
+            height: 0.3,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 20),
+                  Center(
+                    child: Text(
+                      'Demande compte bancaire',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
-                    child: Text(
-                      'Suivant',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 100),
+                      Container(
+                        padding: EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 15,
+                              offset: Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            if (widget.civility == 'Madame')
+                              _buildTextField(
+                                  'Nom de jeune fille', _maidenNameController),
+                            _buildTextField(
+                                'Prénom du père', _fatherFirstNameController),
+                            _buildTextField(
+                                'Nom de la mère', _motherLastNameController),
+                            _buildTextField('Prénom de la mère',
+                                _motherFirstNameController),
+                            _buildTextField(
+                                'Numéro de téléphone', _phoneNumberController),
+                            _buildDropdownField('Nationalité 1',
+                                ['Française', 'Américaine', 'Autre'], (value) {
+                              setState(() {
+                                nationality1 = value;
+                              });
+                            }),
+                            _buildDropdownField('Nationalité 2', [
+                              'Aucune',
+                              'Française',
+                              'Américaine',
+                              'Autre'
+                            ], (value) {
+                              setState(() {
+                                nationality2 = value;
+                              });
+                            }),
+                            _buildDropdownField('Situation familiale', [
+                              'Célibataire',
+                              'Marié(e)',
+                              'Divorcé(e)'
+                            ], (value) {
+                              setState(() {
+                                situationFamiliale = value;
+                              });
+                            }),
+                            SizedBox(height: 20),
+                            AnimatedOpacity(
+                              duration: Duration(milliseconds: 500),
+                              opacity: _areFieldsFilled ? 1.0 : 0.0,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                width: double.infinity,
+                                height: 50,
+                                child: ElevatedButton(
+                                  onPressed: _areFieldsFilled
+                                      ? _navigateToNextPage
+                                      : null,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Suivant',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
