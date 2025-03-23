@@ -43,15 +43,26 @@ class _VideoConferencePageState extends State<VideoConferencePage>
     }
   }
 
-  Color getCardColor(String status) {
-    switch (status) {
-      case 'pending':
-        return Color(0xFF1976D2); // Bleu
-      case 'accepted':
-        return Color(0xFF2E7D32); // Vert
-      default:
-        return Color(0xFF757575); // Gris pour expiré et autres
+  Color getCardColor(String status, String clientDecision, DateTime scheduledDate) {
+    // Si la date est dépassée de plus de 30 minutes
+    if (DateTime.now().difference(scheduledDate).inMinutes > 30) {
+      return Color(0xFF757575); // Gris pour expiré
     }
+
+    // Si le client a déjà pris une décision
+    if (clientDecision != 'pending') {
+      switch (clientDecision) {
+        case 'accepted':
+          return Color(0xFF2E7D32); // Vert pour accepté
+        case 'refused':
+          return Color(0xFF757575); // Gris pour refusé
+        default:
+          return Color(0xFF757575); // Gris par défaut
+      }
+    }
+
+    // Si le client n'a pas encore pris de décision
+    return Color(0xFF1976D2); // Bleu pour en attente
   }
 
   Color getGradientColor(Color baseColor) {
@@ -173,7 +184,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  conf['titre_demande'] ?? 'Sans titre',
+                                  conf['titre'] ?? 'Sans titre',
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
@@ -320,7 +331,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                                   ),
                                   SizedBox(width: 12),
                                   Text(
-                                    "Aucun lien disponible",
+                                    "Disponible quand la réunion commencera",
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey.shade600,
@@ -950,13 +961,24 @@ class _VideoConferencePageState extends State<VideoConferencePage>
   }
 
   Widget _buildConferenceCard(Map<String, dynamic> conf) {
+    final DateTime scheduledDate = DateTime.parse(conf['scheduled_at']);
     final String status = conf['status'] ?? 'pending';
-    final Color cardColor = getCardColor(status);
+    final String clientDecision = conf['client_decision'] ?? 'pending';
+    final Color cardColor = getCardColor(status, clientDecision, scheduledDate);
     final Color gradientColor = getGradientColor(cardColor);
     
-    // Convertir la date de string à DateTime
-    final DateTime scheduledDate = DateTime.parse(conf['scheduled_at']);
-
+    // Vérifier si la carte doit être floutée
+    bool shouldBlur = false;
+    if (_selectedFilter != 'all') {
+      if (_selectedFilter == 'pending') {
+        shouldBlur = clientDecision != 'pending';
+      } else if (_selectedFilter == 'accepted') {
+        shouldBlur = clientDecision != 'accepted';
+      } else if (_selectedFilter == 'expired') {
+        shouldBlur = !(DateTime.now().difference(scheduledDate).inMinutes > 30 || clientDecision == 'refused');
+      }
+    }
+    
     return Hero(
       tag: 'conference-${conf['id']}',
       child: Container(
@@ -999,7 +1021,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  conf['titre_demande'] ?? 'Sans titre',
+                                  conf['titre'] ?? 'Sans titre',
                                   style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
@@ -1124,7 +1146,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                     ],
                   ),
                 ),
-                if (_selectedFilter != 'all' && status != _selectedFilter)
+                if (shouldBlur)
                   Positioned.fill(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(25),
@@ -1132,7 +1154,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                         filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.15),
+                            color: Colors.black.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(25),
                           ),
                         ),
@@ -1173,18 +1195,23 @@ class _VideoConferencePageState extends State<VideoConferencePage>
   }
 
   List<Map<String, dynamic>> get filteredConferences {
-    // D'abord, filtrer par recherche
-    return conferences.where((conf) {
-      final matchesSearch = conf['titre_demande']?.toLowerCase()
+    // Filtrer uniquement par recherche
+    var filtered = conferences.where((conf) {
+      return conf['titre']?.toLowerCase()
               .contains(_searchQuery.toLowerCase()) ?? false ||
           "${conf['employe_prenom']} ${conf['employe_nom']}"
               .toLowerCase()
               .contains(_searchQuery.toLowerCase());
-
-      // On retourne toutes les conférences qui correspondent à la recherche
-      // Le filtre sera géré visuellement avec l'effet de flou
-      return matchesSearch;
     }).toList();
+
+    // Trier par date et heure (du plus récent au plus ancien)
+    filtered.sort((a, b) {
+      final DateTime dateA = DateTime.parse(a['scheduled_at']);
+      final DateTime dateB = DateTime.parse(b['scheduled_at']);
+      return dateB.compareTo(dateA);
+    });
+
+    return filtered;
   }
 
   @override
