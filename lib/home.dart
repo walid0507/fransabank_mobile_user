@@ -6,6 +6,7 @@ import 'header.dart'; // Importation du header commun
 import 'clientp.dart'; // Importation de la page client
 import 'api_service.dart'; // Importation du service API
 import 'package:projet1/configngrok.dart';
+import 'curved_header.dart'; // Ajout de l'import pour curved_header.dart
 
 class ProfileScreen extends StatefulWidget {
   final String nomClient;
@@ -102,24 +103,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.blue.shade300, Colors.blue.shade900],
+      body: Stack(
+        children: [
+          CurvedHeader(
+            height: 0.9,
+            title: 'Connexion',
+            onBackPressed: () {},
+            child: Container(),
           ),
-        ),
-        child: Column(
-          children: [
-            AppHeader(), // Utilisation du header
-            Expanded(
+          SafeArea(
+            child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20.0, vertical: 30.0),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    SizedBox(height: 200),
                     Center(
                       child: Text(
                         "Bonjour nomClient",
@@ -131,31 +130,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 50),
-                    const SizedBox(height: 15),
                     _buildTextField("Numéro du compte"),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 25),
                     _buildTextField("Mot de passe", obscureText: true),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 40),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: TextButton(
+                      child: ElevatedButton(
                         onPressed: () {
-                          loginUser(); // Appel de la méthode de connexion
+                          loginUser();
                         },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.blue.shade700,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 30, vertical: 15),
+                        ),
                         child: const Text(
                           "Se connecter",
-                          style: TextStyle(color: Colors.white, fontSize: 14),
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
-                    const Spacer(),
-                    const SizedBox(height: 20),
                   ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -166,15 +172,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ? _clientIdController
           : _passwordController,
       obscureText: obscureText,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: Colors.black),
       decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
+        hintText: label,
+        hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.2),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
+        fillColor: Colors.white,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 8,
         ),
       ),
     );

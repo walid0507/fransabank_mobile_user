@@ -110,11 +110,24 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       body: Stack(
         children: [
           CurvedHeader(
-            height: 0.3,
+            height: 0.9,
             title: 'Demande compte bancaire',
-            onBackPressed: () => Navigator.pop(context),
-            child:
-                Container(), // Le contenu principal est maintenant géré par le SafeArea en dessous
+            onBackPressed: () {},
+            child: Container(),
+          ),
+          Positioned(
+            top: 10,
+            left: 16,
+            child: SafeArea(
+              child: IconButton(
+                icon: Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                padding: EdgeInsets.zero,
+                constraints: BoxConstraints(),
+              ),
+            ),
           ),
           SafeArea(
             child: SingleChildScrollView(
@@ -147,7 +160,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                 'Civilité', ['Monsieur', 'Madame'], (value) {
                               setState(() {
                                 civility = value;
-                                _checkFields(); // Ajouter cette ligne
+                                _checkFields();
                               });
                             }),
                             _buildTextField('Prénom', _firstNameController),
@@ -216,7 +229,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       padding: const EdgeInsets.only(bottom: 15.0),
       child: TextFormField(
         controller: controller,
-        onChanged: (value) => _checkFields(), // Ajouter cette ligne
+        onChanged: (value) => _checkFields(),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(color: Colors.grey.shade600),

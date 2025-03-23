@@ -20,61 +20,65 @@ class CurvedHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipPath(
-      clipper: InvertedCurvedClipper(),
-      child: Container(
-        width: double.infinity,
-        height: MediaQuery.of(context).size.height * height,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          image: DecorationImage(
-            image: AssetImage(backgroundImage),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              backgroundColor.withOpacity(0.9),
-              BlendMode.srcOver,
-            ),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 10, left: 16),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon:
-                          Icon(Icons.arrow_back, color: Colors.white, size: 28),
-                      onPressed: () {
-                        if (Navigator.canPop(context)) {
-                          Navigator.pop(context);
-                        } else {
-                          Navigator.of(context).pushReplacementNamed('/');
-                        }
-                      },
-                      padding: EdgeInsets.zero,
-                      constraints: BoxConstraints(),
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+    return Stack(
+      children: [
+        ClipPath(
+          clipper: InvertedCurvedClipper(),
+          child: Container(
+            width: double.infinity,
+            height: MediaQuery.of(context).size.height * height,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              image: DecorationImage(
+                image: AssetImage(backgroundImage),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  backgroundColor.withOpacity(0.9),
+                  BlendMode.srcOver,
                 ),
               ),
             ),
-            Expanded(child: child),
-          ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 10, left: 16),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(width: 40), // Espace pour le bouton
+                        SizedBox(width: 8),
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(child: child),
+              ],
+            ),
+          ),
         ),
-      ),
+        Positioned(
+          top: 10,
+          left: 16,
+          child: SafeArea(
+            child: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.white, size: 28),
+              onPressed: onBackPressed,
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

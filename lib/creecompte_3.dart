@@ -8,6 +8,7 @@ import 'package:projet1/configngrok.dart';
 import 'denvoyé.dart';
 import 'documents.dart';
 import 'curved_header.dart';
+import 'creecompte_2.dart'; // Ajout de l'import pour creecompte_2.dart
 
 class CreateAccountStep3 extends StatefulWidget {
   final Map<String, dynamic> formData;
@@ -222,11 +223,34 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
       body: Stack(
         children: [
           CurvedHeader(
-            height: 0.3,
+            height: 0.9,
             title: 'Demande compte bancaire',
-            onBackPressed: () => Navigator.pop(context),
-            child:
-                Container(), // Le contenu principal est maintenant géré par le SafeArea en dessous
+            onBackPressed: () {},
+            child: Container(),
+          ),
+          Positioned(
+            top: 10,
+            left: 16,
+            child: SafeArea(
+              child: IconButton(
+                icon: Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CreateAccountStep2(
+                        civility: widget.formData['civilité'] == 'Mr'
+                            ? 'Monsieur'
+                            : 'Madame',
+                        formData: widget.formData,
+                      ),
+                    ),
+                  );
+                },
+                padding: EdgeInsets.zero,
+                constraints: BoxConstraints(),
+              ),
+            ),
           ),
           SafeArea(
             child: SingleChildScrollView(

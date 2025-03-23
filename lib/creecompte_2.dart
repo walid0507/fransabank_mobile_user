@@ -3,6 +3,7 @@ import 'creecompte_3.dart';
 import 'fatca_page.dart'; // Assurez-vous que cette importation est correcte
 import 'package:projet1/configngrok.dart';
 import 'curved_header.dart';
+import 'creecompte.dart'; // Ajout de l'import pour creecompte.dart
 
 class CreateAccountStep2 extends StatefulWidget {
   final String? civility;
@@ -104,11 +105,29 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
       body: Stack(
         children: [
           CurvedHeader(
-            height: 0.3,
+            height: 0.9,
             title: 'Demande compte bancaire',
-            onBackPressed: () => Navigator.pop(context),
-            child:
-                Container(), // Le contenu principal est maintenant géré par le SafeArea en dessous
+            onBackPressed: () {},
+            child: Container(),
+          ),
+          Positioned(
+            top: 10,
+            left: 16,
+            child: SafeArea(
+              child: IconButton(
+                icon: Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CreateAccountScreen(),
+                    ),
+                  );
+                },
+                padding: EdgeInsets.zero,
+                constraints: BoxConstraints(),
+              ),
+            ),
           ),
           SafeArea(
             child: SingleChildScrollView(
