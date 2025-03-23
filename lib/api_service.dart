@@ -89,9 +89,9 @@ class ApiService {
 
       // Ajouter plusieurs `type_document_id` (répétition de la clé)
       for (int i = 0; i < typeDocumentIds.length; i++) {
-  request.fields['type_document_id[$i]'] = typeDocumentIds[i]; // ✅ Envoie chaque ID séparément
-}
-
+        request.fields['type_document_id[$i]'] =
+            typeDocumentIds[i]; // ✅ Envoie chaque ID séparément
+      }
 
       // Ajouter plusieurs fichiers sous `documents[]`
       for (File file in files) {
@@ -199,8 +199,6 @@ class ApiService {
       print("Réponse : ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-     
-        
         return jsonDecode(response.body);
       } else {
         throw Exception('Erreur ${response.statusCode}: ${response.body}');
@@ -211,53 +209,54 @@ class ApiService {
     }
   }
 
-  static Future<void> uploadFile(String url, File file, String token, String demandeId) async {
-  try {
-    var request = http.MultipartRequest('POST', Uri.parse(url));
+  static Future<void> uploadFile(
+      String url, File file, String token, String demandeId) async {
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse(url));
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? currentToken = prefs.getString('token');
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? currentToken = prefs.getString('token');
 
-    if (currentToken == null) {
-      throw Exception("Token manquant !");
-    }
-
-    request.headers['Authorization'] = 'Bearer $currentToken';
-
-    // Ajouter `demande_id` dans le body de la requête
-    request.fields['demande_id'] = demandeId;
-
-    // Ajouter le fichier
-    request.files.add(await http.MultipartFile.fromPath('file', file.path));
-
-    var streamedResponse = await request.send();
-    var response = await http.Response.fromStream(streamedResponse);
-
-    // Vérifier si le token a expiré et essayer de le rafraîchir
-    if (response.statusCode == 401) {
-      String? newToken = await refreshToken();
-      if (newToken != null) {
-        request = http.MultipartRequest('POST', Uri.parse(url));
-        request.headers['Authorization'] = 'Bearer $newToken';
-        request.fields['demande_id'] = demandeId; // Réajouter `demande_id`
-        request.files.add(await http.MultipartFile.fromPath('file', file.path));
-        streamedResponse = await request.send();
-        response = await http.Response.fromStream(streamedResponse);
+      if (currentToken == null) {
+        throw Exception("Token manquant !");
       }
-    }
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception(
-          'Échec de l\'upload du fichier. Code: ${response.statusCode}, Message: ${response.body}');
-    }
+      request.headers['Authorization'] = 'Bearer $currentToken';
 
-    print("✅ Fichier uploadé avec succès !");
-  } catch (e) {
-    print("❌ Erreur lors de l'upload du fichier: $e");
-    throw e;
+      // Ajouter `demande_id` dans le body de la requête
+      request.fields['demande_id'] = demandeId;
+
+      // Ajouter le fichier
+      request.files.add(await http.MultipartFile.fromPath('file', file.path));
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      // Vérifier si le token a expiré et essayer de le rafraîchir
+      if (response.statusCode == 401) {
+        String? newToken = await refreshToken();
+        if (newToken != null) {
+          request = http.MultipartRequest('POST', Uri.parse(url));
+          request.headers['Authorization'] = 'Bearer $newToken';
+          request.fields['demande_id'] = demandeId; // Réajouter `demande_id`
+          request.files
+              .add(await http.MultipartFile.fromPath('file', file.path));
+          streamedResponse = await request.send();
+          response = await http.Response.fromStream(streamedResponse);
+        }
+      }
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception(
+            'Échec de l\'upload du fichier. Code: ${response.statusCode}, Message: ${response.body}');
+      }
+
+      print("✅ Fichier uploadé avec succès !");
+    } catch (e) {
+      print("❌ Erreur lors de l'upload du fichier: $e");
+      throw e;
+    }
   }
-}
-
 
   static Future<void> checkToken(String token) async {
     if (token == null || token.isEmpty) {
@@ -509,39 +508,107 @@ class ApiService {
       rethrow;
     }
   }
+
   static Future<List<Map<String, dynamic>>> getVideoConferences() async {
-  try {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('access_token');
-    String? clientId = prefs.getString('client_id');
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('access_token');
+      String? clientId = prefs.getString('client_id');
 
-    if (token == null || clientId == null) {
-      throw Exception("Token ou client ID manquant !");
+      if (token == null || clientId == null) {
+        throw Exception("Token ou client ID manquant !");
+      }
+
+      final response = await http.get(
+        Uri.parse(
+            "${Config.baseApiUrl}/api/client/$clientId/video-conference/"),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+
+      print("Code HTTP: ${response.statusCode}");
+      print("Réponse: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.cast<Map<String, dynamic>>(); // Convertir en List<Map>
+      } else {
+        throw Exception("Erreur ${response.statusCode}: ${response.body}");
+      }
+    } catch (e) {
+      print("❌ Erreur lors de la récupération des visioconférences: $e");
+      return [];
     }
+  }
 
-    final response = await http.get(
-      Uri.parse("${Config.baseApiUrl}/api/client/$clientId/video-conference/"),
+  static Future<void> repondreVisio(
+      String conferenceId, String decision) async {
+    final clientId = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('client_id'));
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('access_token'));
+
+    final response = await http.post(
+      Uri.parse(
+          '${Config.baseApiUrl}/api/client/$clientId/video-conference/$conferenceId/repondre/'),
       headers: {
-        'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({'decision': decision}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Erreur lors de la réponse à la visioconférence');
+    }
+  }
+
+  static Future<void> reprogrammerVisio(
+      String conferenceId, String titre, String details) async {
+    final clientId = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('client_id'));
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('access_token'));
+
+    final response = await http.post(
+      Uri.parse(
+          '${Config.baseApiUrl}/api/client/$clientId/video-conference/$conferenceId/reprogrammer/'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'titre': titre,
+        'details': details,
+      }),
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception(
+          'Erreur lors de la reprogrammation de la visioconférence');
+    }
+  }
+
+  static Future<void> annulerTotalementVisio(String conferenceId) async {
+    final clientId = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('client_id'));
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('access_token'));
+
+    final response = await http.post(
+      Uri.parse(
+          '${Config.baseApiUrl}/api/client/$clientId/video-conference/$conferenceId/annuler_totalement/'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
       },
     );
 
-    print("Code HTTP: ${response.statusCode}");
-    print("Réponse: ${response.body}");
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.cast<Map<String, dynamic>>(); // Convertir en List<Map>
-    } else {
-      throw Exception("Erreur ${response.statusCode}: ${response.body}");
+    if (response.statusCode != 200) {
+      throw Exception('Erreur lors de l\'annulation de la visioconférence');
     }
-  } catch (e) {
-    print("❌ Erreur lors de la récupération des visioconférences: $e");
-    return [];
   }
 }
-
-}
-
