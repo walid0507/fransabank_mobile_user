@@ -68,10 +68,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _showWelcome = false;
+  bool _rememberMe = false;
 
   @override
   void initState() {
     super.initState();
+    _loadSavedEmail();
     Future.delayed(Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
@@ -86,6 +88,26 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadSavedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedEmail = prefs.getString('saved_email');
+    if (savedEmail != null) {
+      setState(() {
+        _emailController.text = savedEmail;
+        _rememberMe = true;
+      });
+    }
+  }
+
+  Future<void> _saveEmail(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_rememberMe) {
+      await prefs.setString('saved_email', email);
+    } else {
+      await prefs.remove('saved_email');
+    }
   }
 
   Future<void> _submit() async {
@@ -126,6 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
         String token = data['access'];
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('access_token', token);
+        await _saveEmail(email);
         print("✅ Connexion réussie, Token JWT : $token");
         _showMessage("Connexion réussie", isError: false);
 
@@ -227,7 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _emailController,
                       decoration: InputDecoration(
-                        hintText: 'Username or Email',
+                        hintText: 'Email',
                         hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
                         filled: true,
                         fillColor: Colors.white.withOpacity(0.9),
@@ -268,10 +291,32 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
+                    SizedBox(height: 5),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _rememberMe,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              _rememberMe = value ?? false;
+                            });
+                          },
+                          activeColor: Color(0xFF024DA2),
+                        ),
+                        Text(
+                          'Se souvenir de moi',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
-              SizedBox(height: 10),
+              SizedBox(height: 5),
               TextButton(
                 onPressed: () {
                   Navigator.push(
@@ -289,7 +334,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.10),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.05),
               Container(
                 width: double.infinity,
                 child: ElevatedButton(

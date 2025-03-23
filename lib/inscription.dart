@@ -5,32 +5,7 @@ import 'verif_mail.dart';
 import 'header.dart';
 import 'main.dart';
 import 'package:projet1/configngrok.dart';
-class InvertedCurvedClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    Path path = Path();
-
-    // Point de départ
-    path.lineTo(0, size.height * 0.90);
-
-    // Première courbe
-    path.quadraticBezierTo(size.width * 0.10, size.height * 0.95,
-        size.width * 0.25, size.height * 0.95);
-
-    // Deuxième courbe
-    path.quadraticBezierTo(
-        size.width * 0.75, size.height * 0.95, size.width, size.height * 0.85);
-
-    // Compléter le chemin
-    path.lineTo(size.width, 0);
-    path.lineTo(0, 0);
-
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => true;
-}
+import 'curved_header.dart';
 
 class Inscription extends StatefulWidget {
   const Inscription({super.key});
@@ -52,7 +27,6 @@ class _InscriptionState extends State<Inscription> {
   @override
   void initState() {
     super.initState();
-    // Ajouter des listeners à tous les contrôleurs
     _usernameController.addListener(_checkFields);
     _nomController.addListener(_checkFields);
     _prenomController.addListener(_checkFields);
@@ -63,7 +37,6 @@ class _InscriptionState extends State<Inscription> {
 
   @override
   void dispose() {
-    // Nettoyer les listeners
     _usernameController.removeListener(_checkFields);
     _nomController.removeListener(_checkFields);
     _prenomController.removeListener(_checkFields);
@@ -96,7 +69,6 @@ class _InscriptionState extends State<Inscription> {
         _showMessage("Les mots de passe ne correspondent pas.");
         return;
       }
-
 
       final url = Uri.parse('${Config.baseApiUrl}/api/register/');
 
@@ -140,6 +112,7 @@ class _InscriptionState extends State<Inscription> {
     return TextFormField(
       controller: controller,
       obscureText: isPassword,
+      style: TextStyle(color: Colors.black),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
@@ -175,138 +148,84 @@ class _InscriptionState extends State<Inscription> {
 
   @override
   Widget build(BuildContext context) {
-    Color primaryBlue = Color(0xFF024DA2);
-
     return Scaffold(
       body: Stack(
         children: [
-          // Bouton retour en haut à gauche
-          Positioned(
-            top: 40,
-            left: 20,
-            child: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.pop(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      LoginScreen(),
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) {
-                    return SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(-1.0, 0.0),
-                        end: Offset.zero,
-                      ).animate(animation),
-                      child: child,
-                    );
-                  },
-                  transitionDuration: Duration(milliseconds: 300),
-                ),
-              ),
-            ),
+          CurvedHeader(
+            height: 0.9,
+            title: 'Inscription',
+            onBackPressed: () => Navigator.pop(context),
+            child: Container(),
           ),
-
-          // Partie supérieure avec découpage inversé
-          ClipPath(
-            clipper: _areFieldsFilled ? InvertedCurvedClipper() : null,
-            child: Container(
-              width: double.infinity,
-              height: MediaQuery.of(context).size.height,
-              decoration: BoxDecoration(
-                color: primaryBlue,
-                image: DecorationImage(
-                  image: AssetImage('assets/images/stars.jpg'),
-                  fit: BoxFit.cover,
-                  colorFilter: ColorFilter.mode(
-                    primaryBlue.withOpacity(0.9),
-                    BlendMode.srcOver,
+          SafeArea(
+            child: Column(
+              children: [
+                SizedBox(height: 40),
+                Center(
+                  child: Image.asset(
+                    'assets/images/fransa2bk.png',
+                    width: 130,
+                    height: 130,
                   ),
                 ),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 40),
-                child: Form(
-                  key: _formKey,
+                const SizedBox(height: 30),
+                Expanded(
                   child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        SizedBox(height: 60),
-                        Image.asset(
-                          'assets/images/fransa2bk.png',
-                          width: 130,
-                          height: 130,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            _buildTextField("Nom d'utilisateur", _usernameController),
+                            SizedBox(height: 12),
+                            _buildTextField("Nom", _nomController),
+                            SizedBox(height: 12),
+                            _buildTextField("Prénom", _prenomController),
+                            SizedBox(height: 12),
+                            _buildTextField("Email", _emailController),
+                            SizedBox(height: 12),
+                            _buildTextField("Mot de passe", _passwordController, isPassword: true),
+                            SizedBox(height: 12),
+                            _buildTextField("Confirmer le mot de passe", _confirmPasswordController, isPassword: true),
+                            SizedBox(height: 40),
+                          ],
                         ),
-                        SizedBox(height: 5),
-                        Text(
-                          'Création de compte',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                          ),
-                        ),
-                        SizedBox(height: 15),
-                        Container(
-                          width: MediaQuery.of(context).size.width * 0.85,
-                          child: Column(
-                            children: [
-                              _buildTextField(
-                                  "Nom d'utilisateur", _usernameController),
-                              SizedBox(height: 12),
-                              _buildTextField("Nom", _nomController),
-                              SizedBox(height: 12),
-                              _buildTextField("Prénom", _prenomController),
-                              SizedBox(height: 12),
-                              _buildTextField("Email", _emailController),
-                              SizedBox(height: 12),
-                              _buildTextField(
-                                  "Mot de passe", _passwordController,
-                                  isPassword: true),
-                              SizedBox(height: 12),
-                              _buildTextField("Confirmer le mot de passe",
-                                  _confirmPasswordController,
-                                  isPassword: true),
-                              SizedBox(height: 20),
-                            ],
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
-
-          // Bouton d'inscription en bas à droite avec animation
           AnimatedPositioned(
             duration: Duration(milliseconds: 500),
             curve: Curves.easeInOut,
-            bottom: _areFieldsFilled
-                ? 20
-                : -100, // Cache le bouton s'il n'est pas visible
-            right: 20,
+            bottom: _areFieldsFilled ? 20 : -100,
+            left: 0,
+            right: 0,
             child: AnimatedOpacity(
               duration: Duration(milliseconds: 500),
               opacity: _areFieldsFilled ? 1.0 : 0.0,
-              child: Container(
-                width: 150,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade800,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              child: Center(
+                child: Container(
+                  width: 150,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.blue.shade700,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  ),
-                  onPressed: _areFieldsFilled ? _submit : null,
-                  child: Text(
-                    "S'INSCRIRE",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
+                    onPressed: _areFieldsFilled ? _submit : null,
+                    child: Text(
+                      "S'INSCRIRE",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
                     ),
                   ),
                 ),

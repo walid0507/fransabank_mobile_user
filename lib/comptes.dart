@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:projet1/home.dart';
 import 'header.dart';
 import 'creecompte.dart';
-import 'curved_header.dart'; // Ajout du nouvel import
+import 'curved_header.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ComptesPage extends StatefulWidget {
   final String nomClient;
@@ -14,13 +15,30 @@ class ComptesPage extends StatefulWidget {
 }
 
 class _ComptesPageState extends State<ComptesPage> {
-  List<Map<String, dynamic>> comptes = [
-    {"type_compte": "Épargne", "solde": "10 000"},
-    {"type_compte": "Courant", "solde": "50 000"},
-  ];
-
+  List<String> comptes = ["Compte 1", "Compte 2", "Compte 3"];
   bool _isLoading = false;
   String? _errorMessage;
+  final _storage = const FlutterSecureStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedClientId();
+  }
+
+  String _maskClientId(String id) {
+    if (id.length <= 4) return id;
+    return "${id.substring(0, 2)}*****${id.substring(id.length - 2)}";
+  }
+
+  Future<void> _loadSavedClientId() async {
+    final clientId = await _storage.read(key: 'client_id');
+    if (clientId != null) {
+      setState(() {
+        comptes[0] = _maskClientId(clientId);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,18 +48,15 @@ class _ComptesPageState extends State<ComptesPage> {
           CurvedHeader(
             title: 'Comptes',
             onBackPressed: () => Navigator.pop(context),
-            child:
-                Container(), // Le contenu principal est maintenant géré par le padding en dessous
+            child: Container(),
           ),
           Padding(
-            padding:
-                EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.35),
+            padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.35),
             child: Column(
               children: [
                 Expanded(
                   child: _isLoading
-                      ? Center(
-                          child: CircularProgressIndicator(color: Colors.white))
+                      ? Center(child: CircularProgressIndicator(color: Colors.white))
                       : comptes.isEmpty
                           ? Center(
                               child: Text(
@@ -50,11 +65,9 @@ class _ComptesPageState extends State<ComptesPage> {
                               ),
                             )
                           : ListView.builder(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
                               itemCount: comptes.length,
                               itemBuilder: (context, index) {
-                                final compte = comptes[index];
                                 return GestureDetector(
                                   onTap: () {
                                     Navigator.push(
@@ -71,20 +84,15 @@ class _ComptesPageState extends State<ComptesPage> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: ListTile(
-                                      leading: Icon(
-                                          Icons.account_balance_wallet,
+                                      leading: Icon(Icons.account_balance_wallet,
                                           color: Colors.white),
                                       title: Text(
-                                        "${compte['type_compte']}",
+                                        comptes[index],
                                         style: TextStyle(
                                           fontSize: 18,
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,
                                         ),
-                                      ),
-                                      subtitle: Text(
-                                        "${compte['solde']} DA",
-                                        style: TextStyle(color: Colors.white70),
                                       ),
                                       trailing: Icon(Icons.arrow_forward_ios,
                                           color: Colors.white70),

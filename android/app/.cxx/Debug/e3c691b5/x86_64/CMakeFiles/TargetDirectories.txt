@@ -1,0 +1,2 @@
+C:/Users/ASUS/Desktop/fransabank_mobile_user/android/app/.cxx/Debug/e3c691b5/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/ASUS/Desktop/fransabank_mobile_user/android/app/.cxx/Debug/e3c691b5/x86_64/CMakeFiles/rebuild_cache.dir

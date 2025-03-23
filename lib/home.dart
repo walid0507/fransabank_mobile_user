@@ -7,6 +7,8 @@ import 'clientp.dart'; // Importation de la page client
 import 'api_service.dart'; // Importation du service API
 import 'package:projet1/configngrok.dart';
 import 'curved_header.dart'; // Ajout de l'import pour curved_header.dart
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'comptes.dart'; // Importation de la page des comptes
 
 class ProfileScreen extends StatefulWidget {
   final String nomClient;
@@ -21,6 +23,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _clientIdController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool isLoading = false;
+  bool _rememberMe = false;
+  final _storage = const FlutterSecureStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedClientId();
+  }
+
+  Future<void> _loadSavedClientId() async {
+    final clientId = await _storage.read(key: 'client_id');
+    final rememberMe = await _storage.read(key: 'rememberMe');
+
+    if (clientId != null && rememberMe == 'true') {
+      setState(() {
+        _clientIdController.text = clientId;
+        _rememberMe = true;
+      });
+    }
+  }
+
+  Future<void> _saveClientId() async {
+    if (_rememberMe) {
+      await _storage.write(key: 'client_id', value: _clientIdController.text);
+      await _storage.write(key: 'rememberMe', value: 'true');
+    } else {
+      await _storage.delete(key: 'client_id');
+      await _storage.delete(key: 'rememberMe');
+    }
+  }
 
   Future<void> loginUser() async {
     String clientId = _clientIdController.text.trim();
@@ -57,6 +89,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
         // Sauvegarder uniquement le client_id car il n'y a pas de token
         if (response["client_id"] != null) {
+          await _saveClientId();
           await prefs.setString("client_id", response["client_id"]);
           print("Client ID sauvegardé: ${response["client_id"]}");
         }
@@ -108,7 +141,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           CurvedHeader(
             height: 0.9,
             title: 'Connexion',
-            onBackPressed: () {},
+            onBackPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ComptesPage(nomClient: widget.nomClient),
+                ),
+              );
+            },
             child: Container(),
           ),
           SafeArea(
@@ -133,6 +173,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _buildTextField("Numéro du compte"),
                     const SizedBox(height: 25),
                     _buildTextField("Mot de passe", obscureText: true),
+                    const SizedBox(height: 15),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _rememberMe,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              _rememberMe = value ?? false;
+                            });
+                          },
+                          activeColor: Colors.white,
+                        ),
+                        Text(
+                          'Se souvenir de moi',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 40),
                     Align(
                       alignment: Alignment.centerRight,

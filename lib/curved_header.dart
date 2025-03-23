@@ -7,6 +7,7 @@ class CurvedHeader extends StatelessWidget {
   final double height;
   final String title;
   final VoidCallback onBackPressed;
+  final TextStyle? titleStyle;
 
   const CurvedHeader({
     Key? key,
@@ -16,6 +17,7 @@ class CurvedHeader extends StatelessWidget {
     this.backgroundColor = const Color(0xFF024DA2),
     this.backgroundImage = 'assets/images/stars.jpg',
     this.height = 0.9,
+    this.titleStyle,
   }) : super(key: key);
 
   @override
@@ -45,13 +47,22 @@ class CurvedHeader extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 10, left: 16),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        SizedBox(width: 40), // Espace pour le bouton
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(28),
+                            onTap: onBackPressed,
+                            child: Container(
+                              padding: EdgeInsets.all(12),
+                              child: Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                            ),
+                          ),
+                        ),
                         SizedBox(width: 8),
                         Text(
                           title,
-                          style: TextStyle(
+                          style: titleStyle ?? TextStyle(
                             color: Colors.white,
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -63,18 +74,6 @@ class CurvedHeader extends StatelessWidget {
                 ),
                 Expanded(child: child),
               ],
-            ),
-          ),
-        ),
-        Positioned(
-          top: 10,
-          left: 16,
-          child: SafeArea(
-            child: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white, size: 28),
-              onPressed: onBackPressed,
-              padding: EdgeInsets.zero,
-              constraints: BoxConstraints(),
             ),
           ),
         ),
