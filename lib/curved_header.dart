@@ -5,10 +5,14 @@ class CurvedHeader extends StatelessWidget {
   final Color backgroundColor;
   final String backgroundImage;
   final double height;
+  final String title;
+  final VoidCallback onBackPressed;
 
   const CurvedHeader({
     Key? key,
     required this.child,
+    required this.title,
+    required this.onBackPressed,
     this.backgroundColor = const Color(0xFF024DA2),
     this.backgroundImage = 'assets/images/stars.jpg',
     this.height = 0.9,
@@ -32,7 +36,44 @@ class CurvedHeader extends StatelessWidget {
             ),
           ),
         ),
-        child: child,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 10, left: 16),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon:
+                          Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                      onPressed: () {
+                        if (Navigator.canPop(context)) {
+                          Navigator.pop(context);
+                        } else {
+                          Navigator.of(context).pushReplacementNamed('/');
+                        }
+                      },
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(),
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(child: child),
+          ],
+        ),
       ),
     );
   }

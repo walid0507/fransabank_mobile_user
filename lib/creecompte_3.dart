@@ -223,25 +223,10 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
         children: [
           CurvedHeader(
             height: 0.3,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 20),
-                  Center(
-                    child: Text(
-                      'Demande compte bancaire',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            title: 'Demande compte bancaire',
+            onBackPressed: () => Navigator.pop(context),
+            child:
+                Container(), // Le contenu principal est maintenant géré par le SafeArea en dessous
           ),
           SafeArea(
             child: SingleChildScrollView(

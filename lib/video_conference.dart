@@ -13,7 +13,6 @@ class VideoConferencePage extends StatefulWidget {
 
 class _VideoConferencePageState extends State<VideoConferencePage>
     with SingleTickerProviderStateMixin {
-    
   late AnimationController _controller;
   late Animation<double> _pulseAnimation;
   String _searchQuery = '';
@@ -37,13 +36,15 @@ class _VideoConferencePageState extends State<VideoConferencePage>
       });
     } catch (e) {
       setState(() {
-        errorMessage = 'Erreur lors du chargement des conférences: ${e.toString()}';
+        errorMessage =
+            'Erreur lors du chargement des conférences: ${e.toString()}';
         isLoading = false;
       });
     }
   }
 
-  Color getCardColor(String status, String clientDecision, DateTime scheduledDate) {
+  Color getCardColor(
+      String status, String clientDecision, DateTime scheduledDate) {
     // Si la date est dépassée de plus de 30 minutes
     if (DateTime.now().difference(scheduledDate).inMinutes > 30) {
       return Color(0xFF757575); // Gris pour expiré
@@ -108,19 +109,20 @@ class _VideoConferencePageState extends State<VideoConferencePage>
       }
     });
   }
-  void _launchURL(String url) async {
-  Uri uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) {
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  } else {
-    throw "Impossible d'ouvrir le lien : $url";
-  }
-}
 
+  void _launchURL(String url) async {
+    Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      throw "Impossible d'ouvrir le lien : $url";
+    }
+  }
 
   void showConferenceDetails(Map<String, dynamic> conf) {
     final DateTime scheduledDate = DateTime.parse(conf['scheduled_at']);
-    final String formattedTime = "${scheduledDate.hour.toString().padLeft(2, '0')}:${scheduledDate.minute.toString().padLeft(2, '0')}";
+    final String formattedTime =
+        "${scheduledDate.hour.toString().padLeft(2, '0')}:${scheduledDate.minute.toString().padLeft(2, '0')}";
 
     showGeneralDialog(
       context: context,
@@ -139,7 +141,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
         return ScaleTransition(
           scale: Tween<double>(begin: 0.7, end: 1.0).animate(curvedAnimation),
           child: FadeTransition(
-            opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curvedAnimation),
+            opacity:
+                Tween<double>(begin: 0.0, end: 1.0).animate(curvedAnimation),
             child: AlertDialog(
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
@@ -176,7 +179,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                                 ),
                               ],
                             ),
-                            child: Icon(Icons.videocam, color: Colors.blue.shade900, size: 24),
+                            child: Icon(Icons.videocam,
+                                color: Colors.blue.shade900, size: 24),
                           ),
                           SizedBox(width: 12),
                           Expanded(
@@ -208,11 +212,15 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                     SizedBox(height: 20),
 
                     // Informations principales avec des icônes
-                    _buildInfoRow(Icons.person, "Employé", "${conf['employe_prenom']} ${conf['employe_nom']}"),
-                    _buildInfoRow(Icons.calendar_today, "Date", scheduledDate.toLocal().toString().split(' ')[0]),
+                    _buildInfoRow(Icons.person, "Employé",
+                        "${conf['employe_prenom']} ${conf['employe_nom']}"),
+                    _buildInfoRow(Icons.calendar_today, "Date",
+                        scheduledDate.toLocal().toString().split(' ')[0]),
                     _buildInfoRow(Icons.access_time, "Heure", formattedTime),
-                    _buildInfoRow(Icons.info_outline, "Statut", getStatusText(conf['status'] ?? 'pending')),
-                    _buildInfoRow(Icons.assignment_turned_in, "Décision client", getStatusText(conf['client_decision'] ?? 'pending')),
+                    _buildInfoRow(Icons.info_outline, "Statut",
+                        getStatusText(conf['status'] ?? 'pending')),
+                    _buildInfoRow(Icons.assignment_turned_in, "Décision client",
+                        getStatusText(conf['client_decision'] ?? 'pending')),
                     SizedBox(height: 20),
 
                     // Lien de la réunion avec un design moderne
@@ -245,7 +253,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                                   color: Colors.blue.shade50,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: Icon(Icons.link, color: Colors.blue.shade900, size: 20),
+                                child: Icon(Icons.link,
+                                    color: Colors.blue.shade900, size: 20),
                               ),
                               SizedBox(width: 12),
                               Text(
@@ -259,7 +268,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                             ],
                           ),
                           SizedBox(height: 12),
-                          if (conf['meeting_url'] != null && conf['meeting_url'].isNotEmpty)
+                          if (conf['meeting_url'] != null &&
+                              conf['meeting_url'].isNotEmpty)
                             Material(
                               color: Colors.transparent,
                               child: InkWell(
@@ -283,7 +293,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                                           style: TextStyle(
                                             fontSize: 14,
                                             color: Colors.blue.shade700,
-                                            decoration: TextDecoration.underline,
+                                            decoration:
+                                                TextDecoration.underline,
                                           ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -292,16 +303,20 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                                         padding: EdgeInsets.all(6),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.blue.shade200.withOpacity(0.3),
+                                              color: Colors.blue.shade200
+                                                  .withOpacity(0.3),
                                               blurRadius: 4,
                                               offset: Offset(0, 2),
                                             ),
                                           ],
                                         ),
-                                        child: Icon(Icons.open_in_new, color: Colors.blue.shade700, size: 18),
+                                        child: Icon(Icons.open_in_new,
+                                            color: Colors.blue.shade700,
+                                            size: 18),
                                       ),
                                     ],
                                   ),
@@ -327,7 +342,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                                       color: Colors.grey.shade100,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: Icon(Icons.info_outline, color: Colors.grey.shade600, size: 18),
+                                    child: Icon(Icons.info_outline,
+                                        color: Colors.grey.shade600, size: 18),
                                   ),
                                   SizedBox(width: 12),
                                   Text(
@@ -367,7 +383,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                       ElevatedButton(
                         onPressed: () async {
                           try {
-                            await ApiService.repondreVisio(conf['id'].toString(), 'accepted');
+                            await ApiService.repondreVisio(
+                                conf['id'].toString(), 'accepted');
                             Navigator.pop(context);
                             // Recharger la liste des conférences
                             loadConferences();
@@ -402,7 +419,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -417,7 +435,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                       ElevatedButton(
                         onPressed: () async {
                           try {
-                            await ApiService.repondreVisio(conf['id'].toString(), 'refused');
+                            await ApiService.repondreVisio(
+                                conf['id'].toString(), 'refused');
                             Navigator.pop(context);
                             // Afficher le dialogue de reprogrammation ou annulation
                             showReprogramOrCancelDialog(conf);
@@ -441,7 +460,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -559,10 +579,12 @@ class _VideoConferencePageState extends State<VideoConferencePage>
               actions: [
                 ElevatedButton(
                   onPressed: () async {
-                    if (titleController.text.isEmpty || subtitleController.text.isEmpty) {
+                    if (titleController.text.isEmpty ||
+                        subtitleController.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Veuillez remplir le formulaire avant de reprogrammer la visioconférence'),
+                          content: Text(
+                              'Veuillez remplir le formulaire avant de reprogrammer la visioconférence'),
                           backgroundColor: Colors.red,
                           behavior: SnackBarBehavior.floating,
                           margin: EdgeInsets.all(10),
@@ -621,7 +643,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                 ElevatedButton(
                   onPressed: () async {
                     try {
-                      await ApiService.annulerTotalementVisio(conf['id'].toString());
+                      await ApiService.annulerTotalementVisio(
+                          conf['id'].toString());
                       Navigator.pop(context);
                       loadConferences();
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -947,7 +970,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                       label,
                       style: TextStyle(
                         color: isSelected ? Colors.white : Colors.grey[800],
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                   ],
@@ -966,7 +990,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
     final String clientDecision = conf['client_decision'] ?? 'pending';
     final Color cardColor = getCardColor(status, clientDecision, scheduledDate);
     final Color gradientColor = getGradientColor(cardColor);
-    
+
     // Vérifier si la carte doit être floutée
     bool shouldBlur = false;
     if (_selectedFilter != 'all') {
@@ -975,10 +999,12 @@ class _VideoConferencePageState extends State<VideoConferencePage>
       } else if (_selectedFilter == 'accepted') {
         shouldBlur = clientDecision != 'accepted';
       } else if (_selectedFilter == 'expired') {
-        shouldBlur = !(DateTime.now().difference(scheduledDate).inMinutes > 30 || clientDecision == 'refused');
+        shouldBlur =
+            !(DateTime.now().difference(scheduledDate).inMinutes > 30 ||
+                clientDecision == 'refused');
       }
     }
-    
+
     return Hero(
       tag: 'conference-${conf['id']}',
       child: Container(
@@ -1064,8 +1090,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                               ],
                             ),
                           ),
-                          if (status == 'pending' ||
-                              status == 'accepted')
+                          if (status == 'pending' || status == 'accepted')
                             Container(
                               padding: EdgeInsets.all(12),
                               decoration: BoxDecoration(
@@ -1129,7 +1154,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                                       ),
                                       SizedBox(width: 6),
                                       Text(
-                                        "${scheduledDate.toLocal()}".split(' ')[0],
+                                        "${scheduledDate.toLocal()}"
+                                            .split(' ')[0],
                                         style: TextStyle(
                                           color: Colors.white.withOpacity(0.8),
                                           fontSize: 14,
@@ -1197,11 +1223,13 @@ class _VideoConferencePageState extends State<VideoConferencePage>
   List<Map<String, dynamic>> get filteredConferences {
     // Filtrer uniquement par recherche
     var filtered = conferences.where((conf) {
-      return conf['titre']?.toLowerCase()
-              .contains(_searchQuery.toLowerCase()) ?? false ||
-          "${conf['employe_prenom']} ${conf['employe_nom']}"
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase());
+      return conf['titre']
+              ?.toLowerCase()
+              .contains(_searchQuery.toLowerCase()) ??
+          false ||
+              "${conf['employe_prenom']} ${conf['employe_nom']}"
+                  .toLowerCase()
+                  .contains(_searchQuery.toLowerCase());
     }).toList();
 
     // Trier par date et heure (du plus récent au plus ancien)
@@ -1229,50 +1257,52 @@ class _VideoConferencePageState extends State<VideoConferencePage>
             _buildSearchBar(),
             _buildFilterChips(),
             Expanded(
-              child: isLoading 
-                ? Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[900]!),
-                    ),
-                  )
-                : errorMessage != null
+              child: isLoading
                   ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            errorMessage!,
-                            style: TextStyle(color: Colors.red),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: loadConferences,
-                            child: Text('Réessayer'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue[900],
-                            ),
-                          ),
-                        ],
+                      child: CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.blue[900]!),
                       ),
                     )
-                  : conferences.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Aucune vidéoconférence disponible',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
+                  : errorMessage != null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                errorMessage!,
+                                style: TextStyle(color: Colors.red),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: loadConferences,
+                                child: Text('Réessayer'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue[900],
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
-                        itemCount: filteredConferences.length,
-                        itemBuilder: (context, index) {
-                          return _buildConferenceCard(filteredConferences[index]);
-                        },
-                      ),
+                        )
+                      : conferences.isEmpty
+                          ? Center(
+                              child: Text(
+                                'Aucune vidéoconférence disponible',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: EdgeInsets.fromLTRB(20, 0, 20, 20),
+                              itemCount: filteredConferences.length,
+                              itemBuilder: (context, index) {
+                                return _buildConferenceCard(
+                                    filteredConferences[index]);
+                              },
+                            ),
             ),
           ],
         ),
@@ -1284,7 +1314,8 @@ class _VideoConferencePageState extends State<VideoConferencePage>
           backgroundColor: Colors.blue.shade900,
           foregroundColor: Colors.white,
           icon: Icon(Icons.video_call, size: 28),
-          label: Text('Nouvelle Visio', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          label: Text('Nouvelle Visio',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           elevation: 8,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
