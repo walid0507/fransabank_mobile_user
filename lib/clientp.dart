@@ -53,9 +53,7 @@ class _ClientScreenState extends State<ClientScreen>
   void initState() {
     super.initState();
     _fetchSolde(); // Charger le solde au démarrage
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      _fetchSolde();
-    });
+   
 
     // Initialiser les contrôleurs d'animation
     _initializeAnimationControllers();

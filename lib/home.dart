@@ -183,7 +183,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _rememberMe = value ?? false;
                             });
                           },
-                          activeColor: Colors.white,
+                          activeColor: Color(0xFF024DA2),
                         ),
                         Text(
                           'Se souvenir de moi',
