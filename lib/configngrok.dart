@@ -1,5 +1,5 @@
 class Config {
   //Lien ngrok ici
   static const String baseApiUrl =
-      "https://impressive-acc-vacuum-young.trycloudflare.com";
+      "https://qualities-b-resume-tackle.trycloudflare.com";
 }

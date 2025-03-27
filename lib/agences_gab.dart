@@ -19,8 +19,9 @@ class _AgencesGabState extends State<AgencesGab> {
     'Direction Générale': [
       {
         'name': 'Direction Générale',
-        'lat': 32.9495822090853836,
-        'lon': 2.9495822090853836,
+        'image': 'images/agences/direction.jpg',
+        'lat': 36.74472998890608,
+        'lon': 2.9495913225210226,
         'adresse':
             'Résidence des Pins, Bâtiment A, Lot N° 994, section N° 04, Cheraga, Alger.',
         'numéro de télephone': '(+213) 021 999 200',
@@ -31,6 +32,7 @@ class _AgencesGabState extends State<AgencesGab> {
     'Agences Fransabank Centre': [
       {
         'name': 'Agence Sidi Yahia',
+        'image': 'images/agences/sidiyahia.jpg',
         'lat': 36.73927566349871,
         'lon': 3.0348093562047174,
         'adresse': '45B, Lot Petite Provence Sidi Yahia Hydra, Alger.',
@@ -40,16 +42,17 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Ouled Fayet',
+        'image': 'images/agences/direction.jpg',
         'lat': 36.744793512659946,
         'lon': 2.949679691562442,
         'adresse':
             'Résidence des Pins, Bâtiment A, Lot N° 994, section N° 04, Cheraga, Alger.',
         'numéro de télephone': '(+213) 021 999 204',
         'fax': '(+213) 021 999 209',
-   
       },
       {
         'name': 'Agence Blida',
+        'image': 'images/agences/blida.jpg',
         'lat': 36.480146756851596,
         'lon': 2.835535094133326,
         'adresse':
@@ -60,15 +63,17 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Bab Ezzouar',
+        'image': 'images/agences/babezzouar.jpg',
         'lat': 36.71455593564886,
         'lon': 3.2009032316147428,
         'adresse':
-            'Quartier des affaires d’Alger, lot 02 N°15 et 16, Immeuble CMA CGM,  Bab Ezzouar, Alger.',
+            "Quartier des affaires d'Alger, lot 02 N°15 et 16, Immeuble CMA CGM, Bab Ezzouar, Alger.",
         'numéro de télephone': '(+213) 023 92 49 94 / 92 49 95 / 92 50 03',
         'fax': '(+213) 023 92 50 02',
       },
       {
         'name': 'Agence Kouba',
+        'image': 'images/agences/kouba.jpg',
         'lat': 36.72513943052998,
         'lon': 3.0728849550068036,
         'adresse':
@@ -79,6 +84,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Baba Hassen',
+        'image': 'images/agences/babahassen.jpg',
         'lat': 36.69910908147914,
         'lon': 2.973378301701347,
         'adresse': 'Ilot N°211, Section 03, N°01 et 02, Baba Hassen, Alger.',
@@ -88,6 +94,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Rouiba',
+        'image': 'images/agences/rouiba.jpg',
         'lat': 36.7394504755736,
         'lon': 3.276088160217714,
         'adresse': 'Ilot 158 Bis, les Cadettes Commune de Rouiba, Alger.',
@@ -96,6 +103,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Tizi Ouzou',
+        'image': 'images/agences/tizi.jpg',
         'lat': 36.70975731102915,
         'lon': 4.0355921171127775,
         'adresse':
@@ -106,24 +114,26 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Alger Centre',
+        'image': 'images/agences/algercentre.jpg',
         'lat': 36.7649657870512,
         'lon': 3.0539005052669164,
-        'adresse': 'N°18/20 Rue Ahmed Zabana, Commune Sidi M’Hammed, Alger.',
+        'adresse': "N°18/20 Rue Ahmed Zabana, Commune Sidi M'Hammed, Alger.",
         'numéro de télephone': ' (+213) 021 74 15 42 / 74 64 22 / 74 71 37',
         'fax': '(+213) 021 73 08 02',
       },
       {
         'name': 'Agence Garden City',
+        'image': 'images/agences/fransagarden.png',
         'lat': 36.75050919453092,
         'lon': 2.9518361826846578,
         'adresse':
             'Centre Commercial Garden City Local 303 B, 3ème étage, Commune de Dely Ibrahim, Alger.',
         'numéro de télephone': '(+213) 023 28 03 03 / 28 03 14 / 28 06 27',
         'fax': ' (+213) 023 28 07 63',
-       
       },
       {
         'name': 'Agence Zeralda',
+        'image': 'images/agences/zeralda.jpg',
         'lat': 36.71846921651968,
         'lon': 2.848701152037131,
         'adresse':
@@ -133,6 +143,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Dely Brahim',
+        'image': 'images/agences/delybrahim.jpg',
         'lat': 36.7537431546275,
         'lon': 2.97741143283714,
         'adresse':
@@ -144,6 +155,7 @@ class _AgencesGabState extends State<AgencesGab> {
     'Agences Fransabank Est': [
       {
         'name': 'Agence Béjaia',
+        'image': 'images/agences/bejaia.jpg',
         'lat': 36.74516715456071,
         'lon': 5.0594578135128,
         'adresse': 'Route des AURES, Ilo n° 43 / Section n° 74, Béjaia',
@@ -152,6 +164,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Bordj Bou Arréridj',
+        'image': 'images/agences/bordj.jpg',
         'lat': 36.075310929384564,
         'lon': 4.7466877164763,
         'adresse': 'Lot 475, N°T30, Bordj Bou Arréridj',
@@ -160,24 +173,27 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Sétif',
+        'image': 'images/agences/setif.jpg',
         'lat': 36.20056113632666,
         'lon': 5.410176587442805,
         'adresse':
-            'Boulevard des Entrepreneurs, Nouvelle Zone urbaine secteur “A” lot 06 parts N°110 ilot 65, Sétif',
+            'Boulevard des Entrepreneurs, Nouvelle Zone urbaine secteur "A" lot 06 parts N°110 ilot 65, Sétif',
         'numéro de télephone': '(+213) 036 51 44 14 / 51 35 98 / 51 41 35',
         'fax': '(+213) 036 51 41 57',
       },
       {
         'name': 'Agence El Eulma',
+        'image': 'images/agences/eleulma.jpg',
         'lat': 36.152899576164685,
         'lon': 5.677293916502533,
-        'adresse': 'Promotion Immobilière REKKAB, Bt “G”, Bloc 1, El Eulma.',
+        'adresse': 'Promotion Immobilière REKKAB, Bt "G", Bloc 1, El Eulma.',
         'numéro de télephone':
             '(+213) 036 47 71 03 / 47 71 14 / 47 71 35 / 47 70 61',
         'fax': '(+213) 036 47 70 72',
       },
       {
         'name': 'Agence Constantine',
+        'image': 'images/agences/constantine.jpg',
         'lat': 36.357592136521696,
         'lon': 6.635605747663993,
         'adresse': 'Cité Ali Besbes, Lot G N° 23, Sidi Mabrouk, Constantine.',
@@ -187,6 +203,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Batna',
+        'image': 'images/agences/batna.jpg',
         'lat': 35.553862917721354,
         'lon': 6.1836037031341515,
         'adresse': 'Rue des Frères Guellil, lot N°9, Batna.',
@@ -195,9 +212,10 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Annaba',
+        'image': 'images/agences/annaba.jpg',
         'lat': 36.89442040019443,
         'lon': 7.757188761665468,
-        'adresse': '07, avenue de l’ALN, Annaba.',
+        'adresse': "07, avenue de l'ALN, Annaba.",
         'numéro de télephone': '(+213) 038 43 32 77',
         'fax': '(+213) 038 43 32 89',
       },
@@ -205,6 +223,7 @@ class _AgencesGabState extends State<AgencesGab> {
     'Agences Fransabank Ouest': [
       {
         'name': 'Agence Oran 1',
+        'image': 'images/agences/oran1.jpg',
         'lat': 35.69673220510397,
         'lon': -0.6059391335040081,
         'adresse': 'Cité Dar El Beida – Coopérative El Zouhour N°12, Oran.',
@@ -214,14 +233,16 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Oran 2',
+        'image': 'images/agences/oran2.jpg',
         'lat': 35.672663427176424,
         'lon': -0.6392721825016395,
-        'adresse': 'Cité des Palmiers, avenue de l’ANP, Oran.',
+        'adresse': "Cité des Palmiers, avenue de l'ANP, Oran.",
         'numéro de télephone': '(+213) 041 22 12 09 / 22 12 23 / 22 11 92',
         'fax': '(+213) 041 22 11 79',
       },
       {
         'name': 'Agence Sidi Bel Abbès',
+        'image': 'images/agences/belabbes.jpg',
         'lat': 35.17924206483503,
         'lon': -0.6417915627385755,
         'adresse':
@@ -231,6 +252,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Tlemcen',
+        'image': 'images/agences/tlemcen.jpg',
         'lat': 34.88454284848412,
         'lon': -1.3212830916133036,
         'adresse': 'Section 149, Ilot 138, lieu-dit Bab Wahrane, Tlemcen.',
@@ -241,6 +263,7 @@ class _AgencesGabState extends State<AgencesGab> {
     'Agences Fransabank Sud': [
       {
         'name': 'Agence Biskra',
+        'image': 'images/agences/biskra.jpg',
         'lat': 34.846318928141244,
         'lon': 5.710089981076843,
         'adresse': 'Cité 1000 Logements, Bâtiment N°34, Biskra.',
@@ -331,6 +354,11 @@ class _AgencesGabState extends State<AgencesGab> {
                                     width: double.infinity,
                                     margin: EdgeInsets.only(top: 10),
                                     padding: EdgeInsets.all(10),
+                                    constraints: BoxConstraints(
+                                      maxHeight:
+                                          MediaQuery.of(context).size.height *
+                                              0.6,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(10),
@@ -340,27 +368,30 @@ class _AgencesGabState extends State<AgencesGab> {
                                             blurRadius: 5)
                                       ],
                                     ),
-                                    child: Column(
-                                      children:
-                                          _agenciesByRegion.keys.map((region) {
-                                        return ExpansionTile(
-                                          title: Text(region,
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold)),
-                                          children: _agenciesByRegion[region]!
-                                              .map((agency) {
-                                            return ListTile(
-                                              title: Text(agency['name']),
-                                              onTap: () {
-                                                _moveToAgency(agency);
-                                                setState(() {
-                                                  _isExpanded = false;
-                                                });
-                                              },
-                                            );
-                                          }).toList(),
-                                        );
-                                      }).toList(),
+                                    child: SingleChildScrollView(
+                                      child: Column(
+                                        children: _agenciesByRegion.keys
+                                            .map((region) {
+                                          return ExpansionTile(
+                                            title: Text(region,
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                            children: _agenciesByRegion[region]!
+                                                .map((agency) {
+                                              return ListTile(
+                                                title: Text(agency['name']),
+                                                onTap: () {
+                                                  _moveToAgency(agency);
+                                                  setState(() {
+                                                    _isExpanded = false;
+                                                  });
+                                                },
+                                              );
+                                            }).toList(),
+                                          );
+                                        }).toList(),
+                                      ),
                                     ),
                                   )
                                 : SizedBox(),
@@ -458,15 +489,267 @@ class _AgencesGabState extends State<AgencesGab> {
   }
 
   void _showAgencyInfo(String agencyName) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(agencyName),
-        content: Text("Informations sur l'agence"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Fermer"),
+    Map<String, dynamic>? selectedAgency;
+
+    _agenciesByRegion.forEach((region, agencies) {
+      for (var agency in agencies) {
+        if (agency['name'] == agencyName) {
+          selectedAgency = agency;
+          break;
+        }
+      }
+    });
+
+    if (selectedAgency != null) {
+      final name = selectedAgency!['name']?.toString() ?? '';
+      final adresse = selectedAgency!['adresse']?.toString() ?? '';
+      final telephone =
+          selectedAgency!['numéro de télephone']?.toString() ?? '';
+      final fax = selectedAgency!['fax']?.toString();
+      final email = selectedAgency!['e-mail']?.toString();
+
+      showDialog(
+        context: context,
+        builder: (context) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Color(0xFF1E40AF).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(Icons.account_balance,
+                          color: Color(0xFF1E40AF), size: 30),
+                    ),
+                    SizedBox(width: 15),
+                    Expanded(
+                      child: Text(
+                        name,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E40AF),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.camera_alt, color: Color(0xFF1E40AF)),
+                      onPressed: () {
+                        if (selectedAgency!['image'] != null &&
+                            selectedAgency!['image'].isNotEmpty) {
+                          showDialog(
+                            context: context,
+                            builder: (context) => Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Container(
+                                padding: EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Photo de l\'agence',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1E40AF),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.close),
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 20),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Container(
+                                        constraints: BoxConstraints(
+                                          maxWidth: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.8,
+                                          maxHeight: MediaQuery.of(context)
+                                                  .size
+                                                  .height *
+                                              0.6,
+                                        ),
+                                        child: Image.asset(
+                                          selectedAgency!['image'],
+                                          fit: BoxFit.contain,
+                                          filterQuality: FilterQuality.high,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: 20),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Color(0xFF1E40AF),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 30, vertical: 12),
+                                      ),
+                                      onPressed: () => Navigator.pop(context),
+                                      child: Text(
+                                        'Fermer',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+                SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildInfoCard(
+                        icon: Icons.location_on,
+                        title: 'Adresse',
+                        content: adresse,
+                      ),
+                      SizedBox(height: 15),
+                      _buildInfoCard(
+                        icon: Icons.phone,
+                        title: 'Téléphone',
+                        content: telephone,
+                      ),
+                      if (fax != null) ...[
+                        SizedBox(height: 15),
+                        _buildInfoCard(
+                          icon: Icons.fax,
+                          title: 'Fax',
+                          content: fax,
+                        ),
+                      ],
+                      if (email != null) ...[
+                        SizedBox(height: 15),
+                        _buildInfoCard(
+                          icon: Icons.email,
+                          title: 'E-mail',
+                          content: email,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
+                Center(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF1E40AF),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Fermer',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildInfoCard({
+    required IconData icon,
+    required String title,
+    required String content,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Color(0xFF1E40AF).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: Color(0xFF1E40AF), size: 20),
+          ),
+          SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  content,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[800],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
