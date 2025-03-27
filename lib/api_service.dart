@@ -327,14 +327,18 @@ class ApiService {
   static Future<Map<String, dynamic>> clientSec(
       String clientId, String password) async {
     final url = Uri.parse('${Config.baseApiUrl}/api/client/login/');
-
+    String token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('access_token') ?? '');
     try {
       print("=== DÉBUT DE LA CONNEXION ===");
       print("Tentative de connexion avec client_id: $clientId");
 
       final response = await http.post(
         url,
-        headers: {"Content-Type": "application/json"},
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': 'Bearer $token',
+        },
         body: jsonEncode({"client_id": clientId, "password": password}),
       );
 
