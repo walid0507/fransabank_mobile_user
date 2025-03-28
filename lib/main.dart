@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projet1/comptes.dart';
+import 'package:projet1/splash_screen.dart';
 import 'header.dart';
 import 'inscription.dart';
 import 'mdpoub.dart'; // Mot de passe oublié
@@ -52,7 +53,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Login',
-      home: LoginScreen(),
+      home: SplashScreen(),
     );
   }
 }
