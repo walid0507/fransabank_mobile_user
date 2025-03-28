@@ -1,5 +1,5 @@
 class Config {
   //Lien ngrok ici
   static const String baseApiUrl =
-      "https://qualities-b-resume-tackle.trycloudflare.com";
+      "https://avenue-albums-tee-operators.trycloudflare.com";
 }

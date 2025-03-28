@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:projet1/header3.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AgencesGab extends StatefulWidget {
   const AgencesGab({Key? key}) : super(key: key);
@@ -27,6 +28,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'numéro de télephone': '(+213) 021 999 200',
         'fax': '(+213) 021 999 207',
         'e-mail': ' info@fransabank.dz',
+        'lienmaps':
+            'https://maps.app.goo.gl/LPQsCtpDzzr8dcVS6?g_st=com.google.maps.preview.copy',
       },
     ],
     'Agences Fransabank Centre': [
@@ -39,6 +42,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'numéro de télephone':
             '(+213) 023 47 61 41 / 47 61 36 / 47 61 34 / 54 44 45',
         'fax': ' (+213) 023 47 61 37',
+        'lienmaps':
+            'https://maps.app.goo.gl/eoKg9TWQe9bXJGPd8?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Ouled Fayet',
@@ -49,6 +54,8 @@ class _AgencesGabState extends State<AgencesGab> {
             'Résidence des Pins, Bâtiment A, Lot N° 994, section N° 04, Cheraga, Alger.',
         'numéro de télephone': '(+213) 021 999 204',
         'fax': '(+213) 021 999 209',
+        'lienmaps':
+            'https://maps.app.goo.gl/LPQsCtpDzzr8dcVS6?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Blida',
@@ -60,6 +67,7 @@ class _AgencesGabState extends State<AgencesGab> {
         'numéro de télephone':
             '(+213) 025 22 47 61 / 22 47 69 / 23 79 46 / 49 48 18',
         'fax': '(+213) 025 22 48 29',
+        'lienmaps': '',
       },
       {
         'name': 'Agence Bab Ezzouar',
@@ -70,6 +78,8 @@ class _AgencesGabState extends State<AgencesGab> {
             "Quartier des affaires d'Alger, lot 02 N°15 et 16, Immeuble CMA CGM, Bab Ezzouar, Alger.",
         'numéro de télephone': '(+213) 023 92 49 94 / 92 49 95 / 92 50 03',
         'fax': '(+213) 023 92 50 02',
+        'lienmaps':
+            'https://maps.app.goo.gl/A8jHc3wPw5GLLuw9A?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Kouba',
@@ -81,6 +91,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'numéro de télephone':
             '(+213) 023 70 63 35 /  70 63 47 / 70 63 69 / 70 62 42',
         'fax': ' (+213) 023 70 63 70',
+        'lienmaps':
+            'https://maps.app.goo.gl/1BEyoCXaFZiNLP2z5?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Baba Hassen',
@@ -91,6 +103,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'numéro de télephone':
             '(+213) 023 35 32 02 / 35 32 03/ 35 32 06 / 35 30 15',
         'fax': ' (+213) 023 35 30 98',
+        'lienmaps':
+            'https://maps.app.goo.gl/yXhEkNJm3Ey8wpLE7?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Rouiba',
@@ -100,6 +114,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'adresse': 'Ilot 158 Bis, les Cadettes Commune de Rouiba, Alger.',
         'numéro de télephone': ' (+213) 023 85 43 47 / 85 43 20 / 85 43 41',
         'fax': '(+213) 023 85 43 21',
+        'lienmaps':
+            'https://maps.app.goo.gl/UmrYS69F7s96e73j7?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Tizi Ouzou',
@@ -111,6 +127,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'numéro de télephone':
             ' (+213) 026 45 87 00 / 45 88 60 / 45 88 56 / 45 88 48',
         'fax': '(+213) 026 45 88 59',
+        'lienmaps':
+            'https://maps.app.goo.gl/xkqnJaiCDMdwdgpp9?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Alger Centre',
@@ -120,6 +138,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'adresse': "N°18/20 Rue Ahmed Zabana, Commune Sidi M'Hammed, Alger.",
         'numéro de télephone': ' (+213) 021 74 15 42 / 74 64 22 / 74 71 37',
         'fax': '(+213) 021 73 08 02',
+        'lienmaps':
+            'https://maps.app.goo.gl/cMiEKa4s7MFdYKy59?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Garden City',
@@ -130,6 +150,8 @@ class _AgencesGabState extends State<AgencesGab> {
             'Centre Commercial Garden City Local 303 B, 3ème étage, Commune de Dely Ibrahim, Alger.',
         'numéro de télephone': '(+213) 023 28 03 03 / 28 03 14 / 28 06 27',
         'fax': ' (+213) 023 28 07 63',
+        'lienmaps':
+            'https://maps.app.goo.gl/PfHzwtAb2BWWr3iT6?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Zeralda',
@@ -140,6 +162,8 @@ class _AgencesGabState extends State<AgencesGab> {
             'Zighoud Youcef, section 09 ilot 181, Commune de Zéralda, Alger',
         'numéro de télephone': '(+213) 023 32 54 57 / 32 65 01 / 32 67 79',
         'fax': '(+213) 023 32 69 00',
+        'lienmaps':
+            'https://maps.app.goo.gl/KjFAREmTEpyLGFPB7?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Dely Brahim',
@@ -150,6 +174,8 @@ class _AgencesGabState extends State<AgencesGab> {
             'Bois des Cars 2, Groupe de propriété 11, Section 12, N°216, Dely Brahim, Alger',
         'numéro de télephone': ' (+213) 023 30 88 00 / 30 88 22',
         'fax': ' (+213) 023 30 88 66',
+        'lienmaps':
+            'https://maps.app.goo.gl/WumNsKdrCz3yrCs18?g_st=com.google.maps.preview.copy',
       },
     ],
     'Agences Fransabank Est': [
@@ -161,6 +187,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'adresse': 'Route des AURES, Ilo n° 43 / Section n° 74, Béjaia',
         'numéro de télephone': ' (+213) 034 18 72 66 / 18 72 67 / 18 72 68',
         'fax': '(+213) 034 18 72 69',
+        'lienmaps':
+            'https://maps.app.goo.gl/N1ndrjqHcsWFridf6?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Bordj Bou Arréridj',
@@ -170,6 +198,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'adresse': 'Lot 475, N°T30, Bordj Bou Arréridj',
         'numéro de télephone': '(+213) 035 76 49 41 / 76 49 63 / 76 49 68',
         'fax': '(+213) 035 76 49 95',
+        'lienmaps':
+            'https://maps.app.goo.gl/CHZnpDfujVTnkeEJ6?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Sétif',
@@ -180,6 +210,8 @@ class _AgencesGabState extends State<AgencesGab> {
             'Boulevard des Entrepreneurs, Nouvelle Zone urbaine secteur "A" lot 06 parts N°110 ilot 65, Sétif',
         'numéro de télephone': '(+213) 036 51 44 14 / 51 35 98 / 51 41 35',
         'fax': '(+213) 036 51 41 57',
+        'lienmaps':
+            'https://maps.app.goo.gl/juUat8aZ68Zcc9aK9?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence El Eulma',
@@ -190,6 +222,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'numéro de télephone':
             '(+213) 036 47 71 03 / 47 71 14 / 47 71 35 / 47 70 61',
         'fax': '(+213) 036 47 70 72',
+        'lienmaps':
+            'https://maps.app.goo.gl/QnmWoiHo9y6Fih8C8?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Constantine',
@@ -200,6 +234,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'numéro de télephone':
             '(+213) 031 73 27 14 / 73 27 17 / 73 27 33 / 73 26 78',
         'fax': '(+213) 031 73 27 44',
+        'lienmaps':
+            'https://maps.app.goo.gl/Pp9nTCggTZ2nxtfn8?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Batna',
@@ -209,6 +245,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'adresse': 'Rue des Frères Guellil, lot N°9, Batna.',
         'numéro de télephone': '(+213) 033 85 10 68 / 85 31 80 / 80 63 74',
         'fax': '(+213) 033 80 57 07',
+        'lienmaps':
+            'https://maps.app.goo.gl/HsRtCZTvzkyTrTgC9?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Annaba',
@@ -218,6 +256,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'adresse': "07, avenue de l'ALN, Annaba.",
         'numéro de télephone': '(+213) 038 43 32 77',
         'fax': '(+213) 038 43 32 89',
+        'lienmaps':
+            'https://maps.app.goo.gl/ynxZ7QqPKg1Vo3Hc9?g_st=com.google.maps.preview.copy',
       },
     ],
     'Agences Fransabank Ouest': [
@@ -230,6 +270,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'numéro de télephone':
             '(+213) 041 85 13 94 / 85 13 95 / 85 13 97 / 85 13 98',
         'fax': '(+213) 41 85 13 96',
+        'lienmaps':
+            'https://maps.app.goo.gl/rvRawcfZ76NDi1ZA8?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Oran 2',
@@ -239,6 +281,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'adresse': "Cité des Palmiers, avenue de l'ANP, Oran.",
         'numéro de télephone': '(+213) 041 22 12 09 / 22 12 23 / 22 11 92',
         'fax': '(+213) 041 22 11 79',
+        'lienmaps':
+            'https://maps.app.goo.gl/adPHdwkU59YQSaBH8?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Sidi Bel Abbès',
@@ -249,6 +293,8 @@ class _AgencesGabState extends State<AgencesGab> {
             'Section 256, Ilot 125,Cité El Madina El Mounawara, Rue Mokdad Ben Amar. Sidi Bel Abbès.',
         'numéro de télephone': '(+213) 048 75 57 84 / 75 59 27',
         'fax': '(+213) 048 75 54 54',
+        'lienmaps':
+            'https://maps.app.goo.gl/2TGXgcFcvHyojcij6?g_st=com.google.maps.preview.copy',
       },
       {
         'name': 'Agence Tlemcen',
@@ -258,6 +304,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'adresse': 'Section 149, Ilot 138, lieu-dit Bab Wahrane, Tlemcen.',
         'numéro de télephone': '(+213) 043 41 33 60 / 41 34 40 /  41 34 44',
         'fax': '(+213) 043 41 35 46',
+        'lienmaps':
+            'https://maps.app.goo.gl/1vEAMGNCZXdoUUrq9?g_st=com.google.maps.preview.copy',
       },
     ],
     'Agences Fransabank Sud': [
@@ -269,6 +317,8 @@ class _AgencesGabState extends State<AgencesGab> {
         'adresse': 'Cité 1000 Logements, Bâtiment N°34, Biskra.',
         'numéro de télephone': '(+213) 033 54 11 35 / 54 11 37 / 54 11 38',
         'fax': ' (+213) 033 54 10 01',
+        'lienmaps':
+            'https://maps.app.goo.gl/Bgw341ZxoiyNW5Ge7?g_st=com.google.maps.preview.copy',
       },
     ],
   };
@@ -507,6 +557,7 @@ class _AgencesGabState extends State<AgencesGab> {
           selectedAgency!['numéro de télephone']?.toString() ?? '';
       final fax = selectedAgency!['fax']?.toString();
       final email = selectedAgency!['e-mail']?.toString();
+      final lienmaps = selectedAgency!['lienmaps']?.toString();
 
       showDialog(
         context: context,
@@ -672,6 +723,14 @@ class _AgencesGabState extends State<AgencesGab> {
                           content: email,
                         ),
                       ],
+                      if (lienmaps != null) ...[
+                        SizedBox(height: 15),
+                        _buildInfoCard(
+                          icon: Icons.map,
+                          title: 'Itinéraire',
+                          content: lienmaps,
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -741,13 +800,34 @@ class _AgencesGabState extends State<AgencesGab> {
                   ),
                 ),
                 SizedBox(height: 5),
-                Text(
-                  content,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[800],
+                if (title == 'Itinéraire')
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final Uri url = Uri.parse(content);
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(url);
+                      }
+                    },
+                    icon: Icon(Icons.directions, size: 18),
+                    label: Text('Voir l\'itinéraire'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF1E40AF),
+                      foregroundColor: Colors.white,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  )
+                else
+                  Text(
+                    content,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[800],
+                    ),
                   ),
-                ),
               ],
             ),
           ),
