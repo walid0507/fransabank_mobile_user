@@ -4,6 +4,7 @@ import 'header.dart';
 import 'creecompte.dart';
 import 'curved_header.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
 
 class ComptesPage extends StatefulWidget {
   final String nomClient;
@@ -14,16 +15,36 @@ class ComptesPage extends StatefulWidget {
   _ComptesPageState createState() => _ComptesPageState();
 }
 
-class _ComptesPageState extends State<ComptesPage> {
-  List<String> comptes = ["Compte 1", "Compte 2", "Compte 3"];
+class _ComptesPageState extends State<ComptesPage>
+    with SingleTickerProviderStateMixin {
+  List<Map<String, String>> comptes = [];
   bool _isLoading = false;
   String? _errorMessage;
   final _storage = const FlutterSecureStorage();
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  static const int MAX_COMPTES = 4;
 
   @override
   void initState() {
     super.initState();
-    _loadSavedClientId();
+    print("Initialisation de la page Comptes");
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    _loadSavedComptes().then((_) {
+      print("Comptes chargés après initState");
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   String _maskClientId(String id) {
@@ -31,17 +52,231 @@ class _ComptesPageState extends State<ComptesPage> {
     return "${id.substring(0, 2)}*****${id.substring(id.length - 2)}";
   }
 
-  Future<void> _loadSavedClientId() async {
-    final clientId = await _storage.read(key: 'client_id');
-    if (clientId != null) {
-      setState(() {
-        comptes[0] = _maskClientId(clientId);
-      });
+  Future<void> _loadSavedComptes() async {
+    try {
+      final comptesJson = await _storage.read(key: 'comptes_sauvegardes');
+      print("Comptes chargés: $comptesJson");
+      if (comptesJson != null) {
+        final List<dynamic> comptesList = json.decode(comptesJson);
+        setState(() {
+          comptes = comptesList
+              .map((compte) => Map<String, String>.from(compte))
+              .toList();
+        });
+        print("Nombre de comptes chargés: ${comptes.length}");
+        print("Détail des comptes: $comptes");
+      } else {
+        print("Aucun compte trouvé dans le stockage");
+      }
+    } catch (e) {
+      print("Erreur lors du chargement des comptes: $e");
     }
+  }
+
+  Future<void> _saveComptes() async {
+    await _storage.write(
+      key: 'comptes_sauvegardes',
+      value: json.encode(comptes),
+    );
+  }
+
+  Future<void> _ajouterCompte(String nouveauCompte, String typeClient) async {
+    if (comptes.length >= MAX_COMPTES) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Vous avez atteint la limite de $MAX_COMPTES comptes saubegardés.'),
+          backgroundColor: Colors.orange,
+          action: SnackBarAction(
+            label: 'Oublier un compte',
+            onPressed: () {
+              _showForgetAccountDialog();
+            },
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (!comptes.any((compte) => compte['id'] == nouveauCompte)) {
+      setState(() {
+        comptes.add({
+          'id': nouveauCompte,
+          'type': typeClient,
+        });
+      });
+      await _saveComptes();
+    }
+  }
+
+  Future<void> _showForgetAccountDialog() async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Choisir un compte à oublier'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: comptes.map((compte) {
+                return ListTile(
+                  title: Text(_maskClientId(compte['id'] ?? '')),
+                  subtitle: Text(compte['type'] ?? ''),
+                  onTap: () async {
+                    setState(() {
+                      comptes.remove(compte);
+                    });
+                    await _saveComptes();
+                    Navigator.pop(context);
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Annuler'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildModernButton({
+    required String text,
+    required VoidCallback onPressed,
+    bool isEnabled = true,
+    IconData? icon,
+    double? width,
+    double? height,
+  }) {
+    return GestureDetector(
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) => _controller.reverse(),
+      onTapCancel: () => _controller.reverse(),
+      onTap: isEnabled ? onPressed : null,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          width: width ?? 200,
+          height: height ?? 56,
+          decoration: BoxDecoration(
+            gradient: isEnabled
+                ? LinearGradient(
+                    colors: [Colors.blue.shade700, Colors.blue.shade900],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : LinearGradient(
+                    colors: [Colors.grey.shade400, Colors.grey.shade600],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, color: Colors.white, size: 24),
+                SizedBox(width: 8),
+              ],
+              Text(
+                text,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    print("Construction de l'état vide");
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          SizedBox(height: 40),
+          Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.account_balance_wallet,
+              size: 80,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 30),
+          Text(
+            "Aucun compte sauvegardé",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 10),
+          Text(
+            "Ajoutez votre premier compte bancaire",
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 16,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getIconForType(String type) {
+    switch (type) {
+      case 'Étudiant':
+        return Icons.school;
+      case 'Commerçant':
+        return Icons.store;
+      case 'Professionnel':
+        return Icons.business;
+      case 'Personnel':
+        return Icons.person;
+      case 'Jeune/Enfant':
+        return Icons.child_care;
+      default:
+        return Icons.account_balance_wallet;
+    }
+  }
+
+  String _formatTypeClient(String type) {
+    return type
+        .replaceAll('Ã©', 'é')
+        .replaceAll('Ã¨', 'è')
+        .replaceAll('Ã§', 'ç')
+        .replaceAll('Ã ', 'à');
   }
 
   @override
   Widget build(BuildContext context) {
+    print("État actuel - Nombre de comptes: ${comptes.length}");
     return Scaffold(
       body: Stack(
         children: [
@@ -51,86 +286,132 @@ class _ComptesPageState extends State<ComptesPage> {
             child: Container(),
           ),
           Padding(
-            padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.35),
+            padding:
+                EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.02),
             child: Column(
               children: [
-                Expanded(
-                  child: _isLoading
-                      ? Center(child: CircularProgressIndicator(color: Colors.white))
-                      : comptes.isEmpty
-                          ? Center(
-                              child: Text(
-                                "Aucun compte disponible",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            )
-                          : ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                              itemCount: comptes.length,
-                              itemBuilder: (context, index) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ProfileScreen(
-                                            nomClient: widget.nomClient),
-                                      ),
-                                    );
-                                  },
-                                  child: Card(
-                                    color: Colors.white.withOpacity(0.2),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: ListTile(
-                                      leading: Icon(Icons.account_balance_wallet,
-                                          color: Colors.white),
-                                      title: Text(
-                                        comptes[index],
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      trailing: Icon(Icons.arrow_forward_ios,
-                                          color: Colors.white70),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Align(
-                    alignment: Alignment.bottomRight,
-                    child: SizedBox(
-                      width: 150,
-                      child: ElevatedButton(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 20.0, top: 0),
+                      child: _buildModernButton(
+                        text: "Ajouter",
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => CreateAccountScreen(),
+                              builder: (context) => ProfileScreen(
+                                nomClient: widget.nomClient,
+                                clearFields: true,
+                              ),
                             ),
                           );
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.blue.shade700,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        ),
-                        child: Text(
-                          '+ Ajouter',
-                          style: const TextStyle(fontSize: 14),
-                        ),
+                        icon: Icons.add_circle_outline,
+                        width: 100,
+                        height: 40,
                       ),
                     ),
+                  ],
+                ),
+                Expanded(
+                  child: _isLoading
+                      ? Center(
+                          child: CircularProgressIndicator(color: Colors.white))
+                      : comptes.isEmpty
+                          ? _buildEmptyState()
+                          : Padding(
+                              padding: const EdgeInsets.only(top: 60.0),
+                              child: ListView.builder(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0),
+                                itemCount: comptes.length,
+                                itemBuilder: (context, index) {
+                                  final type = _formatTypeClient(
+                                      comptes[index]['type'] ?? '');
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ProfileScreen(
+                                              nomClient: widget.nomClient),
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      margin: EdgeInsets.only(bottom: 12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue.shade700
+                                            .withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(16),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.2),
+                                            blurRadius: 8,
+                                            offset: Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ListTile(
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 20, vertical: 8),
+                                        leading: Container(
+                                          padding: EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                Colors.white.withOpacity(0.2),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(_getIconForType(type),
+                                              color: Colors.white),
+                                        ),
+                                        title: Text(
+                                          _maskClientId(
+                                              comptes[index]['id'] ?? ''),
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        subtitle: Text(
+                                          type,
+                                          style: TextStyle(
+                                            color:
+                                                Colors.white.withOpacity(0.8),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        trailing: Icon(Icons.arrow_forward_ios,
+                                            color: Colors.white70),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20.0),
+                  child: _buildModernButton(
+                    text: comptes.length >= MAX_COMPTES
+                        ? "Limite atteinte"
+                        : "Demander un nouveau compte",
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CreateAccountScreen(),
+                        ),
+                      );
+                    },
+                    isEnabled: comptes.length < MAX_COMPTES,
+                    icon: Icons.account_balance,
+                    width: MediaQuery.of(context).size.width * 0.8,
                   ),
                 ),
               ],

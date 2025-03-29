@@ -310,14 +310,14 @@ class _DocumentsState extends State<Documents> {
                 size: 30,
               ),
         onTap: () async {
-  final files = await _pickFiles(); // Sélectionner plusieurs fichiers ✅
+  final files = await _pickFiles(); 
 
   if (files != null && files.isNotEmpty) {
     setState(() {
       if (selectedDocuments.containsKey(title)) {
-        selectedDocuments[title]!.addAll(files); // Ajouter à la liste existante ✅
+        selectedDocuments[title]!.addAll(files); 
       } else {
-        selectedDocuments[title] = files; // Créer une nouvelle liste ✅
+        selectedDocuments[title] = files; 
       }
     });
 

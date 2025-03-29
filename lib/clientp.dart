@@ -106,7 +106,7 @@ class _ClientScreenState extends State<ClientScreen>
       body: Column(
         children: [
           Header3(
-            title: "Home Page",
+            title: "Accueil",
             onBackPressed: () => Navigator.pop(context),
           ),
           // Section solde

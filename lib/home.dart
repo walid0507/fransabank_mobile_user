@@ -9,11 +9,17 @@ import 'package:projet1/configngrok.dart';
 import 'curved_header.dart'; // Ajout de l'import pour curved_header.dart
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'comptes.dart'; // Importation de la page des comptes
+import 'dart:convert';
 
 class ProfileScreen extends StatefulWidget {
   final String nomClient;
+  final bool clearFields;
 
-  const ProfileScreen({Key? key, required this.nomClient}) : super(key: key);
+  const ProfileScreen({
+    Key? key,
+    required this.nomClient,
+    this.clearFields = false,
+  }) : super(key: key);
 
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
@@ -29,18 +35,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _loadSavedClientId();
+    if (!widget.clearFields) {
+      _loadSavedClientId();
+    }
   }
 
   Future<void> _loadSavedClientId() async {
-    final clientId = await _storage.read(key: 'client_id');
-    final rememberMe = await _storage.read(key: 'rememberMe');
+    try {
+      final clientId = await _storage.read(key: 'client_id');
+      final rememberMe = await _storage.read(key: 'rememberMe');
+      print("Chargement des données sauvegardées:");
+      print("Client ID: $clientId");
+      print("Remember Me: $rememberMe");
 
-    if (clientId != null && rememberMe == 'true') {
-      setState(() {
-        _clientIdController.text = clientId;
-        _rememberMe = true;
-      });
+      if (clientId != null && rememberMe == 'true') {
+        setState(() {
+          _clientIdController.text = clientId;
+          _rememberMe = true;
+        });
+      }
+    } catch (e) {
+      print("Erreur lors du chargement des données: $e");
     }
   }
 
@@ -86,12 +101,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       } else {
         SharedPreferences prefs = await SharedPreferences.getInstance();
+        final storage = FlutterSecureStorage();
 
-        // Sauvegarder uniquement le client_id car il n'y a pas de token
+        // Sauvegarder le client_id et le type de client
         if (response["client_id"] != null) {
-          await _saveClientId();
           await prefs.setString("client_id", response["client_id"]);
+          await storage.write(key: 'client_id', value: response["client_id"]);
           print("Client ID sauvegardé: ${response["client_id"]}");
+          print("Type Client reçu: ${response["type_client"]}");
+
+          // Si "Se souvenir de moi" est coché, sauvegarder dans la liste des comptes
+          if (_rememberMe) {
+            // Sauvegarder rememberMe
+            await storage.write(key: 'rememberMe', value: 'true');
+
+            // Charger les comptes existants
+            final comptesJson = await storage.read(key: 'comptes_sauvegardes');
+            List<Map<String, String>> comptes = [];
+
+            if (comptesJson != null) {
+              final List<dynamic> comptesList = json.decode(comptesJson);
+              comptes = comptesList
+                  .map((compte) => Map<String, String>.from(compte))
+                  .toList();
+              print("Comptes existants chargés: $comptes");
+            }
+
+            // Vérifier si le compte existe déjà
+            if (!comptes
+                .any((compte) => compte['id'] == response["client_id"])) {
+              // Ajouter le nouveau compte avec le type_client
+              final newCompte = {
+                'id': response["client_id"].toString(),
+                'type': (response["type_client"] ?? 'Client')
+                    .toString()
+                    .replaceAll('Ã§', 'ç'),
+              };
+              print("Nouveau compte à ajouter: $newCompte");
+              comptes.add(newCompte);
+
+              // Sauvegarder la liste mise à jour
+              await storage.write(
+                key: 'comptes_sauvegardes',
+                value: json.encode(comptes),
+              );
+              print("Liste des comptes sauvegardée: $comptes");
+            }
+          } else {
+            // Si "Se souvenir de moi" n'est pas coché, supprimer les données
+            await storage.delete(key: 'rememberMe');
+            await storage.delete(key: 'client_id');
+          }
         }
 
         if (!mounted) return;
@@ -145,7 +205,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ComptesPage(nomClient: widget.nomClient),
+                  builder: (context) =>
+                      ComptesPage(nomClient: widget.nomClient),
                 ),
               );
             },
