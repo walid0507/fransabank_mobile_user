@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CurvedHeader extends StatelessWidget {
+class CurvedHeader extends StatefulWidget {
   final Widget child;
   final Color backgroundColor;
   final String backgroundImage;
@@ -8,6 +8,7 @@ class CurvedHeader extends StatelessWidget {
   final String title;
   final VoidCallback onBackPressed;
   final TextStyle? titleStyle;
+  final IconData? icon;
 
   const CurvedHeader({
     Key? key,
@@ -18,7 +19,15 @@ class CurvedHeader extends StatelessWidget {
     this.backgroundImage = 'assets/images/stars.jpg',
     this.height = 0.9,
     this.titleStyle,
+    this.icon,
   }) : super(key: key);
+
+  @override
+  State<CurvedHeader> createState() => _CurvedHeaderState();
+}
+
+class _CurvedHeaderState extends State<CurvedHeader> {
+  bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +37,14 @@ class CurvedHeader extends StatelessWidget {
           clipper: InvertedCurvedClipper(),
           child: Container(
             width: double.infinity,
-            height: MediaQuery.of(context).size.height * height,
+            height: MediaQuery.of(context).size.height * widget.height,
             decoration: BoxDecoration(
-              color: backgroundColor,
+              color: widget.backgroundColor,
               image: DecorationImage(
-                image: AssetImage(backgroundImage),
+                image: AssetImage(widget.backgroundImage),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
-                  backgroundColor.withOpacity(0.9),
+                  widget.backgroundColor.withOpacity(0.9),
                   BlendMode.srcOver,
                 ),
               ),
@@ -47,32 +56,45 @@ class CurvedHeader extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 10, left: 16),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(28),
-                            onTap: onBackPressed,
-                            child: Container(
-                              padding: EdgeInsets.all(12),
-                              child: Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                        if (widget.onBackPressed != null)
+                          GestureDetector(
+                            onTapDown: (_) => setState(() => _isPressed = true),
+                            onTapUp: (_) => setState(() => _isPressed = false),
+                            onTapCancel: () =>
+                                setState(() => _isPressed = false),
+                            child: AnimatedContainer(
+                              duration: Duration(milliseconds: 200),
+                              transform: Matrix4.identity()
+                                ..scale(_isPressed ? 0.8 : 1.0)
+                                ..rotateZ(_isPressed ? -0.1 : 0.0),
+                              child: IconButton(
+                                icon: Icon(
+                                  widget.icon ?? Icons.arrow_back,
+                                  color: _isPressed
+                                      ? Colors.blue[200]
+                                      : Colors.white,
+                                  size: _isPressed ? 28 : 24,
+                                ),
+                                onPressed: widget.onBackPressed,
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(width: 8),
                         Text(
-                          title,
-                          style: titleStyle ?? TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          widget.title,
+                          style: widget.titleStyle ??
+                              TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                Expanded(child: child),
+                Expanded(child: widget.child),
               ],
             ),
           ),

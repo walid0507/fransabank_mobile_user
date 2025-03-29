@@ -5,6 +5,7 @@ import 'creecompte.dart';
 import 'curved_header.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
+import 'main.dart';
 
 class ComptesPage extends StatefulWidget {
   final String nomClient;
@@ -52,6 +53,8 @@ class _ComptesPageState extends State<ComptesPage>
     return "${id.substring(0, 2)}*****${id.substring(id.length - 2)}";
   }
 
+ 
+
   Future<void> _loadSavedComptes() async {
     try {
       final comptesJson = await _storage.read(key: 'comptes_sauvegardes');
@@ -59,9 +62,16 @@ class _ComptesPageState extends State<ComptesPage>
       if (comptesJson != null) {
         final List<dynamic> comptesList = json.decode(comptesJson);
         setState(() {
-          comptes = comptesList
-              .map((compte) => Map<String, String>.from(compte))
-              .toList();
+          comptes = comptesList.map((compte) {
+            String type = (compte['type'] ?? '').toString();
+            // Appliquer le formatage directement lors du chargement
+            
+
+            return <String, String>{
+              'id': compte['id'].toString(),
+              'type': type,
+            };
+          }).toList();
         });
         print("Nombre de comptes chargés: ${comptes.length}");
         print("Détail des comptes: $comptes");
@@ -250,28 +260,20 @@ class _ComptesPageState extends State<ComptesPage>
   }
 
   IconData _getIconForType(String type) {
-    switch (type) {
-      case 'Étudiant':
+    switch (type.toLowerCase()) {
+      case 'étudiant':
         return Icons.school;
-      case 'Commerçant':
+      case 'commerçant':
         return Icons.store;
-      case 'Professionnel':
+      case 'professionnel':
         return Icons.business;
-      case 'Personnel':
+      case 'personnel':
         return Icons.person;
-      case 'Jeune/Enfant':
+      case 'jeune/enfant':
         return Icons.child_care;
       default:
         return Icons.account_balance_wallet;
     }
-  }
-
-  String _formatTypeClient(String type) {
-    return type
-        .replaceAll('Ã©', 'é')
-        .replaceAll('Ã¨', 'è')
-        .replaceAll('Ã§', 'ç')
-        .replaceAll('Ã ', 'à');
   }
 
   @override
@@ -282,7 +284,8 @@ class _ComptesPageState extends State<ComptesPage>
         children: [
           CurvedHeader(
             title: 'Comptes',
-            onBackPressed: () => Navigator.pop(context),
+            onBackPressed: () => _showLogoutDialog(),
+            icon: Icons.logout_rounded,
             child: Container(),
           ),
           Padding(
@@ -328,8 +331,8 @@ class _ComptesPageState extends State<ComptesPage>
                                     horizontal: 20.0),
                                 itemCount: comptes.length,
                                 itemBuilder: (context, index) {
-                                  final type = _formatTypeClient(
-                                      comptes[index]['type'] ?? '');
+                                  final type =
+                                      comptes[index]['type'] ?? '';
                                   return GestureDetector(
                                     onTap: () {
                                       Navigator.push(
@@ -419,6 +422,138 @@ class _ComptesPageState extends State<ComptesPage>
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _showLogoutDialog() async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.logout_rounded,
+                    color: Colors.red,
+                    size: 40,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Déconnexion',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'Voulez-vous vraiment vous déconnecter ?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                  ),
+                ),
+                SizedBox(height: 30),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade200,
+                            foregroundColor: Colors.black87,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Text(
+                            'Non',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            final storage = FlutterSecureStorage();
+                            await storage.delete(key: 'client_id');
+                            await storage.delete(key: 'rememberMe');
+
+                            if (mounted) {
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => LoginScreen()),
+                                (route) => false,
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Text(
+                            'Oui',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

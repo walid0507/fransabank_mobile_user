@@ -10,6 +10,7 @@ import 'curved_header.dart'; // Ajout de l'import pour curved_header.dart
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'comptes.dart'; // Importation de la page des comptes
 import 'dart:convert';
+import 'header3.dart'; // Importation du nouveau header
 
 class ProfileScreen extends StatefulWidget {
   final String nomClient;
@@ -201,83 +202,80 @@ class _ProfileScreenState extends State<ProfileScreen> {
           CurvedHeader(
             height: 0.9,
             title: 'Connexion',
-            onBackPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      ComptesPage(nomClient: widget.nomClient),
-                ),
-              );
-            },
+            onBackPressed: () => Navigator.pop(context),
             child: Container(),
           ),
           SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 200),
-                    Center(
-                      child: Text(
-                        "Bonjour nomClient",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+            child: Column(
+              children: [
+                SizedBox(height: 150),
+                Center(
+                  child: Text(
+                    "Bonjour ${widget.nomClient}",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 50),
-                    _buildTextField("Numéro du compte"),
-                    const SizedBox(height: 25),
-                    _buildTextField("Mot de passe", obscureText: true),
-                    const SizedBox(height: 15),
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: _rememberMe,
-                          onChanged: (bool? value) {
-                            setState(() {
-                              _rememberMe = value ?? false;
-                            });
-                          },
-                          activeColor: Color(0xFF024DA2),
-                        ),
-                        Text(
-                          'Se souvenir de moi',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 40),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          loginUser();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.blue.shade700,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 30, vertical: 15),
-                        ),
-                        child: const Text(
-                          "Se connecter",
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 80),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Column(
+                        children: [
+                          _buildTextField("Numéro du compte"),
+                          SizedBox(height: 12),
+                          _buildTextField("Mot de passe", obscureText: true),
+                          SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Checkbox(
+                                value: _rememberMe,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    _rememberMe = value ?? false;
+                                  });
+                                },
+                                activeColor: Color(0xFF024DA2),
+                              ),
+                              Text(
+                                'Se souvenir de moi',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 40),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                loginUser();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.blue.shade700,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 30, vertical: 15),
+                              ),
+                              child: const Text(
+                                "Se connecter",
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

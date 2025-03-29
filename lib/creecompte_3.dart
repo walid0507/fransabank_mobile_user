@@ -122,16 +122,20 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
         print("FormData existant : ${widget.formData}");
 
         // Structurer les données selon le modèle Django
+        final Map<String, int> clientTypeMap = {
+          'Étudiant': 1,
+          'Commerçant': 2,
+          'Professionnel': 3,
+          'Personnel': 4,
+          'Jeune/Enfant': 5,
+        };
+
         final formDataToSend = {
           ...widget.formData,
           "address": _addressController.text,
           "Pays_naissance": _countryOfBirthController.text,
           "nom_employeur": _employerNameController.text,
-          "type_client": _clientTypeController.text == 'Particulier'
-              ? 1
-              : _clientTypeController.text == 'Entreprise'
-                  ? 2
-                  : 3,
+          "type_client": clientTypeMap[_clientTypeController.text] ?? null,
         };
 
         print("Données à envoyer : $formDataToSend");
@@ -225,44 +229,38 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
           CurvedHeader(
             height: 0.9,
             title: 'Demande compte bancaire',
-            onBackPressed: () {},
-            child: Container(),
-          ),
-          Positioned(
-            top: 10,
-            left: 16,
-            child: SafeArea(
-              child: IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.white, size: 28),
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CreateAccountStep2(
-                        civility: widget.formData['civilité'] == 'Mr'
-                            ? 'Monsieur'
-                            : 'Madame',
-                        formData: widget.formData,
-                      ),
-                    ),
-                  );
-                },
-                padding: EdgeInsets.zero,
-                constraints: BoxConstraints(),
+            onBackPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CreateAccountStep2(
+                  civility: widget.formData['civilité'] == 'Mr'
+                      ? 'Monsieur'
+                      : 'Madame',
+                  formData: widget.formData,
+                ),
               ),
             ),
+            child: Container(),
           ),
           SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 100),
-                      Container(
+            child: Column(
+              children: [
+                SizedBox(height: 60),
+                const Text(
+                  'Informations professionnelles',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Container(
+                        margin: EdgeInsets.only(bottom: 20),
                         padding: EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -275,123 +273,129 @@ class _CreateAccountStep3State extends State<CreateAccountStep3> {
                             ),
                           ],
                         ),
-                        child: Column(
-                          children: [
-                            TextFormField(
-                              controller: _addressController,
-                              decoration: InputDecoration(
-                                labelText: 'Adresse',
-                                border: OutlineInputBorder(),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Veuillez entrer votre adresse';
-                                }
-                                return null;
-                              },
-                            ),
-                            SizedBox(height: 20),
-                            TextFormField(
-                              controller: _countryOfBirthController,
-                              decoration: InputDecoration(
-                                labelText: 'Pays de naissance',
-                                border: OutlineInputBorder(),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Veuillez entrer votre pays de naissance';
-                                }
-                                return null;
-                              },
-                            ),
-                            SizedBox(height: 20),
-                            TextFormField(
-                              controller: _employerNameController,
-                              decoration: InputDecoration(
-                                labelText: "Nom de l'employeur",
-                                border: OutlineInputBorder(),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Veuillez entrer le nom de votre employeur';
-                                }
-                                return null;
-                              },
-                            ),
-                            SizedBox(height: 20),
-                            DropdownButtonFormField<String>(
-                              decoration: InputDecoration(
-                                labelText: 'Type de client',
-                                border: OutlineInputBorder(),
-                              ),
-                              items: ['Particulier', 'Entreprise', 'Autre']
-                                  .map((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              _buildTextField('Adresse', _addressController),
+                              _buildTextField('Pays de naissance',
+                                  _countryOfBirthController),
+                              _buildTextField('Nom de l\'employeur',
+                                  _employerNameController),
+                              _buildDropdownField('Type de client', [
+                                'Étudiant',
+                                'Commerçant',
+                                'Professionnel',
+                                'Personnel',
+                                'Jeune/Enfant'
+                              ], (value) {
                                 setState(() {
                                   _clientTypeController.text = value!;
                                 });
-                              },
-                              validator: (value) {
-                                if (value == null) {
-                                  return 'Veuillez sélectionner un type de client';
-                                }
-                                return null;
-                              },
-                            ),
-                            SizedBox(height: 20),
-                            AnimatedOpacity(
-                              duration: Duration(milliseconds: 500),
-                              opacity: _areFieldsFilled ? 1.0 : 0.0,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 4,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                width: double.infinity,
-                                height: 50,
-                                child: ElevatedButton(
-                                  onPressed:
-                                      _areFieldsFilled ? _submitFinal : null,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
+                              }),
+                              SizedBox(height: 20),
+                              AnimatedOpacity(
+                                duration: Duration(milliseconds: 500),
+                                opacity: _areFieldsFilled ? 1.0 : 0.0,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 4,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
                                   ),
-                                  child: Text(
-                                    'Soumettre',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
+                                  width: double.infinity,
+                                  height: 50,
+                                  child: ElevatedButton(
+                                    onPressed:
+                                        _areFieldsFilled ? _submitFinal : null,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Soumettre',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          fillColor: Colors.white,
+          filled: true,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Veuillez remplir ce champ';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _buildDropdownField(
+      String label, List<String> items, ValueChanged<String?> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: DropdownButtonFormField<String>(
+        decoration: InputDecoration(
+          labelText: label,
+          fillColor: Colors.white,
+          filled: true,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+        items: items.map((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(value),
+          );
+        }).toList(),
+        onChanged: (value) {
+          setState(() {
+            _clientTypeController.text = value!;
+          });
+        },
+        validator: (value) {
+          if (value == null) {
+            return 'Veuillez sélectionner un $label';
+          }
+          return null;
+        },
       ),
     );
   }

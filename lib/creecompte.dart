@@ -112,36 +112,28 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           CurvedHeader(
             height: 0.9,
             title: 'Demande compte bancaire',
-            onBackPressed: () {},
+            onBackPressed: () => Navigator.pop(context),
             child: Container(),
           ),
-          Positioned(
-            top: 10,
-            left: 16,
-            child: SafeArea(
-              child: IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.white, size: 28),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                padding: EdgeInsets.zero,
-                constraints: BoxConstraints(),
-              ),
-            ),
-          ),
           SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                          height:
-                              100), // Ajustez cette valeur selon vos besoins
-                      Container(
+            child: Column(
+              children: [
+                SizedBox(height: 60),
+                Text(
+                  'Demande compte bancaire',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Container(
+                        margin: EdgeInsets.only(bottom: 20),
                         padding: EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -154,69 +146,72 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                             ),
                           ],
                         ),
-                        child: Column(
-                          children: [
-                            _buildDropdownField(
-                                'Civilité', ['Monsieur', 'Madame'], (value) {
-                              setState(() {
-                                civility = value;
-                                _checkFields();
-                              });
-                            }),
-                            _buildTextField('Prénom', _firstNameController),
-                            _buildTextField('Nom', _lastNameController),
-                            _buildDateField('Date de naissance'),
-                            _buildTextField(
-                                'Lieu de naissance', _birthPlaceController),
-                            _buildTextField('Numéro de la carte nationale',
-                                _idNumberController),
-                            SizedBox(height: 20),
-                            AnimatedOpacity(
-                              duration: Duration(milliseconds: 500),
-                              opacity: _areFieldsFilled ? 1.0 : 0.0,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 4,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                width: double.infinity,
-                                height: 50,
-                                child: ElevatedButton(
-                                  onPressed: _areFieldsFilled
-                                      ? _navigateToNextPage
-                                      : null,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              _buildDropdownField(
+                                  'Civilité', ['Monsieur', 'Madame'], (value) {
+                                setState(() {
+                                  civility = value;
+                                  _checkFields();
+                                });
+                              }),
+                              _buildTextField('Prénom', _firstNameController),
+                              _buildTextField('Nom', _lastNameController),
+                              _buildDateField('Date de naissance'),
+                              _buildTextField(
+                                  'Lieu de naissance', _birthPlaceController),
+                              _buildTextField('Numéro de la carte nationale',
+                                  _idNumberController),
+                              SizedBox(height: 20),
+                              AnimatedOpacity(
+                                duration: Duration(milliseconds: 500),
+                                opacity: _areFieldsFilled ? 1.0 : 0.0,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 4,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
                                   ),
-                                  child: Text(
-                                    'Suivant',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
+                                  width: double.infinity,
+                                  height: 50,
+                                  child: ElevatedButton(
+                                    onPressed: _areFieldsFilled
+                                        ? _navigateToNextPage
+                                        : null,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Suivant',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ],

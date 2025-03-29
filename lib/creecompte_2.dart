@@ -37,6 +37,7 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
     _motherLastNameController.addListener(_checkFields);
     _motherFirstNameController.addListener(_checkFields);
     _phoneNumberController.addListener(_checkFields);
+
     if (widget.civility == 'Madame') {
       _maidenNameController.addListener(_checkFields);
     }
@@ -107,39 +108,33 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
           CurvedHeader(
             height: 0.9,
             title: 'Demande compte bancaire',
-            onBackPressed: () {},
-            child: Container(),
-          ),
-          Positioned(
-            top: 10,
-            left: 16,
-            child: SafeArea(
-              child: IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.white, size: 28),
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CreateAccountScreen(),
-                    ),
-                  );
-                },
-                padding: EdgeInsets.zero,
-                constraints: BoxConstraints(),
+            onBackPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CreateAccountScreen(),
               ),
             ),
+            child: Container(),
           ),
           SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 100),
-                      Container(
+            child: Column(
+              children: [
+                SizedBox(height: 60),
+                const Text(
+                  'Informations familiales',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Container(
+                        margin: EdgeInsets.only(bottom: 20),
                         padding: EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -152,91 +147,100 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
                             ),
                           ],
                         ),
-                        child: Column(
-                          children: [
-                            if (widget.civility == 'Madame')
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              if (widget.civility == 'Madame')
+                                _buildTextField('Nom de jeune fille',
+                                    _maidenNameController),
                               _buildTextField(
-                                  'Nom de jeune fille', _maidenNameController),
-                            _buildTextField(
-                                'Prénom du père', _fatherFirstNameController),
-                            _buildTextField(
-                                'Nom de la mère', _motherLastNameController),
-                            _buildTextField('Prénom de la mère',
-                                _motherFirstNameController),
-                            _buildTextField(
-                                'Numéro de téléphone', _phoneNumberController),
-                            _buildDropdownField('Nationalité 1',
-                                ['Française', 'Américaine', 'Autre'], (value) {
-                              setState(() {
-                                nationality1 = value;
-                              });
-                            }),
-                            _buildDropdownField('Nationalité 2', [
-                              'Aucune',
-                              'Française',
-                              'Américaine',
-                              'Autre'
-                            ], (value) {
-                              setState(() {
-                                nationality2 = value;
-                              });
-                            }),
-                            _buildDropdownField('Situation familiale', [
-                              'Célibataire',
-                              'Marié(e)',
-                              'Divorcé(e)'
-                            ], (value) {
-                              setState(() {
-                                situationFamiliale = value;
-                              });
-                            }),
-                            SizedBox(height: 20),
-                            AnimatedOpacity(
-                              duration: Duration(milliseconds: 500),
-                              opacity: _areFieldsFilled ? 1.0 : 0.0,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 4,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                width: double.infinity,
-                                height: 50,
-                                child: ElevatedButton(
-                                  onPressed: _areFieldsFilled
-                                      ? _navigateToNextPage
-                                      : null,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
+                                  'Prénom du père', _fatherFirstNameController),
+                              _buildTextField(
+                                  'Nom de la mère', _motherLastNameController),
+                              _buildTextField('Prénom de la mère',
+                                  _motherFirstNameController),
+                              _buildTextField('Numéro de téléphone',
+                                  _phoneNumberController),
+                              _buildDropdownField('Nationalité 1', [
+                                'Française',
+                                'Américaine',
+                                'Autre'
+                              ], (value) {
+                                setState(() {
+                                  nationality1 = value;
+                                  _checkFields();
+                                });
+                              }),
+                              _buildDropdownField('Nationalité 2', [
+                                'Aucune',
+                                'Française',
+                                'Américaine',
+                                'Autre'
+                              ], (value) {
+                                setState(() {
+                                  nationality2 = value;
+                                  _checkFields();
+                                });
+                              }),
+                              _buildDropdownField('Situation familiale', [
+                                'Célibataire',
+                                'Marié(e)',
+                                'Divorcé(e)'
+                              ], (value) {
+                                setState(() {
+                                  situationFamiliale = value;
+                                 _checkFields();
+                                });
+                              }),
+                              SizedBox(height: 20),
+                              AnimatedOpacity(
+                                duration: Duration(milliseconds: 500),
+                                opacity: _areFieldsFilled ? 1.0 : 0.0,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 4,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
                                   ),
-                                  child: Text(
-                                    'Suivant',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
+                                  width: double.infinity,
+                                  height: 50,
+                                  child: ElevatedButton(
+                                    onPressed: _areFieldsFilled
+                                        ? _navigateToNextPage
+                                        : null,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Suivant',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ],
