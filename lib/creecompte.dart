@@ -3,19 +3,20 @@ import 'header2.dart'; // Importation du header commun
 import 'creecompte_2.dart';
 import 'package:intl/intl.dart';
 import 'package:projet1/configngrok.dart';
-import 'curved_header.dart'; // Ajoutez cette importation en haut du fichier
+import 'curved_header.dart';
+import 'second_page.dart'; // Ajout de l'import pour SecondPage
 
 class CreateAccountScreen extends StatefulWidget {
   @override
   _CreateAccountScreenState createState() => _CreateAccountScreenState();
 }
 
-class _CreateAccountScreenState extends State<CreateAccountScreen> {
+class _CreateAccountScreenState extends State<CreateAccountScreen> 
+    with SingleTickerProviderStateMixin { // Ajout du mixin pour l'animation
   final _formKey = GlobalKey<FormState>();
   String? civility;
   String? selectedDate;
-  final Map<String, dynamic> formData =
-      {}; // Stocke les infos à envoyer à l'API
+  final Map<String, dynamic> formData = {};
 
   // Ajout des contrôleurs pour récupérer les valeurs des champs
   final _firstNameController = TextEditingController();
@@ -24,6 +25,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _idNumberController = TextEditingController();
 
   bool _areFieldsFilled = false;
+  
+  // Ajout du contrôleur d'animation
+  late AnimationController _nfcButtonController;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
@@ -32,6 +37,19 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     _lastNameController.addListener(_checkFields);
     _birthPlaceController.addListener(_checkFields);
     _idNumberController.addListener(_checkFields);
+    
+    // Initialisation de l'animation
+    _nfcButtonController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    )..repeat(reverse: true);
+    
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(
+        parent: _nfcButtonController,
+        curve: Curves.easeInOut,
+      ),
+    );
   }
 
   @override
@@ -40,6 +58,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     _lastNameController.removeListener(_checkFields);
     _birthPlaceController.removeListener(_checkFields);
     _idNumberController.removeListener(_checkFields);
+    _nfcButtonController.dispose(); // Libérer les ressources de l'animation
     super.dispose();
   }
 
@@ -62,15 +81,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
       formData["civilité"] = civiliteMap[civility] ?? "";
 
-      formData["first_name"] =
-          _firstNameController.text; // Récupérer la valeur du champ Prénom
-      formData["last_name"] =
-          _lastNameController.text; // Récupérer la valeur du champ Nom
+      formData["first_name"] = _firstNameController.text;
+      formData["last_name"] = _lastNameController.text;
       formData["date_of_birth"] = selectedDate;
-      formData["lieu_denaissance"] = _birthPlaceController
-          .text; // Récupérer la valeur du champ Lieu de naissance
-      formData["numero_identite"] =
-          _idNumberController.text; // Récupérer la valeur du champ Numéro ID
+      formData["lieu_denaissance"] = _birthPlaceController.text;
+      formData["numero_identite"] = _idNumberController.text;
 
       Navigator.push(
         context,
@@ -83,10 +98,15 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       );
     }
   }
-
-  void _uploadCard() {
-    // Logique pour uploader la carte
-    print("Upload de la carte en cours...");
+  
+  // Nouvelle méthode pour naviguer vers la page de scan NFC
+  void _navigateToNfcScan() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SecondPage(),
+      ),
+    );
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -99,7 +119,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     if (picked != null && picked != DateTime.now()) {
       setState(() {
         selectedDate = DateFormat('yyyy-MM-dd').format(picked);
-        _checkFields(); // Ajouter cette ligne
+        _checkFields();
       });
     }
   }
@@ -150,6 +170,40 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           key: _formKey,
                           child: Column(
                             children: [
+                              // Ajout du bouton Scan NFC animé en haut du formulaire
+                              AnimatedBuilder(
+                                animation: _scaleAnimation,
+                                builder: (context, child) {
+                                  return Transform.scale(
+                                    scale: _scaleAnimation.value,
+                                    child: Container(
+                                      width: double.infinity,
+                                      margin: EdgeInsets.only(bottom: 20),
+                                      child: ElevatedButton.icon(
+                                        onPressed: _navigateToNfcScan,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue.shade600,
+                                          foregroundColor: Colors.white,
+                                          padding: EdgeInsets.symmetric(vertical: 15),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          elevation: 4,
+                                        ),
+                                        icon: Icon(Icons.nfc, size: 24),
+                                        label: Text(
+                                          'Scanner votre carte d\'identité',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              
                               _buildDropdownField(
                                   'Civilité', ['Monsieur', 'Madame'], (value) {
                                 setState(() {
