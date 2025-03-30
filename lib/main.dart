@@ -211,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 secondChild: Text(
-                  'Welcome to Fransabank!',
+                  'Bienvenue chez Fransabank!',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -274,7 +274,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _passwordController,
                       obscureText: true,
                       decoration: InputDecoration(
-                        hintText: 'Password',
+                        hintText: 'Mot de passe',
                         hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
                         filled: true,
                         fillColor: Colors.white.withOpacity(0.9),
@@ -328,7 +328,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   );
                 },
                 child: Text(
-                  'Forgot Password?',
+                  'Mot de passe oublié ?',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w400,
@@ -357,7 +357,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         )
                       : Text(
-                          "LOG IN",
+                          "CONNEXION",
                           style: TextStyle(
                             color: Color(0xFF024DA2),
                             fontWeight: FontWeight.bold,
@@ -371,7 +371,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'New to Bank Apps? ',
+                    'Première visite ?',
                     style: TextStyle(color: Color(0xFF024DA2)),
                   ),
                   TextButton(
@@ -402,7 +402,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       );
                     },
                     child: Text(
-                      'Sign Up',
+                      "S'inscrire",
                       style: TextStyle(
                         color: Color(0xFF024DA2),
                         fontWeight: FontWeight.w400,

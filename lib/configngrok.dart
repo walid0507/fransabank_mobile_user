@@ -1,5 +1,5 @@
 class Config {
   //Lien ngrok ici
   static const String baseApiUrl =
-      "https://fashion-hood-velvet-glass.trycloudflare.com";
+      "https://sleeping-birthday-ratio-paying.trycloudflare.com";
 }

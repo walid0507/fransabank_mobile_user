@@ -334,7 +334,11 @@ class _ComptesPageState extends State<ComptesPage>
                                   final type =
                                       comptes[index]['type'] ?? '';
                                   return GestureDetector(
-                                    onTap: () {
+                                    onTap: () async {
+                                      final storage = FlutterSecureStorage();
+                                      await storage.write(key: 'client_id', value: comptes[index]['id']);
+                                      await storage.write(key: 'rememberMe', value: 'true');
+                                      
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -515,10 +519,6 @@ class _ComptesPageState extends State<ComptesPage>
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: ElevatedButton(
                           onPressed: () async {
-                            final storage = FlutterSecureStorage();
-                            await storage.delete(key: 'client_id');
-                            await storage.delete(key: 'rememberMe');
-
                             if (mounted) {
                               Navigator.pushAndRemoveUntil(
                                 context,

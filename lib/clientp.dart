@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:projet1/header3.dart';
 import 'package:projet1/demcarte.dart';
 import 'package:projet1/motdepasse.dart';
-import 'package:projet1/main.dart'; // Importation de la page de connexion
-import 'package:projet1/agences_gab.dart'; // Importation de la page Agences & GAB
-import 'package:projet1/parametres.dart'; // Importation de la page Paramètres
-import 'package:projet1/offres.dart'; // Importation de la page Offres
+import 'package:projet1/agences_gab.dart';
+import 'package:projet1/parametres.dart';
+import 'package:projet1/offres.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projet1/video_conference.dart';
 import 'package:projet1/virements.dart';
+import 'package:projet1/comptes.dart';
 import 'dart:async';
 import 'api_service.dart';
 
@@ -107,7 +107,8 @@ class _ClientScreenState extends State<ClientScreen>
         children: [
           Header3(
             title: "Accueil",
-            onBackPressed: () => Navigator.pop(context),
+            onBackPressed: () => _showLogoutDialog(),
+            icon: Icons.logout_rounded,
           ),
           // Section solde
           Padding(
@@ -462,15 +463,6 @@ class _ClientScreenState extends State<ClientScreen>
     );
   }
 
-  // Fonction pour la déconnexion
-  void _onLogoutPressed(BuildContext context) {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
-      (Route<dynamic> route) => false,
-    );
-  }
-
   // Fonction pour naviguer vers la page Agences & GAB
   void _onAgencesPressed(BuildContext context) {
     Navigator.push(
@@ -526,6 +518,134 @@ class _ClientScreenState extends State<ClientScreen>
           token: token,
         ),
       ),
+    );
+  }
+
+  Future<void> _showLogoutDialog() async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.logout_rounded,
+                    color: Colors.red,
+                    size: 40,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Déconnexion',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'Voulez-vous vraiment vous déconnecter ?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                  ),
+                ),
+                SizedBox(height: 30),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade200,
+                            foregroundColor: Colors.black87,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Text(
+                            'Non',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            if (mounted) {
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ComptesPage(nomClient: widget.nomClient)),
+                                (route) => false,
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Text(
+                            'Oui',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

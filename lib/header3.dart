@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 class Header3 extends StatelessWidget {
   final String title;
   final VoidCallback? onBackPressed;
+  final VoidCallback? onLogoutPressed;
+  final IconData? icon;
 
   const Header3({
     Key? key,
     required this.title,
     this.onBackPressed,
+    this.onLogoutPressed,
+    this.icon,
   }) : super(key: key);
 
   @override
@@ -97,8 +101,10 @@ class Header3 extends StatelessWidget {
                         children: [
                           if (onBackPressed != null)
                             IconButton(
-                              icon: const Icon(Icons.arrow_back,
-                                  color: Colors.white),
+                              icon: Icon(
+                                icon ?? Icons.arrow_back,
+                                color: Colors.white,
+                              ),
                               onPressed: onBackPressed,
                             ),
                           Text(
@@ -112,6 +118,19 @@ class Header3 extends StatelessWidget {
                         ],
                       ),
                     ),
+                    // Icône de déconnexion à droite
+                    if (onLogoutPressed != null)
+                      Positioned(
+                        right: 10,
+                        top: 20,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.logout_rounded,
+                            color: Colors.white,
+                          ),
+                          onPressed: onLogoutPressed,
+                        ),
+                      ),
                   ],
                 ),
               ),

@@ -172,7 +172,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           context,
           MaterialPageRoute(
             builder: (context) => ClientScreen(
-              nomClient: "Client ${response["client_id"]}",
+              nomClient: "${response["nom"]} ${response["prenom"]}",
             ),
           ),
         );
