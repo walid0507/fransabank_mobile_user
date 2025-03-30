@@ -13,6 +13,7 @@ class _SplashScreenState extends State<SplashScreen> {
   late VideoPlayerController _controller;
   bool _isDisposed = false;
   bool _showWhiteScreen = false;
+  bool _isVideoReady = false;
 
   @override
   void initState() {
@@ -23,6 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
       ..initialize().then((_) {
         if (!_isDisposed) {
           setState(() {});
+          _isVideoReady = true;
           _controller.play();
         }
       })
@@ -76,34 +78,34 @@ class _SplashScreenState extends State<SplashScreen> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext) {
+    @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: AnimatedSwitcher(
-        duration: Duration(milliseconds: 300),
-        child: _showWhiteScreen
-            ? Container(
-                color: Colors.white,
+      backgroundColor: Colors.white, // 🌟 Fond blanc au lieu d’un écran noir
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 1️⃣ Fond blanc tant que la vidéo n'est pas prête
+          if (!_isVideoReady)
+            Container(color: Colors.white),
+
+          // 2️⃣ Affiche la vidéo quand elle est prête
+          if (_isVideoReady)
+            Center(
+              child: Container(
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height,
-              )
-            : Center(
-                child: _controller.value.isInitialized
-                    ? Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height,
-                        child: FittedBox(
-                          fit: BoxFit.cover,
-                          child: SizedBox(
-                            width: _controller.value.size.width,
-                            height: _controller.value.size.height,
-                            child: VideoPlayer(_controller),
-                          ),
-                        ),
-                      )
-                    : CircularProgressIndicator(),
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  child: SizedBox(
+                    width: _controller.value.size.width,
+                    height: _controller.value.size.height,
+                    child: VideoPlayer(_controller),
+                  ),
+                ),
               ),
+            ),
+        ],
       ),
     );
   }
