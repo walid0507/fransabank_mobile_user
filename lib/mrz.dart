@@ -22,6 +22,8 @@ class _MRZScannerState extends State<MRZScanner> with WidgetsBindingObserver {
   bool _isFlashOn = false;
   bool _isMRZValid = false;
   bool _isProcessing = false;
+  bool _showSuccessMessage = false;
+bool _isScanning = false;
 
   @override
   void initState() {
@@ -116,7 +118,8 @@ class _MRZScannerState extends State<MRZScanner> with WidgetsBindingObserver {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: _isMRZValid ? Colors.green : Colors.white,
+                color: _showSuccessMessage ? Colors.green : Colors.white,
+
                 width: 3,
               ),
             ),
@@ -174,6 +177,22 @@ class _MRZScannerState extends State<MRZScanner> with WidgetsBindingObserver {
               ),
             ),
           ),
+          if (_showSuccessMessage)
+  Positioned(
+    right: 60,
+      
+    child: RotatedBox(
+      quarterTurns: 1, 
+      child: Text(
+        "Scan réussi!",
+        style: TextStyle(
+          color: Colors.green,
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+  ),
         ],
       ),
     );
@@ -280,31 +299,39 @@ class _MRZScannerState extends State<MRZScanner> with WidgetsBindingObserver {
   }
 
   Future<void> _startContinuousScan() async {
-    while (mounted) {
-      if (!_isProcessing) {
-        _isProcessing = true;
-        try {
-          final image = await _cameraController!.takePicture();
-          final inputImage = InputImage.fromFilePath(image.path);
-          final recognizedText = await textRecognizer.processImage(inputImage);
+  while (mounted) {
+    if (!_isProcessing) {
+      _isProcessing = true;
+      try {
+        final image = await _cameraController!.takePicture();
+        final inputImage = InputImage.fromFilePath(image.path);
+        final recognizedText = await textRecognizer.processImage(inputImage);
 
-          // Utiliser la méthode preprocessMRZ existante
-          List<String> mrzLines = preprocessMRZ(recognizedText.text);
-          if (mrzLines.length == 3) {
-            if (mounted) {
-              Navigator.pop(context, mrzLines);
-            }
-            break;
+        // Utiliser la méthode preprocessMRZ existante
+        List<String> mrzLines = preprocessMRZ(recognizedText.text);
+        if (mrzLines.length == 3) {
+          setState(() {
+            _showSuccessMessage = true;
+          });
+
+          // Attendre un instant pour montrer le succès
+          await Future.delayed(Duration(seconds: 2));
+
+          if (mounted) {
+            Navigator.pop(context, mrzLines);
           }
-        } catch (e) {
-          print('Error scanning image: $e');
+          break;
         }
-        _isProcessing = false;
-        // Petite pause pour ne pas surcharger
-        await Future.delayed(const Duration(milliseconds: 500));
+      } catch (e) {
+        print('Error scanning image: $e');
       }
+      _isProcessing = false;
+      // Petite pause pour ne pas surcharger
+      await Future.delayed(const Duration(milliseconds: 500));
     }
   }
+}
+
 
   List<String> preprocessMRZ(String text) {
     List<String> lines =
