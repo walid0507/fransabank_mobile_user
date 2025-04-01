@@ -85,7 +85,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
       case 'accepted':
         return 'Acceptée';
       default:
-        return 'Expirée';
+        return 'Terminée';
     }
   }
 
@@ -910,9 +910,9 @@ class _VideoConferencePageState extends State<VideoConferencePage>
         child: Row(
           children: [
             _buildFilterChip('Tout', 'all'),
-            _buildFilterChip('En attente', 'pending'),
-            _buildFilterChip('Acceptée', 'accepted'),
-            _buildFilterChip('Expirée', 'expired'),
+            _buildFilterChip('En attente', 'blue'),
+            _buildFilterChip('Acceptée', 'green'),
+            _buildFilterChip('Terminée', 'grey'),
           ],
         ),
       ),
@@ -921,6 +921,22 @@ class _VideoConferencePageState extends State<VideoConferencePage>
 
   Widget _buildFilterChip(String label, String value) {
     final bool isSelected = _selectedFilter == value;
+    Color chipColor = Colors.transparent;
+    Color textColor = Colors.grey[800]!;
+
+    // Définir les couleurs en fonction du filtre
+    switch (value) {
+      case 'blue':
+        chipColor = Color(0xFF1976D2);
+        break;
+      case 'green':
+        chipColor = Color(0xFF2E7D32);
+        break;
+      case 'grey':
+        chipColor = Color(0xFF757575);
+        break;
+    }
+
     return Padding(
       padding: EdgeInsets.only(right: 8),
       child: MouseRegion(
@@ -929,18 +945,15 @@ class _VideoConferencePageState extends State<VideoConferencePage>
           duration: Duration(milliseconds: 200),
           transform: Matrix4.identity()..scale(isSelected ? 1.05 : 1.0),
           decoration: BoxDecoration(
-            gradient: isSelected
-                ? LinearGradient(
-                    colors: [Colors.blue[900]!, Colors.blue[700]!],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : null,
+            color: isSelected ? chipColor : null,
             borderRadius: BorderRadius.circular(20),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: Colors.blue[900]!.withOpacity(0.3),
+                      color: (chipColor != Colors.transparent
+                          ? chipColor
+                          : Colors.blue[900]!)
+                          .withOpacity(0.3),
                       blurRadius: 8,
                       offset: Offset(0, 2),
                     ),
@@ -963,13 +976,13 @@ class _VideoConferencePageState extends State<VideoConferencePage>
                     Icon(
                       isSelected ? Icons.check_circle : Icons.circle_outlined,
                       size: 16,
-                      color: isSelected ? Colors.white : Colors.grey[800],
+                      color: isSelected ? Colors.white : textColor,
                     ),
                     SizedBox(width: 8),
                     Text(
                       label,
                       style: TextStyle(
-                        color: isSelected ? Colors.white : Colors.grey[800],
+                        color: isSelected ? Colors.white : textColor,
                         fontWeight:
                             isSelected ? FontWeight.bold : FontWeight.normal,
                       ),
@@ -991,17 +1004,15 @@ class _VideoConferencePageState extends State<VideoConferencePage>
     final Color cardColor = getCardColor(status, clientDecision, scheduledDate);
     final Color gradientColor = getGradientColor(cardColor);
 
-    // Vérifier si la carte doit être floutée
+    // Vérifier si la carte doit être floutée en fonction de sa couleur
     bool shouldBlur = false;
     if (_selectedFilter != 'all') {
-      if (_selectedFilter == 'pending') {
-        shouldBlur = clientDecision != 'pending';
-      } else if (_selectedFilter == 'accepted') {
-        shouldBlur = clientDecision != 'accepted';
-      } else if (_selectedFilter == 'expired') {
-        shouldBlur =
-            !(DateTime.now().difference(scheduledDate).inMinutes > 30 ||
-                clientDecision == 'refused');
+      if (_selectedFilter == 'blue') {
+        shouldBlur = cardColor != Color(0xFF1976D2);
+      } else if (_selectedFilter == 'green') {
+        shouldBlur = cardColor != Color(0xFF2E7D32);
+      } else if (_selectedFilter == 'grey') {
+        shouldBlur = cardColor != Color(0xFF757575);
       }
     }
 
