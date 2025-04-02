@@ -615,4 +615,39 @@ class ApiService {
       throw Exception('Erreur lors de l\'annulation de la visioconférence');
     }
   }
+  static Future<void> uploadPhoto(File photo) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('access_token');
+      
+      if (token == null) {
+        throw Exception("Token non trouvé");
+      }
+
+      final url = Uri.parse('${Config.baseApiUrl}/api/upload_photo/');
+      final request = http.MultipartRequest('POST', url);
+      
+      // Ajouter le token d'authentification
+      request.headers['Authorization'] = 'Bearer $token';
+      
+      request.files.add(await http.MultipartFile.fromPath(
+        'photo',
+        photo.path, 
+      ));
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      
+      if (response.statusCode != 200) {
+        print("Erreur lors de l'upload de la photo: ${response.body}");
+        throw Exception('Échec du téléchargement de la photo');
+      }
+      
+      print("Photo uploadée avec succès");
+      
+    } catch (e) {
+      print('Erreur lors du téléchargement de la photo: $e');
+      rethrow;
+    }
+  }
 }

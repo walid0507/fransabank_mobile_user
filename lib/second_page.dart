@@ -9,6 +9,7 @@ import 'mrz.dart';
 import 'nfcheader.dart';
 import 'explicationmrz.dart';
 import 'dart:convert';
+import 'creecompte.dart';
 
 void main() {
   runApp(const MyApp());
@@ -790,6 +791,37 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                           showResults = false;
                           showExplanation = true;
                         });
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildModernButton(
+                      text: "Sauvegarder scan",
+                      icon: Icons.save,
+                      onPressed: () {
+                        if (mrzData != null) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CreateAccountScreen(
+                                prefillData: {
+                                  'firstName': mrzData!['Nom'] ?? '',
+                                  'lastName': mrzData!['Prénom'] ?? '',
+                                  'dateOfBirth': mrzData!["Date de naissance"] ?? '',
+                                  'documentNumber': mrzData!["Numéro de document"] ?? '',
+                                  'nin': numeroIdentite ?? '',
+                                  'expiryDate': mrzData!["Date d'expiration"] ?? '',
+                                  'gender': mrzData!["Sexe"] == 'F' ? 'Madame' : 'Monsieur',
+                                },
+                                readOnly: true,
+                              ),
+                            ),
+                          );
+                        }
                       },
                     ),
                   ],

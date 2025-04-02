@@ -1,5 +1,5 @@
 class Config {
   //Lien ngrok ici
   static const String baseApiUrl =
-      "https://sie-diagram-encouraged-run.trycloudflare.com";
+      "https://cottages-say-province-leads.trycloudflare.com";
 }

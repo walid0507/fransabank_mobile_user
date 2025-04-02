@@ -7,12 +7,22 @@ import 'curved_header.dart';
 import 'second_page.dart'; // Ajout de l'import pour SecondPage
 
 class CreateAccountScreen extends StatefulWidget {
+  final Map<String, String>? prefillData;
+  final bool readOnly;
+
+  const CreateAccountScreen({
+    Key? key, 
+    this.prefillData,
+    this.readOnly = false,
+  }) : super(key: key);
+
   @override
   _CreateAccountScreenState createState() => _CreateAccountScreenState();
 }
 
-class _CreateAccountScreenState extends State<CreateAccountScreen> 
-    with SingleTickerProviderStateMixin { // Ajout du mixin pour l'animation
+class _CreateAccountScreenState extends State<CreateAccountScreen>
+    with SingleTickerProviderStateMixin {
+  // Ajout du mixin pour l'animation
   final _formKey = GlobalKey<FormState>();
   String? civility;
   String? selectedDate;
@@ -21,11 +31,13 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
   // Ajout des contrôleurs pour récupérer les valeurs des champs
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
-  final _birthPlaceController = TextEditingController();
+
   final _idNumberController = TextEditingController();
+  final _NINController = TextEditingController();
+  final _expController = TextEditingController();
 
   bool _areFieldsFilled = false;
-  
+
   // Ajout du contrôleur d'animation
   late AnimationController _nfcButtonController;
   late Animation<double> _scaleAnimation;
@@ -35,15 +47,25 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
     super.initState();
     _firstNameController.addListener(_checkFields);
     _lastNameController.addListener(_checkFields);
-    _birthPlaceController.addListener(_checkFields);
+   
     _idNumberController.addListener(_checkFields);
-    
+
+    if (widget.prefillData != null) {
+      _firstNameController.text = widget.prefillData!['firstName'] ?? '';
+      _lastNameController.text = widget.prefillData!['lastName'] ?? '';
+      _idNumberController.text = widget.prefillData!['documentNumber'] ?? '';
+      _NINController.text = widget.prefillData!['nin'] ?? '';
+      _expController.text = widget.prefillData!['expiryDate'] ?? '';
+      selectedDate = widget.prefillData!['dateOfBirth'];
+      civility = widget.prefillData!['gender'];
+    }
+
     // Initialisation de l'animation
     _nfcButtonController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     )..repeat(reverse: true);
-    
+
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
       CurvedAnimation(
         parent: _nfcButtonController,
@@ -56,7 +78,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
   void dispose() {
     _firstNameController.removeListener(_checkFields);
     _lastNameController.removeListener(_checkFields);
-    _birthPlaceController.removeListener(_checkFields);
+   
     _idNumberController.removeListener(_checkFields);
     _nfcButtonController.dispose(); // Libérer les ressources de l'animation
     super.dispose();
@@ -70,7 +92,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
           _firstNameController.text.isNotEmpty &&
           _lastNameController.text.isNotEmpty &&
           selectedDate != null &&
-          _birthPlaceController.text.isNotEmpty &&
+         
           _idNumberController.text.isNotEmpty;
     });
   }
@@ -84,7 +106,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
       formData["first_name"] = _firstNameController.text;
       formData["last_name"] = _lastNameController.text;
       formData["date_of_birth"] = selectedDate;
-      formData["lieu_denaissance"] = _birthPlaceController.text;
+      
+     
       formData["numero_identite"] = _idNumberController.text;
 
       Navigator.push(
@@ -98,7 +121,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
       );
     }
   }
-  
+
   // Nouvelle méthode pour naviguer vers la page de scan NFC
   void _navigateToNfcScan() {
     Navigator.push(
@@ -140,7 +163,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
               children: [
                 SizedBox(height: 60),
                 Text(
-                  'Demande compte bancaire',
+                  'Identité',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -170,7 +193,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
                           key: _formKey,
                           child: Column(
                             children: [
-                              // Ajout du bouton Scan NFC animé en haut du formulaire
+                              // NFC :)
                               AnimatedBuilder(
                                 animation: _scaleAnimation,
                                 builder: (context, child) {
@@ -184,9 +207,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.blue.shade600,
                                           foregroundColor: Colors.white,
-                                          padding: EdgeInsets.symmetric(vertical: 15),
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 15),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                           ),
                                           elevation: 4,
                                         ),
@@ -203,7 +228,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
                                   );
                                 },
                               ),
-                              
+
                               _buildDropdownField(
                                   'Civilité', ['Monsieur', 'Madame'], (value) {
                                 setState(() {
@@ -214,10 +239,14 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
                               _buildTextField('Prénom', _firstNameController),
                               _buildTextField('Nom', _lastNameController),
                               _buildDateField('Date de naissance'),
-                              _buildTextField(
-                                  'Lieu de naissance', _birthPlaceController),
+                            
                               _buildTextField('Numéro de la carte nationale',
                                   _idNumberController),
+                              _buildTextField("Numéro d'identite nationale",
+                                  _NINController),
+                              _buildTextField("Date d'expiration du document",
+                                  _expController),
+
                               SizedBox(height: 20),
                               AnimatedOpacity(
                                 duration: Duration(milliseconds: 500),
@@ -278,10 +307,12 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
       padding: const EdgeInsets.only(bottom: 15.0),
       child: TextFormField(
         controller: controller,
+        readOnly: widget.readOnly,
         onChanged: (value) => _checkFields(),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(color: Colors.grey.shade600),
+          enabled: !widget.readOnly,
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.grey.shade300),
           ),
