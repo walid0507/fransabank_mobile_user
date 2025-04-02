@@ -229,13 +229,51 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
                                 },
                               ),
 
-                              _buildDropdownField(
-                                  'Civilité', ['Monsieur', 'Madame'], (value) {
-                                setState(() {
-                                  civility = value;
-                                  _checkFields();
-                                });
-                              }),
+                              // Civilité
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Civilité *',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: RadioListTile<String>(
+                                          title: const Text('Monsieur'),
+                                          value: 'Monsieur',
+                                          groupValue: civility,
+                                          onChanged: widget.readOnly ? null : (String? value) {
+                                            setState(() {
+                                              civility = value;
+                                              _checkFields();
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: RadioListTile<String>(
+                                          title: const Text('Madame'),
+                                          value: 'Madame',
+                                          groupValue: civility,
+                                          onChanged: widget.readOnly ? null : (String? value) {
+                                            setState(() {
+                                              civility = value;
+                                              _checkFields();
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+
                               _buildTextField('Prénom', _firstNameController),
                               _buildTextField('Nom', _lastNameController),
                               _buildDateField('Date de naissance'),

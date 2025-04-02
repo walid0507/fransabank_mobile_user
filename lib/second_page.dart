@@ -726,46 +726,48 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                 const SizedBox(height: 30),
                 
                 // Buttons
-                Column(
-                  children: [
-                    _buildModernButton(
-                      text: "Scanner MRZ",
-                      icon: Icons.camera_alt,
-                      onPressed: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const MRZGuidePage(),
-                          ),
-                        );
-                        if (result != null && mounted) {
+                if (!_isScanning && mrzData == null) ...[
+                  Column(
+                    children: [
+                      _buildModernButton(
+                        text: "Scanner MRZ",
+                        icon: Icons.camera_alt,
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MRZGuidePage(),
+                            ),
+                          );
+                          if (result != null && mounted) {
+                            setState(() {
+                              mrzLines = result as List<String>;
+                              showResults = false;
+                              showExplanation = true;
+                            });
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _buildModernButton(
+                        text: "Scanner NFC",
+                        icon: Icons.nfc,
+                        isEnabled: mrzLines != null,
+                        onPressed: () async {
                           setState(() {
-                            mrzLines = result as List<String>;
+                            _isScanning = true;
                             showResults = false;
-                            showExplanation = true;
+                            _updateProgress(0);
                           });
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    _buildModernButton(
-                      text: "Scanner NFC",
-                      icon: Icons.nfc,
-                      isEnabled: mrzLines != null,
-                      onPressed: () async {
-                        setState(() {
-                          _isScanning = true;
-                          showResults = false;
-                          _updateProgress(0);
-                        });
-                        _showProgressDialog(context);
-                        await read();
-                      },
-                    ),
-                  ],
-                ),
+                          _showProgressDialog(context);
+                          await read();
+                        },
+                      ),
+                    ],
+                  ),
+                ],
 
-                if (mrzData != null) ...[
+                if (mrzData != null && !showResults) ...[
                   const SizedBox(height: 30),
                   _buildModernButton(
                     text: "Voir les résultats",
@@ -790,6 +792,12 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                         setState(() {
                           showResults = false;
                           showExplanation = true;
+                          mrzData = null;
+                          mrzLines = null;
+                          _isScanning = false;
+                          image = null;
+                          signature = null;
+                          numeroIdentite = null;
                         });
                       },
                     ),
@@ -815,7 +823,7 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                                   'documentNumber': mrzData!["Numéro de document"] ?? '',
                                   'nin': numeroIdentite ?? '',
                                   'expiryDate': mrzData!["Date d'expiration"] ?? '',
-                                  'gender': mrzData!["Sexe"] == 'F' ? 'Madame' : 'Monsieur',
+                                  'gender': mrzData!['Sexe'] == 'F' ? 'Madame' : 'Monsieur',
                                 },
                                 readOnly: true,
                               ),
