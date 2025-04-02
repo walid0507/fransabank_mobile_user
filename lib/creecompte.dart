@@ -5,13 +5,14 @@ import 'package:intl/intl.dart';
 import 'package:projet1/configngrok.dart';
 import 'curved_header.dart';
 import 'second_page.dart'; // Ajout de l'import pour SecondPage
+import 'dart:ui';
 
 class CreateAccountScreen extends StatefulWidget {
   final Map<String, String>? prefillData;
   final bool readOnly;
 
   const CreateAccountScreen({
-    Key? key, 
+    Key? key,
     this.prefillData,
     this.readOnly = false,
   }) : super(key: key);
@@ -47,7 +48,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
     super.initState();
     _firstNameController.addListener(_checkFields);
     _lastNameController.addListener(_checkFields);
-   
+
     _idNumberController.addListener(_checkFields);
 
     if (widget.prefillData != null) {
@@ -78,7 +79,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
   void dispose() {
     _firstNameController.removeListener(_checkFields);
     _lastNameController.removeListener(_checkFields);
-   
+
     _idNumberController.removeListener(_checkFields);
     _nfcButtonController.dispose(); // Libérer les ressources de l'animation
     super.dispose();
@@ -92,7 +93,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
           _firstNameController.text.isNotEmpty &&
           _lastNameController.text.isNotEmpty &&
           selectedDate != null &&
-         
           _idNumberController.text.isNotEmpty;
     });
   }
@@ -106,8 +106,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
       formData["first_name"] = _firstNameController.text;
       formData["last_name"] = _lastNameController.text;
       formData["date_of_birth"] = selectedDate;
-      
-     
+
       formData["numero_identite"] = _idNumberController.text;
 
       Navigator.push(
@@ -244,28 +243,48 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
                                     children: [
                                       Expanded(
                                         child: RadioListTile<String>(
-                                          title: const Text('Monsieur'),
+                                          contentPadding: EdgeInsets.zero,
+                                          visualDensity: VisualDensity.compact,
+                                          title: Text(
+                                            'Monsieur',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
                                           value: 'Monsieur',
                                           groupValue: civility,
-                                          onChanged: widget.readOnly ? null : (String? value) {
-                                            setState(() {
-                                              civility = value;
-                                              _checkFields();
-                                            });
-                                          },
+                                          onChanged: widget.readOnly
+                                              ? null
+                                              : (String? value) {
+                                                  setState(() {
+                                                    civility = value;
+                                                    _checkFields();
+                                                  });
+                                                },
                                         ),
                                       ),
                                       Expanded(
                                         child: RadioListTile<String>(
-                                          title: const Text('Madame'),
+                                          contentPadding: EdgeInsets.zero,
+                                          visualDensity: VisualDensity.compact,
+                                          title: Text(
+                                            'Madame',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
                                           value: 'Madame',
                                           groupValue: civility,
-                                          onChanged: widget.readOnly ? null : (String? value) {
-                                            setState(() {
-                                              civility = value;
-                                              _checkFields();
-                                            });
-                                          },
+                                          onChanged: widget.readOnly
+                                              ? null
+                                              : (String? value) {
+                                                  setState(() {
+                                                    civility = value;
+                                                    _checkFields();
+                                                  });
+                                                },
                                         ),
                                       ),
                                     ],
@@ -277,7 +296,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
                               _buildTextField('Prénom', _firstNameController),
                               _buildTextField('Nom', _lastNameController),
                               _buildDateField('Date de naissance'),
-                            
+
                               _buildTextField('Numéro de la carte nationale',
                                   _idNumberController),
                               _buildTextField("Numéro d'identite nationale",
