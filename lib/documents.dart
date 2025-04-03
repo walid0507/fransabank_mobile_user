@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'header.dart';
-import 'main.dart';
-import 'package:projet1/configngrok.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'api_service.dart';
+import 'photo.dart';
 
 class InvertedCurvedClipper extends CustomClipper<Path> {
   @override
@@ -247,6 +243,12 @@ class _DocumentsState extends State<Documents> {
                           SnackBar(
                               content: Text(
                                   'Tous les documents ont été téléversés avec succès !')),
+                        );
+                        
+                        // Navigate to photo.dart
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const Photo()),
                         );
                       } catch (e) {
                         print("❌ Erreur lors de l'upload: $e");

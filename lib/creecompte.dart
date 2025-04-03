@@ -6,6 +6,8 @@ import 'package:projet1/configngrok.dart';
 import 'curved_header.dart';
 import 'second_page.dart'; // Ajout de l'import pour SecondPage
 import 'dart:ui';
+import 'package:intl/intl.dart';
+import 'package:intl/intl.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   final Map<String, String>? prefillData;
@@ -26,8 +28,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
   // Ajout du mixin pour l'animation
   final _formKey = GlobalKey<FormState>();
   String? civility;
-  String? selectedDate;
+  String? selectedDate, selectedExpiryDate;
   final Map<String, dynamic> formData = {};
+  static const int MAX_ID_CARD_LENGTH = 9;
+  static const int MAX_NIN_LENGTH = 18;
 
   // Ajout des contrôleurs pour récupérer les valeurs des champs
   final _firstNameController = TextEditingController();
@@ -48,6 +52,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
     super.initState();
     _firstNameController.addListener(_checkFields);
     _lastNameController.addListener(_checkFields);
+    _NINController.addListener(_checkFields);
 
     _idNumberController.addListener(_checkFields);
 
@@ -56,8 +61,40 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
       _lastNameController.text = widget.prefillData!['lastName'] ?? '';
       _idNumberController.text = widget.prefillData!['documentNumber'] ?? '';
       _NINController.text = widget.prefillData!['nin'] ?? '';
-      _expController.text = widget.prefillData!['expiryDate'] ?? '';
-      selectedDate = widget.prefillData!['dateOfBirth'];
+
+      // Traitement de la date de naissance
+      if (widget.prefillData != null) {
+        // Date de naissance (format reçu: "27/08/2004")
+        if (widget.prefillData!['dateOfBirth'] != null) {
+          try {
+            final parts = widget.prefillData!['dateOfBirth']!.split('/');
+            final parsedDate = DateTime(
+              int.parse(parts[2]), // Année
+              int.parse(parts[1]), // Mois
+              int.parse(parts[0]), // Jour
+            );
+            selectedDate = DateFormat('yyyy-MM-dd').format(parsedDate);
+          } catch (e) {
+            print("Erreur date de naissance: $e");
+          }
+        }
+
+        // Date d'expiration (format reçu: "01/07/2028")
+        if (widget.prefillData!['expiryDate'] != null) {
+          try {
+            final parts = widget.prefillData!['expiryDate']!.split('/');
+            final parsedExpiry = DateTime(
+              int.parse(parts[2]), // Année
+              int.parse(parts[1]), // Mois
+              int.parse(parts[0]), // Jour
+            );
+            selectedExpiryDate = DateFormat('yyyy-MM-dd').format(parsedExpiry);
+          } catch (e) {
+            print("Erreur date expiration: $e");
+          }
+        }
+      }
+
       civility = widget.prefillData!['gender'];
     }
 
@@ -79,21 +116,40 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
   void dispose() {
     _firstNameController.removeListener(_checkFields);
     _lastNameController.removeListener(_checkFields);
+    _NINController.removeListener(_checkFields);
 
     _idNumberController.removeListener(_checkFields);
     _nfcButtonController.dispose(); // Libérer les ressources de l'animation
     super.dispose();
   }
 
-  void _checkFields() {
-    if (!mounted) return; // Vérifier si le widget est toujours monté
+  Future<void> _selectExpiryDate(BuildContext context) async {
+    //redondant on pourrait modifier date de naissance
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() {
+        selectedExpiryDate = DateFormat('yyyy-MM-dd').format(picked);
+        _checkFields();
+      });
+    }
+  }
 
+  void _checkFields() {
     setState(() {
       _areFieldsFilled = civility != null &&
           _firstNameController.text.isNotEmpty &&
           _lastNameController.text.isNotEmpty &&
           selectedDate != null &&
-          _idNumberController.text.isNotEmpty;
+          selectedExpiryDate != null &&
+          _idNumberController.text.isNotEmpty &&
+          _idNumberController.text.length <= MAX_ID_CARD_LENGTH &&
+          _NINController.text.isNotEmpty &&
+          _NINController.text.length <= MAX_NIN_LENGTH;
     });
   }
 
@@ -106,8 +162,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
       formData["first_name"] = _firstNameController.text;
       formData["last_name"] = _lastNameController.text;
       formData["date_of_birth"] = selectedDate;
+      formData["date_of_expiry"] = selectedExpiryDate;
+      formData["numero_doc"] = _idNumberController.text;
 
-      formData["numero_identite"] = _idNumberController.text;
+      formData["numero_identite"] = _NINController.text;
 
       Navigator.push(
         context,
@@ -233,7 +291,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Civilité *',
+                                    'Civilité ',
                                     style: TextStyle(
                                       color: Colors.grey.shade600,
                                       fontSize: 16,
@@ -298,11 +356,13 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
                               _buildDateField('Date de naissance'),
 
                               _buildTextField('Numéro de la carte nationale',
-                                  _idNumberController),
-                              _buildTextField("Numéro d'identite nationale",
-                                  _NINController),
-                              _buildTextField("Date d'expiration du document",
-                                  _expController),
+                                  _idNumberController,
+                                  isIdNumber: true),
+                              _buildTextField(
+                                  "Numéro d'identite nationale", _NINController,
+                                  isNIN: true),
+                              _buildExpiryDateField(
+                                  "Date d'expiration du document"),
 
                               SizedBox(height: 20),
                               AnimatedOpacity(
@@ -359,17 +419,39 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller) {
+  Widget _buildTextField(String label, TextEditingController controller,
+      {bool isIdNumber = false, bool isNIN = false}) {
+    int? maxLength;
+    String? errorMessage;
+
+    if (isIdNumber) {
+      maxLength = MAX_ID_CARD_LENGTH;
+      errorMessage =
+          'Le numéro ne doit pas dépasser $MAX_ID_CARD_LENGTH caractères';
+    }
+    if (isNIN) {
+      maxLength = MAX_NIN_LENGTH;
+      errorMessage = 'Le NIN ne doit pas dépasser $MAX_NIN_LENGTH caractères';
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 15.0),
       child: TextFormField(
         controller: controller,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         readOnly: widget.readOnly,
-        onChanged: (value) => _checkFields(),
+        buildCounter: (context,
+                {required int currentLength,
+                required bool isFocused,
+                int? maxLength}) =>
+            null,
         decoration: InputDecoration(
+          errorStyle: TextStyle(
+            color: Colors.red.shade700,
+            fontSize: 12,
+          ),
           labelText: label,
           labelStyle: TextStyle(color: Colors.grey.shade600),
-          enabled: !widget.readOnly,
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.grey.shade300),
           ),
@@ -379,10 +461,18 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
           contentPadding: EdgeInsets.symmetric(vertical: 15),
         ),
         validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Veuillez remplir ce champ';
-          }
+          if (isIdNumber && (value?.length ?? 0) > MAX_ID_CARD_LENGTH)
+            return errorMessage;
+          if (isNIN && (value?.length ?? 0) > MAX_NIN_LENGTH)
+            return errorMessage;
           return null;
+        },
+        onChanged: (value) {
+          _checkFields();
+          // Forcer la validation immédiate
+          if (_formKey.currentState != null) {
+            _formKey.currentState!.validate();
+          }
         },
       ),
     );
@@ -411,6 +501,40 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
               ),
               Icon(Icons.calendar_today, color: Colors.blue.shade600, size: 20),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExpiryDateField(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15.0),
+      child: FormField<String>(
+        validator: (value) => selectedExpiryDate == null ? '' : null,
+        builder: (state) => InkWell(
+          onTap: () => _selectExpiryDate(context),
+          child: InputDecorator(
+            decoration: InputDecoration(
+              labelText: label,
+              errorText: state.errorText,
+              labelStyle: TextStyle(color: Colors.grey.shade600),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              contentPadding: EdgeInsets.symmetric(vertical: 15),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text(
+                  selectedExpiryDate ?? 'Sélectionnez une date',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Icon(Icons.calendar_today,
+                    color: Colors.blue.shade600, size: 20),
+              ],
+            ),
           ),
         ),
       ),

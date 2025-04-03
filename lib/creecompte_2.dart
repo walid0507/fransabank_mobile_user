@@ -27,6 +27,7 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
   final _motherFirstNameController = TextEditingController();
   final _phoneNumberController = TextEditingController();
   final _maidenNameController = TextEditingController();
+  final _birthplaceController = TextEditingController();
 
   bool _areFieldsFilled = false;
 
@@ -37,6 +38,7 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
     _motherLastNameController.addListener(_checkFields);
     _motherFirstNameController.addListener(_checkFields);
     _phoneNumberController.addListener(_checkFields);
+    _birthplaceController.addListener(_checkFields);
 
     if (widget.civility == 'Madame') {
       _maidenNameController.addListener(_checkFields);
@@ -49,6 +51,8 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
     _motherLastNameController.removeListener(_checkFields);
     _motherFirstNameController.removeListener(_checkFields);
     _phoneNumberController.removeListener(_checkFields);
+    _birthplaceController.addListener(_checkFields);
+
     if (widget.civility == 'Madame') {
       _maidenNameController.removeListener(_checkFields);
     }
@@ -60,7 +64,7 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
       _areFieldsFilled = _fatherFirstNameController.text.isNotEmpty &&
           _motherLastNameController.text.isNotEmpty &&
           _motherFirstNameController.text.isNotEmpty &&
-          _phoneNumberController.text.isNotEmpty &&
+          _phoneNumberController.text.isNotEmpty &&_birthplaceController.text.isNotEmpty&&
           nationality1 != null &&
           nationality2 != null &&
           situationFamiliale != null &&
@@ -79,6 +83,7 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
         "Nationalité": nationality1,
         "Nationalité2": nationality2,
         "Nom_jeune_fille": _maidenNameController.text,
+        "lieu_denaissance":_birthplaceController.text,
         "situation_familliale":
             situationFamiliale, // ✅ Ajout de la situation familiale
       });
@@ -154,6 +159,8 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
                               if (widget.civility == 'Madame')
                                 _buildTextField('Nom de jeune fille',
                                     _maidenNameController),
+                                    _buildTextField('Lieu de naissance',
+                                    _birthplaceController),
                               _buildTextField(
                                   'Prénom du père', _fatherFirstNameController),
                               _buildTextField(
@@ -190,7 +197,7 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
                               ], (value) {
                                 setState(() {
                                   situationFamiliale = value;
-                                 _checkFields();
+                                  _checkFields();
                                 });
                               }),
                               SizedBox(height: 20),
