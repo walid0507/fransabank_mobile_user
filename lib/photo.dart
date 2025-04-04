@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'signature.dart';
+import 'api_service.dart';
 
 class Photo extends StatefulWidget {
   const Photo({super.key});
@@ -11,9 +13,91 @@ class Photo extends StatefulWidget {
   State<Photo> createState() => _PhotoState();
 }
 
-class _PhotoState extends State<Photo> {
+class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget _buildModernButton({
+    required String text,
+    required VoidCallback onPressed,
+    bool isEnabled = true,
+    IconData? icon,
+    double? width,
+    double? height,
+  }) {
+    return GestureDetector(
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) => _controller.reverse(),
+      onTapCancel: () => _controller.reverse(),
+      onTap: isEnabled ? onPressed : null,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          width: width ?? 200,
+          height: height ?? 56,
+          decoration: BoxDecoration(
+            gradient: isEnabled
+                ? LinearGradient(
+                    colors: [Colors.blue.shade700, Colors.blue.shade900],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : LinearGradient(
+                    colors: [Colors.grey.shade400, Colors.grey.shade600],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                spreadRadius: 1,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, color: Colors.white, size: 24),
+                SizedBox(width: 8),
+              ],
+              Text(
+                text,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -51,28 +135,94 @@ class _PhotoState extends State<Photo> {
           ),
           SingleChildScrollView(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 50),
-                Lottie.asset(
-                  'assets/images/photo.json',
-                  height: 200,
-                  fit: BoxFit.contain,
-                ),
-                SizedBox(height: 30),
-                Container(
-                  margin: EdgeInsets.all(20),
-                  padding: EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20, 50, 20, 0),
+                  child: Text(
+                    'Ajoutez votre photo d\'identité',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white.withOpacity(0.97),
+                          Colors.white.withOpacity(0.92),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          spreadRadius: 0,
+                          blurRadius: 15,
+                          offset: const Offset(0, 8),
+                        ),
+                        BoxShadow(
+                          color: primaryBlue.withOpacity(0.08),
+                          spreadRadius: -1,
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: primaryBlue.withOpacity(0.1),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                fontSize: 16,
+                                height: 1.5,
+                                color: Colors.black87.withOpacity(0.9),
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: 'Ajoutez votre photo d\'identité depuis votre galerie\n',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    height: 1.4,
+                                    fontWeight: FontWeight.w600,
+                                    color: primaryBlue.withOpacity(0.9),
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: 'Si vous avez utilisé la fonction de scan NFC, votre photo a été automatiquement récupérée depuis votre carte d\'identité',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    height: 1.4,
+                                    color: Colors.black87.withOpacity(0.75),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Container(
+                  margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
+                  padding: EdgeInsets.all(20),
                   child: Column(
                     children: [
                       if (_selectedImage == null)
@@ -80,19 +230,52 @@ class _PhotoState extends State<Photo> {
                           onTap: _pickImage,
                           child: Container(
                             width: double.infinity,
-                            height: 200,
+                            height: 300,
                             decoration: BoxDecoration(
-                              border: Border.all(color: primaryBlue),
-                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: primaryBlue.withOpacity(0.7),
+                                width: 2.5,
+                              ),
+                              borderRadius: BorderRadius.circular(35),
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white,
+                                  Colors.grey.shade50,
+                                ],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: primaryBlue.withOpacity(0.1),
+                                  spreadRadius: 0,
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 8),
+                                ),
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.5),
+                                  spreadRadius: -2,
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.add_photo_alternate,
-                                    size: 50, color: primaryBlue),
-                                SizedBox(height: 10),
+                                Lottie.asset(
+                                  'assets/images/photo.json',
+                                  height: 160,
+                                  fit: BoxFit.contain,
+                                ),
+                                SizedBox(height: 15),
                                 Text('Ajouter une photo d\'identité',
-                                    style: TextStyle(color: primaryBlue)),
+                                    style: TextStyle(
+                                      color: primaryBlue.withOpacity(0.9),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.3,
+                                    )),
                               ],
                             ),
                           ),
@@ -104,45 +287,78 @@ class _PhotoState extends State<Photo> {
                               borderRadius: BorderRadius.circular(10),
                               child: Image.file(
                                 _selectedImage!,
-                                height: 200,
+                                height: 180,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
                               ),
                             ),
                             SizedBox(height: 10),
-                            TextButton(
+                            _buildModernButton(
+                              text: 'Changer la photo',
                               onPressed: _pickImage,
-                              child: Text('Changer la photo'),
+                              icon: Icons.photo_camera,
+                              width: 200,
                             ),
                           ],
                         ),
                       SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: _selectedImage == null
-                            ? null
-                            : () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => Signature(),
-                                  ),
+                      _buildModernButton(
+                        text: 'Soumettre',
+                        onPressed: () async {
+                          if (_selectedImage != null) {
+                            try {
+                              SharedPreferences prefs = await SharedPreferences.getInstance();
+                              String? demandeIdStr = prefs.getString('demande_id');
+                              int? demandeId = demandeIdStr != null ? int.parse(demandeIdStr) : null;
+                              
+                              if (demandeId == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Erreur: ID de demande non trouvé')),
                                 );
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryBlue,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 50, vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: Text(
-                          'Soumettre',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                        ),
+                                return;
+                              }
+
+                              // Afficher un indicateur de chargement
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (BuildContext context) {
+                                  return Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                },
+                              );
+
+                              await ApiService.uploadPhoto(_selectedImage!, demandeId);
+                              
+                              // Fermer l'indicateur de chargement
+                              Navigator.pop(context);
+
+                              // Afficher un message de succès
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Photo téléchargée avec succès')),
+                              );
+
+                              // Naviguer vers la page suivante
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => Signature(),
+                                ),
+                              );
+                            } catch (e) {
+                              // Fermer l'indicateur de chargement s'il est encore ouvert
+                              Navigator.of(context).pop();
+                              
+                              // Afficher l'erreur
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Erreur lors du téléchargement: $e')),
+                              );
+                            }
+                          }
+                        },
+                        isEnabled: _selectedImage != null,
+                        width: double.infinity,
                       ),
                     ],
                   ),

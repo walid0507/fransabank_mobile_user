@@ -615,7 +615,7 @@ class ApiService {
       throw Exception('Erreur lors de l\'annulation de la visioconférence');
     }
   }
-  static Future<void> uploadPhoto(File photo) async {
+  static Future<void> uploadPhoto(File photo,int demandeId) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('access_token');
@@ -624,7 +624,7 @@ class ApiService {
         throw Exception("Token non trouvé");
       }
 
-      final url = Uri.parse('${Config.baseApiUrl}/api/upload_photo/');
+      final url = Uri.parse('${Config.baseApiUrl}/api/demandecompte/$demandeId/upload_photo/');
       final request = http.MultipartRequest('POST', url);
       
       // Ajouter le token d'authentification
