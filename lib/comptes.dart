@@ -6,6 +6,7 @@ import 'curved_header.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'main.dart';
+import 'listes_comptes.dart';
 
 class ComptesPage extends StatefulWidget {
   final String nomClient;
@@ -53,8 +54,6 @@ class _ComptesPageState extends State<ComptesPage>
     return "${id.substring(0, 2)}*****${id.substring(id.length - 2)}";
   }
 
- 
-
   Future<void> _loadSavedComptes() async {
     try {
       final comptesJson = await _storage.read(key: 'comptes_sauvegardes');
@@ -65,7 +64,6 @@ class _ComptesPageState extends State<ComptesPage>
           comptes = comptesList.map((compte) {
             String type = (compte['type'] ?? '').toString();
             // Appliquer le formatage directement lors du chargement
-            
 
             return <String, String>{
               'id': compte['id'].toString(),
@@ -290,14 +288,14 @@ class _ComptesPageState extends State<ComptesPage>
           ),
           Padding(
             padding:
-                EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.02),
+                EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.04),
             child: Column(
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(right: 20.0, top: 0),
+                      padding: const EdgeInsets.only(right: 20.0, top: 18.0),
                       child: _buildModernButton(
                         text: "Ajouter",
                         onPressed: () {
@@ -331,14 +329,16 @@ class _ComptesPageState extends State<ComptesPage>
                                     horizontal: 20.0),
                                 itemCount: comptes.length,
                                 itemBuilder: (context, index) {
-                                  final type =
-                                      comptes[index]['type'] ?? '';
+                                  final type = comptes[index]['type'] ?? '';
                                   return GestureDetector(
                                     onTap: () async {
                                       final storage = FlutterSecureStorage();
-                                      await storage.write(key: 'client_id', value: comptes[index]['id']);
-                                      await storage.write(key: 'rememberMe', value: 'true');
-                                      
+                                      await storage.write(
+                                          key: 'client_id',
+                                          value: comptes[index]['id']);
+                                      await storage.write(
+                                          key: 'rememberMe', value: 'true');
+
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -402,6 +402,24 @@ class _ComptesPageState extends State<ComptesPage>
                               ),
                             ),
                 ),
+                Padding(
+  padding: const EdgeInsets.only(bottom: 10.0),
+  child: _buildModernButton(
+    text: "Voir mes Demandes",
+    onPressed: () {
+      // Navigation vers la page ListesComptes
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CustomPage(), // Modifie le nom ici
+        ),
+      );
+    },
+    isEnabled: true,
+    icon: Icons.visibility,
+    width: MediaQuery.of(context).size.width * 0.8,
+  ),
+),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20.0),
                   child: _buildModernButton(
