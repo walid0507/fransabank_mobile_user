@@ -39,18 +39,18 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
   final TextEditingController interestRateController = TextEditingController(
     text: '5.45',
   );
+  double _sliderValue = 450;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.grey[100],
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black54),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'EMI Calculator',
@@ -62,86 +62,339 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
         ),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              const Text(
-                'Loan Type',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // En-tête avec résumé
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue[400]!, Colors.blue[600]!],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.withOpacity(0.2),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildLoanTypeButton('Home', Icons.home),
-                    const SizedBox(width: 12),
-                    _buildLoanTypeButton('Personal', Icons.person),
-                    const SizedBox(width: 12),
-                    _buildLoanTypeButton('Medical', Icons.medical_services),
-                    const SizedBox(width: 12),
-                    _buildLoanTypeButton('Car', Icons.directions_car),
-                    const SizedBox(width: 12),
-                    _buildLoanTypeButton('Education', Icons.school),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-              _buildInputField(
-                'Loan Amount',
-                loanAmountController,
-                suffix: ' da',
-                hint: 'Enter loan amount',
-              ),
-              const SizedBox(height: 24),
-              _buildInputField(
-                'Tenure (In Years)',
-                tenureController,
-                hint: 'Enter tenure',
-              ),
-              const SizedBox(height: 24),
-              _buildInputField(
-                'Interest Rate',
-                interestRateController,
-                suffix: '%',
-                hint: 'Enter interest rate',
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Calculate EMI logic here
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Estimated EMI',
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    '14.25 DA/month',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  child: const Text(
-                    'Calculate',
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildSummaryItem('Principal', '450 DA'),
+                      _buildSummaryItem('Interest', '5.45%'),
+                      _buildSummaryItem('Tenure', '3 Years'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Loan Type',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: Colors.black87,
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: [
+                        _buildLoanTypeButton('Home', Icons.home),
+                        const SizedBox(width: 12),
+                        _buildLoanTypeButton('Personal', Icons.person),
+                        const SizedBox(width: 12),
+                        _buildLoanTypeButton('Medical', Icons.medical_services),
+                        const SizedBox(width: 12),
+                        _buildLoanTypeButton('Car', Icons.directions_car),
+                        const SizedBox(width: 12),
+                        _buildLoanTypeButton('Education', Icons.school),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Loan Amount avec Slider
+                  _buildInputFieldWithSlider(
+                    'Loan Amount',
+                    loanAmountController,
+                    suffix: ' DA',
+                    hint: 'Enter loan amount',
+                    minValue: 100,
+                    maxValue: 1000,
+                    value: _sliderValue,
+                    onChanged: (value) {
+                      setState(() {
+                        _sliderValue = value;
+                        loanAmountController.text = value.round().toString();
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 24),
+                  _buildInputField(
+                    'Tenure (In Years)',
+                    tenureController,
+                    hint: 'Enter tenure',
+                    prefixIcon: Icon(
+                      Icons.calendar_today,
+                      size: 20,
+                      color: Colors.blue[400],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  _buildInputField(
+                    'Interest Rate',
+                    interestRateController,
+                    suffix: '%',
+                    hint: 'Enter interest rate',
+                    prefixIcon: Icon(
+                      Icons.percent,
+                      size: 20,
+                      color: Colors.blue[400],
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  Container(
+                    width: double.infinity,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: LinearGradient(
+                        colors: [Colors.blue[400]!, Colors.blue[600]!],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Calculate EMI logic here
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        'Calculate EMI',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryItem(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white70, fontSize: 14),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInputFieldWithSlider(
+    String label,
+    TextEditingController controller, {
+    String? prefix,
+    String? suffix,
+    String? hint,
+    required double minValue,
+    required double maxValue,
+    required double value,
+    required Function(double) onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: hint,
+                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  prefixText: prefix,
+                  suffixText: suffix,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              SliderTheme(
+                data: SliderThemeData(
+                  activeTrackColor: Colors.blue[400],
+                  inactiveTrackColor: Colors.grey[200],
+                  thumbColor: Colors.white,
+                  overlayColor: Colors.blue.withOpacity(0.1),
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 8,
+                  ),
+                ),
+                child: Slider(
+                  min: minValue,
+                  max: maxValue,
+                  value: value,
+                  onChanged: onChanged,
                 ),
               ),
             ],
           ),
         ),
-      ),
+      ],
+    );
+  }
+
+  Widget _buildInputField(
+    String label,
+    TextEditingController controller, {
+    String? prefix,
+    String? suffix,
+    String? hint,
+    Widget? prefixIcon,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(color: Colors.grey[400]),
+              prefixIcon: prefixIcon,
+              prefixText: prefix,
+              suffixText: suffix,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
+              filled: true,
+              fillColor: Colors.white,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -186,62 +439,6 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildInputField(
-    String label,
-    TextEditingController controller, {
-    String? prefix,
-    String? suffix,
-    String? hint,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: TextField(
-            controller: controller,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(color: Colors.grey[400]),
-              prefixText: prefix,
-              suffixText: suffix,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 16,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
-              ),
-              filled: true,
-              fillColor: Colors.white,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
