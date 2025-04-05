@@ -11,6 +11,7 @@ import 'package:projet1/virements.dart';
 import 'package:projet1/comptes.dart';
 import 'dart:async';
 import 'api_service.dart';
+import 'historique_transaction.dart';
 
 class ClientScreen extends StatefulWidget {
   final String nomClient;
@@ -53,7 +54,6 @@ class _ClientScreenState extends State<ClientScreen>
   void initState() {
     super.initState();
     _fetchSolde(); // Charger le solde au démarrage
-   
 
     // Initialiser les contrôleurs d'animation
     _initializeAnimationControllers();
@@ -257,7 +257,14 @@ class _ClientScreenState extends State<ClientScreen>
                             ),
                             const SizedBox(width: 15),
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          TransactionHistoryPage()),
+                                );
+                              },
                               child: Text(
                                 'Voir tout',
                                 style: TextStyle(
@@ -615,7 +622,8 @@ class _ClientScreenState extends State<ClientScreen>
                               Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => ComptesPage(nomClient: widget.nomClient)),
+                                    builder: (context) => ComptesPage(
+                                        nomClient: widget.nomClient)),
                                 (route) => false,
                               );
                             }

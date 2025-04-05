@@ -17,15 +17,39 @@ class CustomPage extends StatelessWidget {
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
-          _buildHeader(context),
+          CurvedHeader(
+            title: 'Listes demandes comptes',
+            onBackPressed: () => Navigator.pop(context),
+            child: Container(),
+          ),
           Positioned(
             top: MediaQuery.of(context).size.height * 0.15,
             left: 0,
             right: 0,
             bottom: 0,
-            child: Container(
-              color: Colors.transparent,
-              child: _buildBody(context),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    SizedBox(height: 5),
+                    Image.asset(
+                      'assets/images/fransa2bk.png',
+                      width: 160,
+                      height: 160,
+                    ),
+                    SizedBox(height: 10),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: comptesBancaires.length,
+                      itemBuilder: (context, index) {
+                        return _buildListTile(context, comptesBancaires[index]);
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
@@ -33,84 +57,6 @@ class CustomPage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return ClipPath(
-      clipper: InvertedCurvedClipper(),
-      child: Container(
-        width: double.infinity,
-        height: MediaQuery.of(context).size.height * 0.9,
-        decoration: BoxDecoration(
-          color: Color(0xFF024DA2),
-          image: DecorationImage(
-            image: AssetImage('assets/images/stars.jpg'), // Assurez-vous d'avoir cette image
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Color(0xFF024DA2).withOpacity(0.9),
-              BlendMode.srcOver,
-            ),
-          ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.only(top: 40),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              AnimatedCrossFade(
-                duration: Duration(milliseconds: 1500),
-                firstChild: Text(
-                  'listes demandes comptes',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                secondChild: Text(
-                  'Bienvenue chez Fransabank!',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                crossFadeState: CrossFadeState.showFirst,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBody(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          children: [
-            SizedBox(height: 5),
-            Image.asset(
-              'assets/images/fransa2bk.png', // Assurez-vous d'avoir cette image
-              width: 160,
-              height: 160,
-            ),
-            SizedBox(height: 10),
-            // Liste des comptes bancaires
-            ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: comptesBancaires.length,
-              itemBuilder: (context, index) {
-                return _buildListTile(context, comptesBancaires[index]);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Fonction pour construire chaque élément de la liste (compte bancaire)
   Widget _buildListTile(BuildContext context, Map<String, String> compte) {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8),
@@ -120,9 +66,7 @@ class CustomPage extends StatelessWidget {
       ),
       child: ListTile(
         onTap: () {
-          // Appel de la fonction pour afficher le dialogue personnalisé
-          // Le statut sera géré dans la fonction _showCustomDialog
-          _showCustomDialog(context, 'en attente'); // Tu peux passer ici n'importe quel statut dynamique
+          _showCustomDialog(context, 'en attente');
         },
         title: Text(
           compte['titulaire']!,
@@ -136,7 +80,6 @@ class CustomPage extends StatelessWidget {
           'ID Compte: ${compte['id']}',
           style: TextStyle(color: Colors.black54),
         ),
-        // Supprime le trailing qui affichait le solde
       ),
     );
   }
@@ -215,15 +158,11 @@ void _showCustomDialog(BuildContext context, String status) {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Si le statut est "en attente", on montre l'animation du sablier
             if (status == "en attente")
-              Image.asset(
-                  'assets/images/sablier_animation.gif'), // Remplace par une animation de sablier
-            // Si le statut est "approuvé", on montre l'icône OK
+              Image.asset('assets/images/sablier_animation.gif'),
             if (status == "approuvé")
               Icon(Icons.check_circle, size: 50, color: Colors.green),
             SizedBox(height: 15),
-            // Texte dynamique en fonction du statut
             Text(
               status == "en attente"
                   ? "Votre demande est en train d'être étudiée"
@@ -241,8 +180,7 @@ void _showCustomDialog(BuildContext context, String status) {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    backgroundColor:
-                        Colors.blue, // Remplacé "primary" par "backgroundColor"
+                    backgroundColor: Colors.blue,
                   ),
                   child: Text("OK"),
                 ),

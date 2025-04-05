@@ -1,236 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'dart:typed_data';
-import 'dart:io';
-import 'dart:ui' as ui;
-import 'package:path_provider/path_provider.dart';
+import 'package:signature/signature.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'dart:convert';
 import 'comptes.dart';
+import 'main.dart';
 
-class SignaturePainter extends CustomPainter {
-  final SignatureController controller;
-
-  SignaturePainter(this.controller);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..color = Colors.black
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 3.0;
-
-    for (var point in controller.points) {
-      if (point != null) {
-        canvas.drawPoints(ui.PointMode.points, [point], paint);
-      }
-    }
-  }
+class SignaturePage extends StatefulWidget {
+  const SignaturePage({Key? key}) : super(key: key);
 
   @override
-  bool shouldRepaint(SignaturePainter oldDelegate) => true;
+  _SignaturePageState createState() => _SignaturePageState();
 }
 
-class SignatureController extends ChangeNotifier {
-  List<Offset?> points = [];
-  bool _isEmpty = true;
-
-  bool get isEmpty => _isEmpty;
-
-  void addPoint(Offset point) {
-    points.add(point);
-    _isEmpty = false;
-    notifyListeners();
+class InvertedCurvedClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    Path path = Path();
+    path.lineTo(0, size.height * 0.90);
+    path.quadraticBezierTo(size.width * 0.10, size.height * 0.95,
+        size.width * 0.25, size.height * 0.95);
+    path.quadraticBezierTo(
+        size.width * 0.75, size.height * 0.95, size.width, size.height * 0.85);
+    path.lineTo(size.width, 0);
+    path.lineTo(0, 0);
+    return path;
   }
-
-  void clear() {
-    points.clear();
-    _isEmpty = true;
-    notifyListeners();
-  }
-
-  Future<Uint8List?> toPngBytes() async {
-    if (isEmpty) return null;
-
-    final ui.PictureRecorder recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder);
-    final paint = Paint()
-      ..color = Colors.black
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 3.0;
-
-    for (var point in points) {
-      if (point != null) {
-        canvas.drawPoints(ui.PointMode.points, [point], paint);
-      }
-    }
-
-    final picture = recorder.endRecording();
-    final img = await picture.toImage(300, 300); // Fixed size for simplicity
-    final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
-    return byteData?.buffer.asUint8List();
-  }
-}
-
-class Signature extends StatefulWidget {
-  const Signature({super.key});
 
   @override
-  State<Signature> createState() => _SignatureState();
+  bool shouldReclip(CustomClipper<Path> oldClipper) => true;
 }
 
-class _SignatureState extends State<Signature> {
-  final SignatureController _controller = SignatureController();
-  bool _isLoading = false;
-  bool _hasSignature = false;
-  String? _signaturePath;
-
-  Future<void> _saveSignature() async {
-    if (_controller.isEmpty) return;
-
-    final Uint8List? data = await _controller.toPngBytes();
-    if (data == null) return;
-
-    final directory = await getApplicationDocumentsDirectory();
-    final String path = '${directory.path}/signature_${DateTime.now().millisecondsSinceEpoch}.png';
-    File(path).writeAsBytesSync(data);
-
-    setState(() {
-      _signaturePath = path;
-      _hasSignature = true;
-    });
-    Navigator.pop(context); // Ferme la boîte de dialogue
-  }
-
-  Future<void> _showSignatureDialog() async {
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          child: Container(
-            padding: EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Signez ici',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                SizedBox(height: 20),
-                Container(
-                  height: 300,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Container(
-                    color: Colors.white,
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 300,
-                      child: GestureDetector(
-                        onPanUpdate: (details) {
-                          _controller.addPoint(details.localPosition);
-                          setState(() {});
-                        },
-                        child: CustomPaint(
-                          painter: SignaturePainter(_controller),
-                          child: Container(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.refresh),
-                      onPressed: () => _controller.clear(),
-                    ),
-                    ElevatedButton(
-                      onPressed: _saveSignature,
-                      child: Text('Valider'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF024DA2),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _submitForm() async {
-    setState(() => _isLoading = true);
-
-    // Simuler un délai de chargement
-    await Future.delayed(Duration(seconds: 2));
-
-    // Simuler une réussite (à remplacer par votre logique d'API)
-    bool success = true;
-
-    if (success) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Container(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Lottie.asset(
-                    'assets/images/demande.json',
-                    height: 150,
-                    repeat: false,
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    'Votre demande a été envoyée à nos équipes',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const ComptesPage(nomClient: '')), // TODO: Pass the actual client name
-                      );
-                    },
-                    child: Text('Voir demande'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF024DA2),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Une erreur est survenue. Veuillez réessayer.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-
-    setState(() => _isLoading = false);
-  }
+class _SignaturePageState extends State<SignaturePage> {
+  final SignatureController _controller = SignatureController(
+    penStrokeWidth: 3,
+    penColor: Colors.black,
+  );
+  String? signatureImage;
+  bool showSignaturePad = false;
 
   @override
   Widget build(BuildContext context) {
-    Color primaryBlue = Color(0xFF024DA2);
+    final currentDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
+
+    Color primaryBlue = const Color(0xFF024DA2);
 
     return Scaffold(
       body: Stack(
@@ -254,98 +68,257 @@ class _SignatureState extends State<Signature> {
             ),
           ),
           SingleChildScrollView(
-            child: Column(
-              children: [
-                SizedBox(height: 50),
-                Lottie.asset(
-                  'assets/images/signature.json',
-                  height: 200,
-                  fit: BoxFit.contain,
-                ),
-                SizedBox(height: 30),
-                Container(
-                  margin: EdgeInsets.all(20),
-                  padding: EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  // Lottie Animation
+                  Lottie.asset(
+                    'assets/images/signature.json',
+                    height: 160,
+                    fit: BoxFit.contain,
                   ),
-                  child: Column(
-                    children: [
-                      if (_hasSignature && _signaturePath != null)
-                        Column(
+                  const SizedBox(height: 10),
+                  Text(
+                    'Signez ci-dessous',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          color: Colors.white,
+                        ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Terms text with handwriting font
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.2),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.file(
-                                File(_signaturePath!),
-                                height: 150,
-                                fit: BoxFit.contain,
+                            Text(
+                              currentDate,
+                              style: GoogleFonts.dancingScript(
+                                fontSize: 16,
+                                color: Colors.black87,
                               ),
                             ),
-                            SizedBox(height: 10),
+                            Text(
+                              'Alger, Algérie',
+                              style: GoogleFonts.dancingScript(
+                                fontSize: 16,
+                                color: Colors.black87,
+                              ),
+                            ),
                           ],
                         ),
-                      ElevatedButton(
-                        onPressed: _showSignatureDialog,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryBlue,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                        SizedBox(height: 20),
+                        Text(
+                          'En signant ce document, vous acceptez tous les termes et conditions d\'utilisation. Vous serez soumis à une reconnaissance faciale.',
+                          style: GoogleFonts.dancingScript(
+                            fontSize: 18,
+                            height: 2,
+                            color: Colors.black87,
                           ),
+                          textAlign: TextAlign.center,
                         ),
-                        child: Text(
-                          _hasSignature ? 'Modifier la signature' : 'Signer',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                      if (_hasSignature)
-                        ElevatedButton(
-                          onPressed: _isLoading ? null : _submitForm,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryBlue,
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 50, vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
+                        SizedBox(height: 20),
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: Text(
+                            'Fransabank',
+                            style: GoogleFonts.dancingScript(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
                             ),
                           ),
-                          child: _isLoading
-                              ? SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white),
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Text(
-                                  'Soumettre',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                ),
                         ),
-                    ],
+                        const SizedBox(height: 30),
+                        if (signatureImage == null)
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                showSignaturePad = true;
+                              });
+                            },
+                            child: Text(
+                              'Signez ici',
+                              style: GoogleFonts.dancingScript(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                              ),
+                            ),
+                          )
+                        else
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  signatureImage = null;
+                                  showSignaturePad = true;
+                                });
+                              },
+                              child: Image.memory(
+                                Uri.parse(signatureImage!)
+                                    .data!
+                                    .contentAsBytes(),
+                                height: 100,
+                              ),
+                            ),
+                          ),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  // if (signatureImage != null)
+                  //   Positioned(
+                  //     bottom: -20,
+                  //     left: 0,
+                  //     right: 0,
+                  //     child: Container(
+                  //       margin: const EdgeInsets.symmetric(horizontal: 20),
+                  //       child: ElevatedButton(
+                  //         onPressed: () {
+                  //           Navigator.pushNamed(context, '/client_tp');
+                  //         },
+                  //         style: ElevatedButton.styleFrom(
+                  //           backgroundColor: const Color(0xFF024DA2),
+                  //           padding: const EdgeInsets.symmetric(vertical: 15),
+                  //           shape: RoundedRectangleBorder(
+                  //             borderRadius: BorderRadius.circular(10),
+                  //           ),
+                  //         ),
+                  //         child: const Text(
+                  //           'Continuer',
+                  //           style: TextStyle(
+                  //             color: Colors.white,
+                  //             fontSize: 16,
+                  //             fontWeight: FontWeight.bold,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
+                ],
+              ),
             ),
           ),
+          if (signatureImage != null)
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginScreen()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF024DA2),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text(
+                    'Continuer',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
+      // Signature Pad Dialog
+      bottomSheet: showSignaturePad
+          ? Container(
+              height: MediaQuery.of(context).size.height * 0.8,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+              ),
+              child: Column(
+                children: [
+                  AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    title: const Text('Votre signature'),
+                    leading: IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () {
+                        setState(() {
+                          showSignaturePad = false;
+                        });
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: Signature(
+                      controller: _controller,
+                      backgroundColor: Colors.white,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            _controller.clear();
+                          },
+                          icon: const Icon(Icons.cleaning_services_rounded),
+                          tooltip: 'Effacer',
+                          iconSize: 32,
+                          color: Colors.red,
+                        ),
+                        IconButton(
+                          onPressed: () async {
+                            if (_controller.isNotEmpty) {
+                              final signature = await _controller.toPngBytes();
+                              if (signature != null) {
+                                setState(() {
+                                  signatureImage =
+                                      'data:image/png;base64,${base64Encode(signature)}';
+                                  showSignaturePad = false;
+                                });
+                              }
+                            }
+                          },
+                          icon: const Icon(Icons.check_circle),
+                          tooltip: 'Valider',
+                          iconSize: 32,
+                          color: Colors.green,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : null,
     );
   }
 
@@ -354,22 +327,4 @@ class _SignatureState extends State<Signature> {
     _controller.dispose();
     super.dispose();
   }
-}
-
-class InvertedCurvedClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    Path path = Path();
-    path.lineTo(0, size.height * 0.90);
-    path.quadraticBezierTo(
-        size.width * 0.10, size.height * 0.95, size.width * 0.25, size.height * 0.95);
-    path.quadraticBezierTo(
-        size.width * 0.75, size.height * 0.95, size.width, size.height * 0.85);
-    path.lineTo(size.width, 0);
-    path.lineTo(0, 0);
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => true;
 }

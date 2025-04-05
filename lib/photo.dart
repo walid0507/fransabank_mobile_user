@@ -3,8 +3,8 @@ import 'package:lottie/lottie.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'signature.dart';
 import 'api_service.dart';
+import 'signature.dart';
 
 class Photo extends StatefulWidget {
   const Photo({super.key});
@@ -343,7 +343,7 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => Signature(),
+                                  builder: (context) => SignaturePage(),
                                 ),
                               );
                             } catch (e) {
