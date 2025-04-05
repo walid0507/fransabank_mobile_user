@@ -7,6 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'main.dart';
 import 'listes_comptes.dart';
+import 'conditions_utilisation.dart';
 
 class ComptesPage extends StatefulWidget {
   final String nomClient;
@@ -430,7 +431,7 @@ class _ComptesPageState extends State<ComptesPage>
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => CreateAccountScreen(),
+                          builder: (context) => ConditionsUtilisationPage(nomClient: widget.nomClient),
                         ),
                       );
                     },
