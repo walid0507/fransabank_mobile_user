@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'header.dart';
+import 'curved_header.dart';
 import 'package:projet1/configngrok.dart';
 
 class Nvmp extends StatefulWidget {
@@ -27,61 +27,66 @@ class _NvmpState extends State<Nvmp> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: Container(
-        width: double.infinity,
-        height: MediaQuery.of(context).size.height,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.blue.shade300,
-              Colors.blue.shade900,
-            ],
-          ),
-        ),
-        child: Column(
-          children: [
-            AppHeader(),
-            SizedBox(height: 30),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(30),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildPasswordField(
-                          _passwordController, "Nouveau mot de passe"),
-                      SizedBox(height: 20),
-                      _buildConfirmPasswordField(_confirmPasswordController,
-                          "Confirmez le nouveau mot de passe"),
-                      SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _validerMotDePasse,
-                          child: Text("Valider"),
-                        ),
+      body: Stack(
+        children: [
+          CurvedHeader(
+            title: "Nouveau mot de passe",
+            onBackPressed: () => Navigator.pop(context),
+            backgroundColor: Colors.blue.shade900,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  SizedBox(height: 100),
+                  Padding(
+                    padding: EdgeInsets.all(30),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          SizedBox(height: 50),
+                          _buildPasswordField(
+                              _passwordController, "Nouveau mot de passe"),
+                          SizedBox(height: 30),
+                          _buildConfirmPasswordField(_confirmPasswordController,
+                              "Confirmez le nouveau mot de passe"),
+                        ],
                       ),
-                    ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 50,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: SizedBox(
+                width: 150,
+                child: ElevatedButton(
+                  onPressed: _validerMotDePasse,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade900,
+                    foregroundColor: Colors.white,
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: Text(
+                    "Valider",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -91,16 +96,27 @@ class _NvmpState extends State<Nvmp> {
       controller: controller,
       obscureText: true,
       decoration: InputDecoration(
-        prefixIcon: Icon(Icons.lock),
-        hintText: label,
+        prefixIcon: Icon(Icons.lock, color: Colors.blue.shade900),
         labelText: label,
+        hintText: label,
         filled: true,
-        fillColor: Colors.blue.shade50,
+        fillColor: Colors.white,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(100),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(color: Colors.blue.shade900, width: 1),
         ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(color: Colors.blue.shade900, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(color: Colors.blue.shade900, width: 2),
+        ),
+        labelStyle: TextStyle(color: Colors.blue.shade900),
+        hintStyle: TextStyle(color: Colors.blue.shade900.withOpacity(0.5)),
       ),
+      style: TextStyle(color: Colors.blue.shade900),
       validator: (value) {
         if (value == null || value.isEmpty) {
           return "Veuillez entrer un mot de passe";
@@ -119,16 +135,27 @@ class _NvmpState extends State<Nvmp> {
       controller: controller,
       obscureText: true,
       decoration: InputDecoration(
-        prefixIcon: Icon(Icons.lock),
-        hintText: label,
+        prefixIcon: Icon(Icons.lock, color: Colors.blue.shade900),
         labelText: label,
+        hintText: label,
         filled: true,
-        fillColor: Colors.blue.shade50,
+        fillColor: Colors.white,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(100),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(color: Colors.blue.shade900, width: 1),
         ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(color: Colors.blue.shade900, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(color: Colors.blue.shade900, width: 2),
+        ),
+        labelStyle: TextStyle(color: Colors.blue.shade900),
+        hintStyle: TextStyle(color: Colors.blue.shade900.withOpacity(0.5)),
       ),
+      style: TextStyle(color: Colors.blue.shade900),
       validator: (value) {
         if (value == null || value.isEmpty) {
           return "Veuillez confirmer votre mot de passe";
