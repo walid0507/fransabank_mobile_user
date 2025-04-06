@@ -12,6 +12,7 @@ import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import 'main.dart';
+import 'shared_data.dart';
 
 class SignaturePage extends StatefulWidget {
   const SignaturePage({Key? key}) : super(key: key);
@@ -58,8 +59,9 @@ Future<File> pngBytesToJpgFile(Uint8List pngBytes) async {
     throw Exception('Erreur de conversion de la signature');
   }
 }
+
 Future<File> convertBase64ToFile(String base64String, String fileName) async {
-  // Supprimer le header "data:image/png;base64," s’il existe
+  // Supprimer le header "data:image/png;base64," s'il existe
   final splitted = base64String.split(',');
   final base64Data = splitted.length > 1 ? splitted[1] : splitted[0];
 
@@ -71,14 +73,65 @@ Future<File> convertBase64ToFile(String base64String, String fileName) async {
   return file;
 }
 
+Future<File> convertUint8ListToFile(Uint8List bytes, String fileName) async {
+  final dir = await getTemporaryDirectory();
+  final file = File('${dir.path}/$fileName');
+  await file.writeAsBytes(bytes);
+  return file;
+}
+
 class _SignaturePageState extends State<SignaturePage> {
   final SignatureController _controller = SignatureController(
     penStrokeWidth: 3,
     penColor: Colors.black,
   );
   String? signatureImage;
+  Uint8List? signatureBytes;
   bool showSignaturePad = false;
   bool isLoading = false;
+  bool hasNfcSignature = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Vérifier si une signature existe déjà depuis SharedData
+    if (SharedData.signatureData != null) {
+      setState(() {
+        // Vérifier le type de la signature
+        if (SharedData.signatureData is String) {
+          signatureImage = SharedData.signatureData as String;
+        } else if (SharedData.signatureData is Uint8List) {
+          signatureBytes = SharedData.signatureData as Uint8List;
+          // Convertir les bytes en base64 pour l'affichage
+          signatureImage =
+              'data:image/png;base64,${base64Encode(signatureBytes!)}';
+        }
+        hasNfcSignature = true;
+      });
+    }
+  }
+
+  // Méthode pour obtenir un Widget d'image à partir des données de signature
+  Widget getSignatureImageWidget() {
+    if (signatureImage != null && signatureImage!.startsWith('data:')) {
+      return Image.memory(
+        Uri.parse(signatureImage!).data!.contentAsBytes(),
+        height: 100,
+      );
+    } else if (signatureImage != null && signatureImage!.startsWith('/')) {
+      return Image.file(
+        File(signatureImage!),
+        height: 100,
+      );
+    } else if (signatureBytes != null) {
+      return Image.memory(
+        signatureBytes!,
+        height: 100,
+      );
+    } else {
+      return const SizedBox.shrink();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +239,7 @@ class _SignaturePageState extends State<SignaturePage> {
                           ),
                         ),
                         const SizedBox(height: 30),
-                        if (signatureImage == null)
+                        if (signatureImage == null && signatureBytes == null)
                           GestureDetector(
                             onTap: () {
                               setState(() {
@@ -202,6 +255,35 @@ class _SignaturePageState extends State<SignaturePage> {
                               ),
                             ),
                           )
+                        else if (hasNfcSignature)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Signature récupérée depuis le scan NFC',
+                                style: GoogleFonts.dancingScript(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      signatureImage = null;
+                                      signatureBytes = null;
+                                      hasNfcSignature = false;
+                                      showSignaturePad = true;
+                                    });
+                                  },
+                                  child: getSignatureImageWidget(),
+                                ),
+                              ),
+                            ],
+                          )
                         else
                           Align(
                             alignment: Alignment.centerLeft,
@@ -209,55 +291,22 @@ class _SignaturePageState extends State<SignaturePage> {
                               onTap: () {
                                 setState(() {
                                   signatureImage = null;
+                                  signatureBytes = null;
                                   showSignaturePad = true;
                                 });
                               },
-                              child: Image.memory(
-                                Uri.parse(signatureImage!)
-                                    .data!
-                                    .contentAsBytes(),
-                                height: 100,
-                              ),
+                              child: getSignatureImageWidget(),
                             ),
                           ),
                         const SizedBox(height: 40),
                       ],
                     ),
                   ),
-                  // if (signatureImage != null)
-                  //   Positioned(
-                  //     bottom: -20,
-                  //     left: 0,
-                  //     right: 0,
-                  //     child: Container(
-                  //       margin: const EdgeInsets.symmetric(horizontal: 20),
-                  //       child: ElevatedButton(
-                  //         onPressed: () {
-                  //           Navigator.pushNamed(context, '/client_tp');
-                  //         },
-                  //         style: ElevatedButton.styleFrom(
-                  //           backgroundColor: const Color(0xFF024DA2),
-                  //           padding: const EdgeInsets.symmetric(vertical: 15),
-                  //           shape: RoundedRectangleBorder(
-                  //             borderRadius: BorderRadius.circular(10),
-                  //           ),
-                  //         ),
-                  //         child: const Text(
-                  //           'Continuer',
-                  //           style: TextStyle(
-                  //             color: Colors.white,
-                  //             fontSize: 16,
-                  //             fontWeight: FontWeight.bold,
-                  //           ),
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ),
                 ],
               ),
             ),
           ),
-          if (signatureImage != null)
+          if (signatureImage != null || signatureBytes != null)
             Positioned(
               bottom: 20,
               left: 0,
@@ -273,7 +322,31 @@ class _SignaturePageState extends State<SignaturePage> {
                           });
 
                           try {
-                              final file = await convertBase64ToFile(signatureImage!, 'signature.png');// signatureImage est non-null ici
+                            File file;
+                            // Vérifier quel type de données nous avons
+                            if (hasNfcSignature) {
+                              if (SharedData.signatureData is String) {
+                                // Cas où signatureData est une chaîne base64
+                                file = await convertBase64ToFile(
+                                    SharedData.signatureData as String,
+                                    'signature.png');
+                              } else if (SharedData.signatureData
+                                  is Uint8List) {
+                                // Cas où signatureData est un Uint8List
+                                file = await convertUint8ListToFile(
+                                    SharedData.signatureData as Uint8List,
+                                    'signature.png');
+                              } else {
+                                throw Exception(
+                                    "Type de signature non pris en charge");
+                              }
+                            } else if (signatureImage != null) {
+                              // Cas où nous avons une signature dessinée
+                              file = await convertBase64ToFile(
+                                  signatureImage!, 'signature.png');
+                            } else {
+                              throw Exception("Aucune signature disponible");
+                            }
 
                             SharedPreferences prefs =
                                 await SharedPreferences.getInstance();
@@ -351,29 +424,10 @@ class _SignaturePageState extends State<SignaturePage> {
                     title: const Text('Votre signature'),
                     leading: IconButton(
                       icon: const Icon(Icons.close),
-                      onPressed: () async {
-                        if (_controller.isNotEmpty) {
-                          // Convertir la signature en PNG
-                          final signaturePng = await _controller.toPngBytes();
-                          if (signaturePng != null) {
-                            // Convertir PNG en JPG
-                            final image = img.decodeImage(signaturePng);
-                            final jpgBytes = img.encodeJpg(image!, quality: 85);
-
-                            // Créer un fichier temporaire
-                            final tempDir = await getTemporaryDirectory();
-                            final file = File(
-                                '${tempDir.path}/signature_${DateTime.now().millisecondsSinceEpoch}.jpg');
-                            await file.writeAsBytes(jpgBytes);
-
-                            // Mettre à jour l'état avec le chemin du fichier
-                            setState(() {
-                              signatureImage =
-                                  file.path; // Stocker le chemin du fichier
-                              showSignaturePad = false;
-                            });
-                          }
-                        }
+                      onPressed: () {
+                        setState(() {
+                          showSignaturePad = false;
+                        });
                       },
                     ),
                   ),
@@ -403,9 +457,12 @@ class _SignaturePageState extends State<SignaturePage> {
                               final signature = await _controller.toPngBytes();
                               if (signature != null) {
                                 setState(() {
+                                  signatureBytes = signature;
                                   signatureImage =
                                       'data:image/png;base64,${base64Encode(signature)}';
                                   showSignaturePad = false;
+                                  hasNfcSignature =
+                                      false; // Marquer comme signature dessinée
                                 });
                               }
                             }
