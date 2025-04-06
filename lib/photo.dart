@@ -5,6 +5,8 @@ import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import 'signature.dart';
+import 'dart:typed_data';
+import 'shared_data.dart';
 
 class Photo extends StatefulWidget {
   const Photo({super.key});
@@ -18,6 +20,7 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
   final ImagePicker _picker = ImagePicker();
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
+  bool get _hasNfcImage => SharedData.imageData != null;
 
   @override
   void initState() {
@@ -100,6 +103,17 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
   }
 
   Future<void> _pickImage() async {
+    // Empêcher de choisir une image si une image NFC existe
+    if (_hasNfcImage) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Vous devez utiliser la photo récupérée depuis votre carte d\'identité'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() {
@@ -110,6 +124,7 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    Uint8List? imagenfc = SharedData.imageData;
     Color primaryBlue = Color(0xFF024DA2);
 
     return Scaffold(
@@ -195,7 +210,9 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
                               ),
                               children: [
                                 TextSpan(
-                                  text: 'Ajoutez votre photo d\'identité depuis votre galerie\n',
+                                  text: _hasNfcImage
+                                      ? 'Photo récupérée depuis votre carte d\'identité\n'
+                                      : 'Ajoutez votre photo d\'identité depuis votre galerie\n',
                                   style: TextStyle(
                                     fontSize: 16,
                                     height: 1.4,
@@ -204,7 +221,9 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
                                   ),
                                 ),
                                 TextSpan(
-                                  text: 'Si vous avez utilisé la fonction de scan NFC, votre photo a été automatiquement récupérée depuis votre carte d\'identité',
+                                  text: _hasNfcImage
+                                      ? 'Cette photo a été récupérée automatiquement depuis votre carte d\'identité et sera utilisée pour votre demande'
+                                      : 'Si vous avez utilisé la fonction de scan NFC, votre photo a été automatiquement récupérée depuis votre carte d\'identité',
                                   style: TextStyle(
                                     fontSize: 16,
                                     height: 1.4,
@@ -225,7 +244,19 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
                   padding: EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      if (_selectedImage == null)
+                      // Si une photo NFC existe, on l'affiche directement
+                      if (_hasNfcImage)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.memory(
+                            imagenfc!,
+                            height: 300,
+                            width: double.infinity,
+                            fit: BoxFit.contain,
+                          ),
+                        )
+                      // Si pas de photo NFC et pas d'image sélectionnée, on affiche l'interface pour ajouter une photo
+                      else if (_selectedImage == null)
                         InkWell(
                           onTap: _pickImage,
                           child: Container(
@@ -280,6 +311,7 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
                             ),
                           ),
                         )
+                      // Si une image a été sélectionnée (et pas de photo NFC), on affiche l'image sélectionnée
                       else
                         Column(
                           children: [
@@ -287,9 +319,9 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
                               borderRadius: BorderRadius.circular(10),
                               child: Image.file(
                                 _selectedImage!,
-                                height: 180,
+                                height: 300,
                                 width: double.infinity,
-                                fit: BoxFit.cover,
+                                fit: BoxFit.contain,
                               ),
                             ),
                             SizedBox(height: 10),
@@ -305,59 +337,88 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
                       _buildModernButton(
                         text: 'Soumettre',
                         onPressed: () async {
-                          if (_selectedImage != null) {
-                            try {
-                              SharedPreferences prefs = await SharedPreferences.getInstance();
-                              String? demandeIdStr = prefs.getString('demande_id');
-                              int? demandeId = demandeIdStr != null ? int.parse(demandeIdStr) : null;
-                              
-                              if (demandeId == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Erreur: ID de demande non trouvé')),
-                                );
-                                return;
-                              }
+                          try {
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            String? demandeIdStr =
+                                prefs.getString('demande_id');
+                            int? demandeId = demandeIdStr != null
+                                ? int.parse(demandeIdStr)
+                                : null;
 
-                              // Afficher un indicateur de chargement
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (BuildContext context) {
-                                  return Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                },
+                            if (demandeId == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text(
+                                        'Erreur: ID de demande non trouvé')),
                               );
+                              return;
+                            }
 
-                              await ApiService.uploadPhoto(_selectedImage!, demandeId);
+                            // Afficher un indicateur de chargement
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (BuildContext context) {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              },
+                            );
+
+                            // Si nous avons une image NFC, convertir en File temporaire pour l'upload
+                            if (_hasNfcImage) {
+                              // Créer un fichier temporaire depuis les données d'image NFC
+                              final tempDir = await Directory.systemTemp.createTemp();
+                              final tempFile = File('${tempDir.path}/nfc_photo.jpg');
+                              await tempFile.writeAsBytes(imagenfc!);
                               
+                              await ApiService.uploadPhoto(tempFile, demandeId);
+                            } else if (_selectedImage != null) {
+                              await ApiService.uploadPhoto(_selectedImage!, demandeId);
+                            } else {
                               // Fermer l'indicateur de chargement
                               Navigator.pop(context);
-
-                              // Afficher un message de succès
+                              
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Photo téléchargée avec succès')),
-                              );
-
-                              // Naviguer vers la page suivante
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => SignaturePage(),
+                                SnackBar(
+                                  content: Text('Veuillez sélectionner une photo'),
+                                  backgroundColor: Colors.red,
                                 ),
                               );
-                            } catch (e) {
-                              // Fermer l'indicateur de chargement s'il est encore ouvert
-                              Navigator.of(context).pop();
-                              
-                              // Afficher l'erreur
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Erreur lors du téléchargement: $e')),
-                              );
+                              return;
                             }
+
+                            // Fermer l'indicateur de chargement
+                            Navigator.pop(context);
+
+                            // Afficher un message de succès
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content:
+                                      Text('Photo téléchargée avec succès')),
+                            );
+
+                            // Naviguer vers la page suivante
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SignaturePage(),
+                              ),
+                            );
+                          } catch (e) {
+                            // Fermer l'indicateur de chargement s'il est encore ouvert
+                            Navigator.of(context).pop();
+
+                            // Afficher l'erreur
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      'Erreur lors du téléchargement: $e')),
+                            );
                           }
                         },
-                        isEnabled: _selectedImage != null,
+                        isEnabled: _hasNfcImage || _selectedImage != null,
                         width: double.infinity,
                       ),
                     ],
@@ -377,8 +438,8 @@ class InvertedCurvedClipper extends CustomClipper<Path> {
   Path getClip(Size size) {
     Path path = Path();
     path.lineTo(0, size.height * 0.90);
-    path.quadraticBezierTo(
-        size.width * 0.10, size.height * 0.95, size.width * 0.25, size.height * 0.95);
+    path.quadraticBezierTo(size.width * 0.10, size.height * 0.95,
+        size.width * 0.25, size.height * 0.95);
     path.quadraticBezierTo(
         size.width * 0.75, size.height * 0.95, size.width, size.height * 0.85);
     path.lineTo(size.width, 0);

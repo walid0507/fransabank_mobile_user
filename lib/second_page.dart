@@ -4,6 +4,8 @@ import 'package:dmrtd/dmrtd.dart';
 import 'package:flutter/material.dart';
 import 'package:mrz_parser/mrz_parser.dart';
 import 'package:image/image.dart' as img;
+import 'shared_data.dart';
+
 import 'package:lottie/lottie.dart';
 import 'mrz.dart';
 import 'nfcheader.dart';
@@ -57,7 +59,7 @@ class SecondPage extends StatefulWidget {
 }
 
 class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
-  Uint8List? image, signature;
+  Uint8List? image,imagenfc, signature;
   String data = "";
   List<String>? mrzLines;
   Map<String, String>? mrzData;
@@ -79,7 +81,7 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
     } else if (mrzData != null && !showResults) {
       return "✅ L'extraction est terminée avec succès ! Appuyez sur 'Voir les résultats' pour consulter les informations de votre carte.";
     } else {
-      return "";  // On retourne une chaîne vide car on utilise _buildInstructionStep
+      return ""; // On retourne une chaîne vide car on utilise _buildInstructionStep
     }
   }
 
@@ -115,14 +117,14 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
 
   void _showErrorDialog(String message) {
     if (!mounted) return;
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext dialogContext) {  
+      builder: (BuildContext dialogContext) {
         _dialogContext = dialogContext;
         return WillPopScope(
-          onWillPop: () async => false,  // Empêche le retour arrière
+          onWillPop: () async => false, // Empêche le retour arrière
           child: AlertDialog(
             title: Row(
               children: [
@@ -186,10 +188,10 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext dialogContext) {  
+      builder: (BuildContext dialogContext) {
         _dialogContext = dialogContext;
         return WillPopScope(
-          onWillPop: () async => false,  // Empêche le retour arrière
+          onWillPop: () async => false, // Empêche le retour arrière
           child: StreamBuilder<int>(
             stream: _scanProgressController.stream,
             initialData: 0,
@@ -255,7 +257,8 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                       Text(
                         statusText,
                         style: TextStyle(
-                          color: progress == 6 ? Color(0xFF003366) : Colors.grey,
+                          color:
+                              progress == 6 ? Color(0xFF003366) : Colors.grey,
                         ),
                       ),
                     ],
@@ -488,10 +491,10 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
       } catch (e) {
         print("Échec du BAC : $e");
         if (mounted) {
-          Navigator.of(context).pop(); // Ferme la boîte de dialogue de progression
+          Navigator.of(context)
+              .pop(); // Ferme la boîte de dialogue de progression
           _showErrorDialog(
-            "La connexion avec la carte a été perdue. Veuillez maintenir la carte immobile et réessayer."
-          );
+              "La connexion avec la carte a été perdue. Veuillez maintenir la carte immobile et réessayer.");
         }
         return;
       }
@@ -503,10 +506,10 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
       } catch (e) {
         print("Erreur lors de la lecture de EF.COM : $e");
         if (mounted) {
-          Navigator.of(context).pop(); // Ferme la boîte de dialogue de progression
+          Navigator.of(context)
+              .pop(); // Ferme la boîte de dialogue de progression
           _showErrorDialog(
-            "Erreur lors de la lecture des données. La carte a peut-être bougé, veuillez réessayer en la maintenant bien immobile."
-          );
+              "Erreur lors de la lecture des données. La carte a peut-être bougé, veuillez réessayer en la maintenant bien immobile.");
         }
         return;
       }
@@ -517,10 +520,10 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
       } catch (e) {
         print("Erreur lors de la lecture de DG1 : $e");
         if (mounted) {
-          Navigator.of(context).pop(); // Ferme la boîte de dialogue de progression
+          Navigator.of(context)
+              .pop(); // Ferme la boîte de dialogue de progression
           _showErrorDialog(
-            "La lecture a été interrompue. Assurez-vous que la carte reste bien en contact avec le lecteur NFC."
-          );
+              "La lecture a été interrompue. Assurez-vous que la carte reste bien en contact avec le lecteur NFC.");
         }
         return;
       }
@@ -530,16 +533,17 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
         print("DG2 lu avec succès");
         if (dg2 != null) {
           setState(() {
-            image = resizeImage(dg2.imageData, width: 120, height: 120);
+             image = resizeImage(dg2.imageData, width: 120, height: 120);
+            imagenfc = dg2.imageData;
           });
         }
       } catch (e) {
         print("Erreur lors de la lecture de DG2 : $e");
         if (mounted) {
-          Navigator.of(context).pop(); // Ferme la boîte de dialogue de progression
+          Navigator.of(context)
+              .pop(); // Ferme la boîte de dialogue de progression
           _showErrorDialog(
-            "Impossible de lire la photo. Veuillez réessayer en gardant la carte parfaitement immobile."
-          );
+              "Impossible de lire la photo. Veuillez réessayer en gardant la carte parfaitement immobile.");
         }
         return;
       }
@@ -558,10 +562,10 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
       } catch (e) {
         print("Erreur lors de la lecture de DG7 : $e");
         if (mounted) {
-          Navigator.of(context).pop(); // Ferme la boîte de dialogue de progression
+          Navigator.of(context)
+              .pop(); // Ferme la boîte de dialogue de progression
           _showErrorDialog(
-            "Erreur lors de la lecture de la signature. Veuillez réessayer en maintenant la carte stable."
-          );
+              "Erreur lors de la lecture de la signature. Veuillez réessayer en maintenant la carte stable.");
         }
         return;
       }
@@ -583,10 +587,10 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
         print("❌ Erreur lors de la lecture du Personal Number : $e");
         print("StackTrace : $stackTrace");
         if (mounted) {
-          Navigator.of(context).pop(); // Ferme la boîte de dialogue de progression
+          Navigator.of(context)
+              .pop(); // Ferme la boîte de dialogue de progression
           _showErrorDialog(
-            "Erreur lors de la lecture du numéro personnel. Veuillez réessayer."
-          );
+              "Erreur lors de la lecture du numéro personnel. Veuillez réessayer.");
         }
         return;
       }
@@ -606,14 +610,13 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
           showResults = false;
         });
       }
-
     } catch (e) {
       print("Erreur lors de la lecture NFC : $e");
       if (mounted) {
-        Navigator.of(context).pop(); // Ferme la boîte de dialogue de progression
+        Navigator.of(context)
+            .pop(); // Ferme la boîte de dialogue de progression
         _showErrorDialog(
-          "Une erreur est survenue lors de la lecture. Assurez-vous que votre carte est bien positionnée et réessayez."
-        );
+            "Une erreur est survenue lors de la lecture. Assurez-vous que votre carte est bien positionnée et réessayez.");
       }
     } finally {
       await nfc.disconnect();
@@ -681,7 +684,7 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                   ),
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Explanation Bubble
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -697,34 +700,39 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                       ),
                     ],
                   ),
-                  child: mrzLines != null && mrzData == null ? Column(
-                    children: [
-                      Text(
-                        "Instructions :",
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF003366),
+                  child: mrzLines != null && mrzData == null
+                      ? Column(
+                          children: [
+                            Text(
+                              "Instructions :",
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF003366),
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            _buildInstructionStep(
+                                "Localisez le lecteur NFC (près des caméras)"),
+                            _buildInstructionStep(
+                                "Alignez votre carte avec le lecteur"),
+                            _buildInstructionStep(
+                                "Appuyez sur 'Scanner NFC' et restez immobile"),
+                          ],
+                        )
+                      : Text(
+                          _getExplanationText(),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF003366),
+                            height: 1.3,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                      ),
-                      SizedBox(height: 8),
-                      _buildInstructionStep("Localisez le lecteur NFC (près des caméras)"),
-                      _buildInstructionStep("Alignez votre carte avec le lecteur"),
-                      _buildInstructionStep("Appuyez sur 'Scanner NFC' et restez immobile"),
-                    ],
-                  ) : Text(
-                    _getExplanationText(),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF003366),
-                      height: 1.3,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
                 ),
 
                 const SizedBox(height: 30),
-                
+
                 // Buttons
                 if (!_isScanning && mrzData == null) ...[
                   Column(
@@ -780,7 +788,6 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                   ),
                 ],
               ],
-
               if (showResults) ...[
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -812,6 +819,8 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                       icon: Icons.save,
                       onPressed: () {
                         if (mrzData != null) {
+                          SharedData.imageData = imagenfc;
+                          SharedData.signatureData = signature;
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
@@ -819,11 +828,16 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                                 prefillData: {
                                   'firstName': mrzData!['Nom'] ?? '',
                                   'lastName': mrzData!['Prénom'] ?? '',
-                                  'dateOfBirth': mrzData!["Date de naissance"] ?? '',
-                                  'documentNumber': mrzData!["Numéro de document"] ?? '',
+                                  'dateOfBirth':
+                                      mrzData!["Date de naissance"] ?? '',
+                                  'documentNumber':
+                                      mrzData!["Numéro de document"] ?? '',
                                   'nin': numeroIdentite ?? '',
-                                  'expiryDate': mrzData!["Date d'expiration"] ?? '',
-                                  'gender': mrzData!['Sexe'] == 'F' ? 'Madame' : 'Monsieur',
+                                  'expiryDate':
+                                      mrzData!["Date d'expiration"] ?? '',
+                                  'gender': mrzData!['Sexe'] == 'F'
+                                      ? 'Madame'
+                                      : 'Monsieur',
                                 },
                                 readOnly: true,
                               ),
@@ -835,7 +849,6 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                   ],
                 ),
                 const SizedBox(height: 20),
-                
                 if (mrzData != null)
                   Card(
                     margin: const EdgeInsets.symmetric(vertical: 16),
@@ -860,7 +873,8 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                             mrzData!["Date de naissance"] ?? "",
                           ),
                           _buildInfoRow("Genre", mrzData!["Sexe"] ?? ""),
-                          _buildInfoRow("Nationalité", mrzData!["Nationalité"] ?? ""),
+                          _buildInfoRow(
+                              "Nationalité", mrzData!["Nationalité"] ?? ""),
                           _buildInfoRow(
                             "Numéro de document",
                             mrzData!["Numéro de document"] ?? "",
@@ -875,7 +889,6 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
-
                 if (image != null || signature != null)
                   Card(
                     margin: const EdgeInsets.only(bottom: 16),
@@ -900,7 +913,8 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                                   children: [
                                     Text(
                                       "Photo",
-                                      style: TextStyle(color: Color(0xFF003366)),
+                                      style:
+                                          TextStyle(color: Color(0xFF003366)),
                                     ),
                                     const SizedBox(height: 5),
                                     Image(image: MemoryImage(image!)),
@@ -911,7 +925,8 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                                   children: [
                                     Text(
                                       "Signature",
-                                      style: TextStyle(color: Color(0xFF003366)),
+                                      style:
+                                          TextStyle(color: Color(0xFF003366)),
                                     ),
                                     const SizedBox(height: 5),
                                     Image(image: MemoryImage(signature!)),
@@ -923,7 +938,6 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
-
                 if (mrzLines != null)
                   Card(
                     margin: const EdgeInsets.only(bottom: 16),
@@ -990,11 +1004,11 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
         Text(
           content,
           style: TextStyle(
-            fontSize: 12, 
+            fontSize: 12,
             color: Color(0xFF003366),
             fontWeight: FontWeight.w600,
             fontFamily: 'Courier',
-            letterSpacing: 0.2, 
+            letterSpacing: 0.2,
           ),
         ),
       ],
