@@ -369,6 +369,7 @@ class _SignaturePageState extends State<SignaturePage> {
                             }
 
                             await ApiService.uploadSignature(file, demandeId);
+                            SharedData.signatureData = null;
 
                             Navigator.pushReplacement(
                               context,

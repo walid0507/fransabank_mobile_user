@@ -107,13 +107,14 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
     if (_hasNfcImage) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Vous devez utiliser la photo récupérée depuis votre carte d\'identité'),
+          content: Text(
+              'Vous devez utiliser la photo récupérée depuis votre carte d\'identité'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
-    
+
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() {
@@ -369,20 +370,25 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
                             // Si nous avons une image NFC, convertir en File temporaire pour l'upload
                             if (_hasNfcImage) {
                               // Créer un fichier temporaire depuis les données d'image NFC
-                              final tempDir = await Directory.systemTemp.createTemp();
-                              final tempFile = File('${tempDir.path}/nfc_photo.jpg');
+                              final tempDir =
+                                  await Directory.systemTemp.createTemp();
+                              final tempFile =
+                                  File('${tempDir.path}/nfc_photo.jpg');
                               await tempFile.writeAsBytes(imagenfc!);
-                              
+
                               await ApiService.uploadPhoto(tempFile, demandeId);
+                              SharedData.imageData = null;
                             } else if (_selectedImage != null) {
-                              await ApiService.uploadPhoto(_selectedImage!, demandeId);
+                              await ApiService.uploadPhoto(
+                                  _selectedImage!, demandeId);
                             } else {
                               // Fermer l'indicateur de chargement
                               Navigator.pop(context);
-                              
+
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('Veuillez sélectionner une photo'),
+                                  content:
+                                      Text('Veuillez sélectionner une photo'),
                                   backgroundColor: Colors.red,
                                 ),
                               );
