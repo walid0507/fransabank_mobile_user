@@ -650,4 +650,41 @@ class ApiService {
       rethrow;
     }
   }
+  static Future<void> uploadSignature(File signature, int demandeId) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('access_token');
+      
+      if (token == null) {
+        throw Exception("Token non trouvé");
+      }
+
+      final url = Uri.parse('${Config.baseApiUrl}/api/demandecompte/$demandeId/upload_signature/');
+      final request = http.MultipartRequest('POST', url);
+      
+      // Ajouter le token d'authentification
+      request.headers['Authorization'] = 'Bearer $token';
+      
+      request.files.add(await http.MultipartFile.fromPath(
+        'signature', 
+        signature.path,
+      ));
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      
+      if (response.statusCode != 200) {
+        print("Erreur lors de l'upload de la signature: ${response.body}");
+        throw Exception('Échec du téléchargement de la signature');
+      }
+      
+  
+      final responseData = json.decode(response.body);
+      print("Signature uploadée avec succès. URL: ${responseData['signature_url']}");
+      
+    } catch (e) {
+      print('Erreur lors du téléchargement de la signature: $e');
+      rethrow;
+    }
+  }
 }

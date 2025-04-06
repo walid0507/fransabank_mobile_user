@@ -4,7 +4,13 @@ import 'package:signature/signature.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
-import 'comptes.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+import 'api_service.dart';
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:image/image.dart' as img;
+import 'package:path_provider/path_provider.dart';
 import 'main.dart';
 
 class SignaturePage extends StatefulWidget {
@@ -32,6 +38,39 @@ class InvertedCurvedClipper extends CustomClipper<Path> {
   bool shouldReclip(CustomClipper<Path> oldClipper) => true;
 }
 
+Future<File> pngBytesToJpgFile(Uint8List pngBytes) async {
+  try {
+    // Décoder l'image PNG
+    final image = img.decodeImage(pngBytes);
+
+    // Convertir en JPG avec une qualité de 85%
+    final jpgBytes = img.encodeJpg(image!, quality: 85);
+
+    // Créer un fichier temporaire
+    final tempDir = await getTemporaryDirectory();
+    final file = File(
+        '${tempDir.path}/signature_${DateTime.now().millisecondsSinceEpoch}.jpg');
+    await file.writeAsBytes(jpgBytes);
+
+    return file;
+  } catch (e) {
+    print('Erreur de conversion: $e');
+    throw Exception('Erreur de conversion de la signature');
+  }
+}
+Future<File> convertBase64ToFile(String base64String, String fileName) async {
+  // Supprimer le header "data:image/png;base64," s’il existe
+  final splitted = base64String.split(',');
+  final base64Data = splitted.length > 1 ? splitted[1] : splitted[0];
+
+  final bytes = base64Decode(base64Data);
+  final dir = await getTemporaryDirectory();
+  final file = File('${dir.path}/$fileName');
+
+  await file.writeAsBytes(bytes);
+  return file;
+}
+
 class _SignaturePageState extends State<SignaturePage> {
   final SignatureController _controller = SignatureController(
     penStrokeWidth: 3,
@@ -39,6 +78,7 @@ class _SignaturePageState extends State<SignaturePage> {
   );
   String? signatureImage;
   bool showSignaturePad = false;
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -225,22 +265,66 @@ class _SignaturePageState extends State<SignaturePage> {
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginScreen()),
-                    );
-                  },
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          setState(() {
+                            isLoading = true;
+                          });
+
+                          try {
+                              final file = await convertBase64ToFile(signatureImage!, 'signature.png');// signatureImage est non-null ici
+
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            String? demandeIdStr =
+                                prefs.getString('demande_id');
+                            int? demandeId = demandeIdStr != null
+                                ? int.parse(demandeIdStr)
+                                : null;
+
+                            if (demandeId == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text(
+                                        'Erreur: ID de demande non trouvé')),
+                              );
+                              setState(() {
+                                isLoading = false;
+                              });
+                              return;
+                            }
+
+                            await ApiService.uploadSignature(file, demandeId);
+
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => LoginScreen()),
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content:
+                                      Text("Erreur lors de l'upload : $e")),
+                            );
+                          } finally {
+                            setState(() {
+                              isLoading = false;
+                            });
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF024DA2),
+                    backgroundColor:
+                        isLoading ? Colors.grey : const Color(0xFF024DA2),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Text(
-                    'Continuer',
-                    style: TextStyle(
+                  child: Text(
+                    isLoading ? 'Envoi en cours...' : 'Continuer',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -267,10 +351,29 @@ class _SignaturePageState extends State<SignaturePage> {
                     title: const Text('Votre signature'),
                     leading: IconButton(
                       icon: const Icon(Icons.close),
-                      onPressed: () {
-                        setState(() {
-                          showSignaturePad = false;
-                        });
+                      onPressed: () async {
+                        if (_controller.isNotEmpty) {
+                          // Convertir la signature en PNG
+                          final signaturePng = await _controller.toPngBytes();
+                          if (signaturePng != null) {
+                            // Convertir PNG en JPG
+                            final image = img.decodeImage(signaturePng);
+                            final jpgBytes = img.encodeJpg(image!, quality: 85);
+
+                            // Créer un fichier temporaire
+                            final tempDir = await getTemporaryDirectory();
+                            final file = File(
+                                '${tempDir.path}/signature_${DateTime.now().millisecondsSinceEpoch}.jpg');
+                            await file.writeAsBytes(jpgBytes);
+
+                            // Mettre à jour l'état avec le chemin du fichier
+                            setState(() {
+                              signatureImage =
+                                  file.path; // Stocker le chemin du fichier
+                              showSignaturePad = false;
+                            });
+                          }
+                        }
                       },
                     ),
                   ),

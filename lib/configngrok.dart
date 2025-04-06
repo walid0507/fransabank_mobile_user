@@ -1,5 +1,5 @@
 class Config {
   //Lien ngrok ici
   static const String baseApiUrl =
-      "https://registry-pure-ver-plane.trycloudflare.com";
+      "https://john-immigration-lambda-acquire.trycloudflare.com";
 }
