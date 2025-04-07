@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'emi.dart'; // Ajout de l'import pour la page EMI
+import 'header3.dart'; // Ajout de l'import pour le header3
 
 void main() {
   runApp(MyApp());
@@ -24,33 +25,21 @@ class LoanPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        backgroundColor: Colors.grey[100],
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.black87),
-          onPressed: () {},
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(200),
+        child: Header3(
+          title: 'Loan Page',
+          onBackPressed: () => Navigator.pop(context),
+          onLogoutPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const EMICalculatorPage(),
+              ),
+            );
+          },
+          rightIcon: Icons.calculate,
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calculate, color: Colors.black87),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const EMICalculatorPage(),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_outlined,
-              color: Colors.black87,
-            ),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -83,7 +72,7 @@ class LoanPage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Current Loan Balance',
+                              'Solde actuel du prêt',
                               style: TextStyle(
                                 fontSize: 16,
                                 color: Colors.black87,
@@ -97,7 +86,7 @@ class LoanPage extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      '\$1,560.32',
+                                      '1,560.32 DA',
                                       style: TextStyle(
                                         fontSize: 32,
                                         fontWeight: FontWeight.bold,
@@ -105,7 +94,7 @@ class LoanPage extends StatelessWidget {
                                       ),
                                     ),
                                     Text(
-                                      'Due in 7 days',
+                                      'À rendre dans 7 jours',
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: Colors.grey[800],
@@ -170,7 +159,7 @@ class LoanPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Recent Activity',
+                        'Activité récente',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -179,7 +168,7 @@ class LoanPage extends StatelessWidget {
                       TextButton(
                         onPressed: () {},
                         child: Text(
-                          'See All',
+                          'Tout voir',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -196,8 +185,8 @@ class LoanPage extends StatelessWidget {
                       children: const [
                         ActivityTile(
                           icon: Icons.directions_car,
-                          title: 'Car EMI',
-                          amount: '\$24.76',
+                          title: 'Voiture EMI',
+                          amount: '\da 24.76',
                           date: '15-Sep-2023',
                           status: 'Due',
                           statusColor: Colors.red,
@@ -205,7 +194,7 @@ class LoanPage extends StatelessWidget {
                         ActivityTile(
                           icon: Icons.home,
                           title: 'Home Loan',
-                          amount: '\$505.28',
+                          amount: '505.28 DA',
                           date: '18-Sep-2023',
                           status: 'Approved',
                           statusColor: Color(0xFF4CAF50),
@@ -213,7 +202,7 @@ class LoanPage extends StatelessWidget {
                         ActivityTile(
                           icon: Icons.local_hospital,
                           title: 'Medical Loan',
-                          amount: '\$200.29',
+                          amount: '200.29 DA',
                           date: '20-Sep-2023',
                           status: 'Processing',
                           statusColor: Color(0xFFFFB74D),
@@ -390,14 +379,13 @@ class ActivityTile extends StatelessWidget {
 class CurvedCardPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint =
-        Paint()
-          ..shader = LinearGradient(
-            colors: [Colors.amber[400]!, Colors.amber[300]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
-          ..style = PaintingStyle.fill;
+    final paint = Paint()
+      ..shader = LinearGradient(
+        colors: [Colors.blue[400]!, Colors.blue[600]!],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..style = PaintingStyle.fill;
 
     final path = Path();
     path.moveTo(0, 0);
@@ -414,11 +402,10 @@ class CurvedCardPainter extends CustomPainter {
     path.close();
 
     // Dessiner des motifs décoratifs
-    final decorPaint =
-        Paint()
-          ..color = Colors.white.withOpacity(0.1)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2;
+    final decorPaint = Paint()
+      ..color = Colors.white.withOpacity(0.1)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
 
     // Cercles décoratifs
     canvas.drawCircle(

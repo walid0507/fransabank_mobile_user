@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'header3.dart';
 
 void main() {
   runApp(const MyApp());
@@ -45,20 +46,11 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.grey[100],
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black54),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'EMI Calculator',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(200),
+        child: Header3(
+          title: 'EMI Calculator',
+          onBackPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(

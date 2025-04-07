@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:projet1/header3.dart';
+import 'pret.dart';
 
 class Transaction {
   final String title;
@@ -77,7 +78,14 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
         children: [
           Header3(
             title: 'Historique',
+            icon: Icons.arrow_back,
             onBackPressed: () => Navigator.pop(context),
+            onLogoutPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const LoanPage()),
+              );
+            },
           ),
           Expanded(
               child: _isLoading ? _buildShimmerList() : _buildTransactionList())
@@ -108,39 +116,96 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage> {
   }
 
   Widget _buildTransactionList() {
+    // Grouper les transactions par date
+    Map<String, List<Transaction>> groupedTransactions = {};
+    for (var tx in transactions) {
+      if (!groupedTransactions.containsKey(tx.date.split(',')[0])) {
+        groupedTransactions[tx.date.split(',')[0]] = [];
+      }
+      groupedTransactions[tx.date.split(',')[0]]!.add(tx);
+    }
+
     return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      itemCount: transactions.length,
+      padding: EdgeInsets.symmetric(horizontal: 16),
+      itemCount: groupedTransactions.length,
       itemBuilder: (context, index) {
-        final tx = transactions[index];
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: ListTile(
-            leading: Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: Icon(
-                tx.amount > 0 ? Icons.arrow_downward : Icons.arrow_upward,
-                color: tx.amount > 0 ? Colors.green : Colors.red,
-                size: 24,
-              ),
-            ),
-            title:
-                Text(tx.title, style: TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(tx.date, style: TextStyle(color: Colors.grey)),
-            trailing: Text(
-              "${tx.amount > 0 ? '+' : ''}${tx.amount.abs().toStringAsFixed(2)} DA",
-              style: TextStyle(
-                color: tx.amount > 0 ? Colors.green : Colors.red,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+        String date = groupedTransactions.keys.elementAt(index);
+        List<Transaction> dayTransactions = groupedTransactions[date]!;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+              child: Text(
+                date,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
               ),
             ),
-          ),
+            ...dayTransactions
+                .map((tx) => Card(
+                      elevation: 2,
+                      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: AssetImage(tx.imageUrl),
+                                  fit: BoxFit.cover,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    tx.title,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    tx.date.split(',')[1],
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              "${tx.amount > 0 ? '+' : ''}${tx.amount.abs().toStringAsFixed(2)} DA",
+                              style: TextStyle(
+                                color:
+                                    tx.amount > 0 ? Colors.green : Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ))
+                .toList(),
+          ],
         );
       },
     );

@@ -5,6 +5,7 @@ class Header3 extends StatelessWidget {
   final VoidCallback? onBackPressed;
   final VoidCallback? onLogoutPressed;
   final IconData? icon;
+  final IconData rightIcon;
 
   const Header3({
     Key? key,
@@ -12,6 +13,7 @@ class Header3 extends StatelessWidget {
     this.onBackPressed,
     this.onLogoutPressed,
     this.icon,
+    this.rightIcon = Icons.account_balance,
   }) : super(key: key);
 
   @override
@@ -124,8 +126,8 @@ class Header3 extends StatelessWidget {
                         right: 10,
                         top: 20,
                         child: IconButton(
-                          icon: const Icon(
-                            Icons.logout_rounded,
+                          icon: Icon(
+                            rightIcon,
                             color: Colors.white,
                           ),
                           onPressed: onLogoutPressed,
