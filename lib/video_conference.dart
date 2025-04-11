@@ -85,7 +85,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
       case 'accepted':
         return 'Acceptée';
       default:
-        return 'Terminée';
+        return 'Terminée/Annulée';
     }
   }
 
@@ -912,7 +912,7 @@ class _VideoConferencePageState extends State<VideoConferencePage>
             _buildFilterChip('Tout', 'all'),
             _buildFilterChip('En attente', 'blue'),
             _buildFilterChip('Acceptée', 'green'),
-            _buildFilterChip('Terminée', 'grey'),
+            _buildFilterChip('Terminée/Annulée', 'grey'),
           ],
         ),
       ),
