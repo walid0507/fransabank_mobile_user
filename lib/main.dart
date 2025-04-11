@@ -12,7 +12,7 @@ import 'verif_mail.dart';
 import 'clientp.dart'; // Page de vérification d'email
 import 'package:flutter/widgets.dart';
 import 'package:projet1/configngrok.dart';
-import 'package:projet1/configngrok.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 void main() {
   runApp(MyApp());
@@ -70,6 +70,14 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _showWelcome = false;
   bool _rememberMe = false;
+  final _storage = const FlutterSecureStorage();
+
+  Future<void> _clearPreviousUserData() async {
+    await _storage.deleteAll();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('client_id');
+    await prefs.remove('rememberMe');
+  }
 
   @override
   void initState() {
@@ -148,7 +156,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
         String token = data['access'];
         final prefs = await SharedPreferences.getInstance();
+        
+        // Vérifier si c'est un nouvel utilisateur
+        final lastEmail = prefs.getString('last_email');
+        bool isNewUser = lastEmail != email;
+
+        if (isNewUser) {
+          // Nettoyer les données de l'utilisateur précédent
+          await _clearPreviousUserData();
+        }
+
         await prefs.setString('access_token', token);
+        await prefs.setString('last_email', email); // Sauvegarder l'email actuel
         await _saveEmail(email);
         print("✅ Connexion réussie, Token JWT : $token");
         _showMessage("Connexion réussie", isError: false);
