@@ -10,9 +10,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Loan Page',
+      title: 'Page de Prêt',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        textTheme: const TextTheme(
+          headlineLarge: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+          titleLarge: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+      ),
       home: LoanPage(),
     );
   }
@@ -28,7 +42,7 @@ class LoanPage extends StatelessWidget {
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(200),
         child: Header3(
-          title: 'Loan Page',
+          title: 'Page de Prêt',
           onBackPressed: () => Navigator.pop(context),
           onLogoutPressed: () {
             Navigator.push(
@@ -49,7 +63,7 @@ class LoanPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Welcome back,',
+                  'Content de vous revoir,',
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
                 const Text(
@@ -58,12 +72,12 @@ class LoanPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Container(
-                  height: 160,
+                  height: 180,
                   width: double.infinity,
                   child: Stack(
                     children: [
                       CustomPaint(
-                        size: Size(double.infinity, 160),
+                        size: Size(double.infinity, 180),
                         painter: CurvedCardPainter(),
                       ),
                       Padding(
@@ -86,7 +100,7 @@ class LoanPage extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
-                                      '1,560.32 DA',
+                                      '1,560.32 DZD',
                                       style: TextStyle(
                                         fontSize: 32,
                                         fontWeight: FontWeight.bold,
@@ -94,7 +108,7 @@ class LoanPage extends StatelessWidget {
                                       ),
                                     ),
                                     Text(
-                                      'À rendre dans 7 jours',
+                                      'À rembourser dans 7 jours',
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: Colors.grey[800],
@@ -110,7 +124,7 @@ class LoanPage extends StatelessWidget {
                                     color: Colors.black87,
                                   ),
                                   label: const Text(
-                                    'Details',
+                                    'Détails',
                                     style: TextStyle(color: Colors.black87),
                                   ),
                                   style: ElevatedButton.styleFrom(
@@ -140,15 +154,15 @@ class LoanPage extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
+                  topLeft: Radius.circular(40),
+                  topRight: Radius.circular(40),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withOpacity(0.15),
                     spreadRadius: 0,
-                    blurRadius: 10,
-                    offset: const Offset(0, -5),
+                    blurRadius: 15,
+                    offset: const Offset(0, -8),
                   ),
                 ],
               ),
@@ -185,27 +199,19 @@ class LoanPage extends StatelessWidget {
                       children: const [
                         ActivityTile(
                           icon: Icons.directions_car,
-                          title: 'Voiture EMI',
-                          amount: '\da 24.76',
+                          title: 'EMI Voiture',
+                          amount: '24.76 DZD',
                           date: '15-Sep-2023',
-                          status: 'Due',
+                          status: 'Dû',
                           statusColor: Colors.red,
                         ),
                         ActivityTile(
                           icon: Icons.home,
-                          title: 'Home Loan',
-                          amount: '505.28 DA',
+                          title: 'Prêt immobilier',
+                          amount: '505.28 DZD',
                           date: '18-Sep-2023',
-                          status: 'Approved',
+                          status: 'Approuvé',
                           statusColor: Color(0xFF4CAF50),
-                        ),
-                        ActivityTile(
-                          icon: Icons.local_hospital,
-                          title: 'Medical Loan',
-                          amount: '200.29 DA',
-                          date: '20-Sep-2023',
-                          status: 'Processing',
-                          statusColor: Color(0xFFFFB74D),
                         ),
                       ],
                     ),
@@ -381,7 +387,7 @@ class CurvedCardPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..shader = LinearGradient(
-        colors: [Colors.blue[400]!, Colors.blue[600]!],
+        colors: [const Color(0xFF1976D2), const Color(0xFF0D47A1)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
@@ -403,19 +409,19 @@ class CurvedCardPainter extends CustomPainter {
 
     // Dessiner des motifs décoratifs
     final decorPaint = Paint()
-      ..color = Colors.white.withOpacity(0.1)
+      ..color = Colors.white.withOpacity(0.15)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
     // Cercles décoratifs
     canvas.drawCircle(
       Offset(size.width * 0.85, size.height * 0.2),
-      30,
+      40,
       decorPaint,
     );
     canvas.drawCircle(
       Offset(size.width * 0.15, size.height * 0.8),
-      20,
+      30,
       decorPaint,
     );
 

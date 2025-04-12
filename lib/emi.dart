@@ -11,11 +11,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'EMI Calculator',
+      title: 'Calculateur EMI',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: const Color(0xFFF5F7FA),
+        textTheme: const TextTheme(
+          headlineLarge: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+          titleLarge: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
       ),
       home: const EMICalculatorPage(),
     );
@@ -30,7 +42,7 @@ class EMICalculatorPage extends StatefulWidget {
 }
 
 class _EMICalculatorPageState extends State<EMICalculatorPage> {
-  String selectedLoanType = 'Home';
+  String selectedLoanType = 'Immobilier';
   final TextEditingController loanAmountController = TextEditingController(
     text: '450',
   );
@@ -65,16 +77,16 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.blue[400]!, Colors.blue[600]!],
+                  colors: [const Color(0xFF1976D2), const Color(0xFF0D47A1)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.2),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
+                    color: Colors.blue.withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
@@ -82,12 +94,12 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Estimated EMI',
+                    'EMI Estimé',
                     style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    '14.25 DA/month',
+                    '14.25 DZD/month',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 32,
@@ -98,9 +110,9 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildSummaryItem('Principal', '450 DA'),
-                      _buildSummaryItem('Interest', '5.45%'),
-                      _buildSummaryItem('Tenure', '3 Years'),
+                      _buildSummaryItem('Principale', '450 DZD'),
+                      _buildSummaryItem('Taux d intérêt', '5.45%'),
+                      _buildSummaryItem('Durée', '3 ans'),
                     ],
                   ),
                 ],
@@ -113,7 +125,7 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Loan Type',
+                    'Type de Prêt',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -126,15 +138,15 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
                     physics: const BouncingScrollPhysics(),
                     child: Row(
                       children: [
-                        _buildLoanTypeButton('Home', Icons.home),
+                        _buildLoanTypeButton('Immobilier', Icons.home),
                         const SizedBox(width: 12),
-                        _buildLoanTypeButton('Personal', Icons.person),
+                        _buildLoanTypeButton('Aménagement', Icons.construction),
                         const SizedBox(width: 12),
-                        _buildLoanTypeButton('Medical', Icons.medical_services),
+                        _buildLoanTypeButton(
+                            'Automobile', Icons.directions_car),
                         const SizedBox(width: 12),
-                        _buildLoanTypeButton('Car', Icons.directions_car),
-                        const SizedBox(width: 12),
-                        _buildLoanTypeButton('Education', Icons.school),
+                        _buildLoanTypeButton(
+                            'Consommation', Icons.shopping_cart),
                       ],
                     ),
                   ),
@@ -142,10 +154,10 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
 
                   // Loan Amount avec Slider
                   _buildInputFieldWithSlider(
-                    'Loan Amount',
+                    'Montant du Prêt',
                     loanAmountController,
-                    suffix: ' DA',
-                    hint: 'Enter loan amount',
+                    suffix: ' DZD',
+                    hint: 'Entrez le montant du prêt',
                     minValue: 100,
                     maxValue: 1000,
                     value: _sliderValue,
@@ -159,9 +171,9 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
 
                   const SizedBox(height: 24),
                   _buildInputField(
-                    'Tenure (In Years)',
+                    'Durée (en années)',
                     tenureController,
-                    hint: 'Enter tenure',
+                    hint: 'Entrez la durée',
                     prefixIcon: Icon(
                       Icons.calendar_today,
                       size: 20,
@@ -170,10 +182,10 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
                   ),
                   const SizedBox(height: 24),
                   _buildInputField(
-                    'Interest Rate',
+                    'Taux d\'intérêt',
                     interestRateController,
                     suffix: '%',
-                    hint: 'Enter interest rate',
+                    hint: 'Entrez le taux d\'intérêt',
                     prefixIcon: Icon(
                       Icons.percent,
                       size: 20,
@@ -187,15 +199,18 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
                       gradient: LinearGradient(
-                        colors: [Colors.blue[400]!, Colors.blue[600]!],
+                        colors: [
+                          const Color(0xFF1976D2),
+                          const Color(0xFF0D47A1)
+                        ],
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.blue.withOpacity(0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
+                          color: Colors.blue.withOpacity(0.4),
+                          blurRadius: 15,
+                          offset: const Offset(0, 6),
                         ),
                       ],
                     ),
@@ -211,7 +226,7 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
                         ),
                       ),
                       child: const Text(
-                        'Calculate EMI',
+                        'Calculer EMI',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -399,16 +414,16 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue : Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: isSelected ? const Color(0xFF1976D2) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             if (!isSelected)
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
           ],
         ),
@@ -417,15 +432,16 @@ class _EMICalculatorPageState extends State<EMICalculatorPage> {
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.white : Colors.blue,
-              size: 20,
+              color: isSelected ? Colors.white : const Color(0xFF1976D2),
+              size: 24,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             Text(
               type,
               style: TextStyle(
                 color: isSelected ? Colors.white : Colors.black87,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontSize: 16,
               ),
             ),
           ],
