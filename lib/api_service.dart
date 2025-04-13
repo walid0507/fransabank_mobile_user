@@ -75,6 +75,40 @@ class ApiService {
     }
   }
 
+  static Future<List<Map<String, dynamic>>> getMesDemandes() async {
+  try {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('access_token');
+    
+    if (token == null) {
+      throw Exception("Token non trouvé !");
+    }
+    
+    final response = await http.get(
+      Uri.parse('${Config.baseApiUrl}/api/demandecompte/mes_demandes/'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+    
+    print("Code HTTP: ${response.statusCode}");
+    print("Réponse brute: ${response.body}");
+    
+    if (response.statusCode == 200) {
+      // Traite directement la réponse comme un tableau
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((item) => Map<String, dynamic>.from(item)).toList();
+    } else {
+      throw Exception("Erreur ${response.statusCode} : ${response.body}");
+    }
+  } catch (e) {
+    print("Erreur lors de la récupération des demandes: $e");
+    return [];
+  }
+}
+
 //fonction upload document
   static Future<void> uploadMultipleDocuments(int demandeId,
       List<String> typeDocumentIds, List<File> files, String token) async {
@@ -615,73 +649,75 @@ class ApiService {
       throw Exception('Erreur lors de l\'annulation de la visioconférence');
     }
   }
-  static Future<void> uploadPhoto(File photo,int demandeId) async {
+
+  static Future<void> uploadPhoto(File photo, int demandeId) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('access_token');
-      
+
       if (token == null) {
         throw Exception("Token non trouvé");
       }
 
-      final url = Uri.parse('${Config.baseApiUrl}/api/demandecompte/$demandeId/upload_photo/');
+      final url = Uri.parse(
+          '${Config.baseApiUrl}/api/demandecompte/$demandeId/upload_photo/');
       final request = http.MultipartRequest('POST', url);
-      
+
       // Ajouter le token d'authentification
       request.headers['Authorization'] = 'Bearer $token';
-      
+
       request.files.add(await http.MultipartFile.fromPath(
         'photo',
-        photo.path, 
+        photo.path,
       ));
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
-      
+
       if (response.statusCode != 200) {
         print("Erreur lors de l'upload de la photo: ${response.body}");
         throw Exception('Échec du téléchargement de la photo');
       }
-      
+
       print("Photo uploadée avec succès");
-      
     } catch (e) {
       print('Erreur lors du téléchargement de la photo: $e');
       rethrow;
     }
   }
+
   static Future<void> uploadSignature(File signature, int demandeId) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('access_token');
-      
+
       if (token == null) {
         throw Exception("Token non trouvé");
       }
 
-      final url = Uri.parse('${Config.baseApiUrl}/api/demandecompte/$demandeId/upload_signature/');
+      final url = Uri.parse(
+          '${Config.baseApiUrl}/api/demandecompte/$demandeId/upload_signature/');
       final request = http.MultipartRequest('POST', url);
-      
+
       // Ajouter le token d'authentification
       request.headers['Authorization'] = 'Bearer $token';
-      
+
       request.files.add(await http.MultipartFile.fromPath(
-        'signature', 
+        'signature',
         signature.path,
       ));
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
-      
+
       if (response.statusCode != 200) {
         print("Erreur lors de l'upload de la signature: ${response.body}");
         throw Exception('Échec du téléchargement de la signature');
       }
-      
-  
+
       final responseData = json.decode(response.body);
-      print("Signature uploadée avec succès. URL: ${responseData['signature_url']}");
-      
+      print(
+          "Signature uploadée avec succès. URL: ${responseData['signature_url']}");
     } catch (e) {
       print('Erreur lors du téléchargement de la signature: $e');
       rethrow;

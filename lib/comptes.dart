@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'main.dart';
 import 'listes_comptes.dart';
 import 'conditions_utilisation.dart';
+import 'demandes_page.dart';
 
 class ComptesPage extends StatefulWidget {
   final String nomClient;
@@ -412,7 +413,7 @@ class _ComptesPageState extends State<ComptesPage>
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => CustomPage(), // Modifie le nom ici
+          builder: (context) => DemandesPage(), // Modifie le nom ici
         ),
       );
     },
