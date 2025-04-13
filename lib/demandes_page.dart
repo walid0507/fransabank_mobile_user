@@ -76,27 +76,54 @@ class _DemandesPageState extends State<DemandesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CurvedHeader(
-        title: "Mes Demandes",
-        onBackPressed: () => Navigator.pop(context),
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : demandes.isEmpty
-                ? const Center(
-                    child: Text(
-                      'Aucune demande trouvée',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: demandes.length,
-                    itemBuilder: (context, index) {
-                      return _buildDemandeCard(demandes[index]);
-                    },
-                  ),
+      body: Stack(
+        children: [
+          CurvedHeader(
+            height: 0.9,
+            title: "Mes Demandes",
+            onBackPressed: () => Navigator.pop(context),
+            child: Container(),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                SizedBox(height: 60),
+                // Text(
+                //   'Mes Demandes',
+                //   style: TextStyle(
+                //     color: Colors.white,
+                //     fontSize: 24,
+                //     fontWeight: FontWeight.bold,
+                //   ),
+                // ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : demandes.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'Aucune demande trouvée',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            )
+                          : Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: ListView.builder(
+                                itemCount: demandes.length,
+                                itemBuilder: (context, index) {
+                                  return _buildDemandeCard(demandes[index]);
+                                },
+                              ),
+                            ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -217,179 +244,203 @@ class DemandeDetailsPage extends StatelessWidget {
     final formattedDate = DateFormat('dd/MM/yyyy').format(date);
 
     return Scaffold(
-      body: CurvedHeader(
-        title: "Détails de la demande",
-        onBackPressed: () => Navigator.pop(context),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Statut de la demande',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Date de demande',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                Text(
-                                  formattedDate,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 24),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Statut',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                _buildStatusWidget(status),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Informations personnelles',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      _buildInfoRow(
-                          'Civilité', demande['civilité'] ?? 'Non spécifié'),
-                      _buildInfoRow(
-                          'Nom', demande['last_name'] ?? 'Non spécifié'),
-                      _buildInfoRow(
-                          'Prénom', demande['first_name'] ?? 'Non spécifié'),
-                      _buildInfoRow('Nom de jeune fille',
-                          demande['nom_jeunefille'] ?? 'Non spécifié'),
-                      _buildInfoRow('Date de naissance',
-                          demande['date_of_birth'] ?? 'Non spécifié'),
-                      _buildInfoRow('Lieu de naissance',
-                          demande['lieu_denaissance'] ?? 'Non spécifié'),
-                      _buildInfoRow('Nationalité',
-                          demande['Nationalité'] ?? 'Non spécifié'),
-                      _buildInfoRow('Nationalité 2',
-                          demande['Nationalité2'] ?? 'Non spécifiée'),
-                      _buildInfoRow('Situation familiale',
-                          demande['situation_familliale'] ?? 'Non spécifié'),
-                      _buildInfoRow('Prénom du père',
-                          demande['Prénom_pere'] ?? 'Non spécifié'),
-                      _buildInfoRow('Nom de la mère',
-                          demande['Nom_mere'] ?? 'Non spécifié'),
-                      _buildInfoRow('Prénom de la mère',
-                          demande['Prénom_mere'] ?? 'Non spécifié'),
-                      _buildInfoRow('Pays de naissance',
-                          demande['Pays_naissance'] ?? 'Non spécifié'),
-                      _buildInfoRow('Adresse', demande['address']),
-                      _buildInfoRow('Téléphone',
-                          demande['phone_number'] ?? 'Non spécifié'),
-                      _buildInfoRow('Numéro d\'identité',
-                          demande['numero_identite'] ?? 'Non spécifié'),
-                      _buildInfoRow('Numéro de document',
-                          demande['numero_doc'] ?? 'Non spécifié'),
-                      _buildInfoRow('Date d\'expiration du document',
-                          demande['date_of_expiry'] ?? 'Non spécifié'),
-                      _buildInfoRow(
-                          'Type de client',
-                          _getTypeName(demande['type_client']) ??
-                              'Non spécifié'),
-                      _buildInfoRow(
-                          'Fonction', demande['fonction'] ?? 'Non spécifiée'),
-                      _buildInfoRow('Nom de l\'employeur',
-                          demande['nom_employeur'] ?? 'Non spécifié'),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Informations FATCA',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      _buildInfoRow(
-                          'Nationalité AM',
-                          demande['fatca_nationalitéAM'] == true
-                              ? 'Oui'
-                              : 'Non'),
-                      _buildInfoRow('Résidence AM',
-                          demande['fatca_residenceAM'] == true ? 'Oui' : 'Non'),
-                      _buildInfoRow('Green Card AM',
-                          demande['fatca_greencardAM'] == true ? 'Oui' : 'Non'),
-                      _buildInfoRow(
-                          'TIN', demande['fatca_TIN'] ?? 'Non spécifié'),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+      body: Stack(
+        children: [
+          CurvedHeader(
+            height: 0.9,
+            title: "Détails de la demande",
+            onBackPressed: () => Navigator.pop(context),
+            child: Container(),
           ),
-        ),
+          SafeArea(
+            child: Column(
+              children: [
+                SizedBox(height: 60),
+                Text(
+                  'Détails de la demande',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Card(
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Statut de la demande',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Date de demande',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          Text(
+                                            formattedDate,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 24),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Statut',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          _buildStatusWidget(status),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Card(
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Informations personnelles',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                _buildInfoRow(
+                                    'Civilité', demande['civilité'] ?? 'Non spécifié'),
+                                _buildInfoRow(
+                                    'Nom', demande['last_name'] ?? 'Non spécifié'),
+                                _buildInfoRow(
+                                    'Prénom', demande['first_name'] ?? 'Non spécifié'),
+                                _buildInfoRow('Nom de jeune fille',
+                                    demande['nom_jeunefille'] ?? 'Non spécifié'),
+                                _buildInfoRow('Date de naissance',
+                                    demande['date_of_birth'] ?? 'Non spécifié'),
+                                _buildInfoRow('Lieu de naissance',
+                                    demande['lieu_denaissance'] ?? 'Non spécifié'),
+                                _buildInfoRow('Nationalité',
+                                    demande['Nationalité'] ?? 'Non spécifié'),
+                                _buildInfoRow('Nationalité 2',
+                                    demande['Nationalité2'] ?? 'Non spécifiée'),
+                                _buildInfoRow('Situation familiale',
+                                    demande['situation_familliale'] ?? 'Non spécifié'),
+                                _buildInfoRow('Prénom du père',
+                                    demande['Prénom_pere'] ?? 'Non spécifié'),
+                                _buildInfoRow('Nom de la mère',
+                                    demande['Nom_mere'] ?? 'Non spécifié'),
+                                _buildInfoRow('Prénom de la mère',
+                                    demande['Prénom_mere'] ?? 'Non spécifié'),
+                                _buildInfoRow('Pays de naissance',
+                                    demande['Pays_naissance'] ?? 'Non spécifié'),
+                                _buildInfoRow('Adresse', demande['address']),
+                                _buildInfoRow('Téléphone',
+                                    demande['phone_number'] ?? 'Non spécifié'),
+                                _buildInfoRow('Numéro d\'identité',
+                                    demande['numero_identite'] ?? 'Non spécifié'),
+                                _buildInfoRow('Numéro de document',
+                                    demande['numero_doc'] ?? 'Non spécifié'),
+                                _buildInfoRow('Date d\'expiration du document',
+                                    demande['date_of_expiry'] ?? 'Non spécifié'),
+                                _buildInfoRow(
+                                    'Type de client',
+                                    _getTypeName(demande['type_client']) ??
+                                        'Non spécifié'),
+                                _buildInfoRow(
+                                    'Fonction', demande['fonction'] ?? 'Non spécifiée'),
+                                _buildInfoRow('Nom de l\'employeur',
+                                    demande['nom_employeur'] ?? 'Non spécifié'),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Card(
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Informations FATCA',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                _buildInfoRow(
+                                    'Nationalité AM',
+                                    demande['fatca_nationalitéAM'] == true
+                                        ? 'Oui'
+                                        : 'Non'),
+                                _buildInfoRow('Résidence AM',
+                                    demande['fatca_residenceAM'] == true ? 'Oui' : 'Non'),
+                                _buildInfoRow('Green Card AM',
+                                    demande['fatca_greencardAM'] == true ? 'Oui' : 'Non'),
+                                _buildInfoRow(
+                                    'TIN', demande['fatca_TIN'] ?? 'Non spécifié'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
