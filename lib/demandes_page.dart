@@ -111,7 +111,8 @@ class _DemandesPageState extends State<DemandesPage> {
                               ),
                             )
                           : Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16.0),
                               child: ListView.builder(
                                 itemCount: demandes.length,
                                 itemBuilder: (context, index) {
@@ -139,9 +140,9 @@ class _DemandesPageState extends State<DemandesPage> {
 
     switch (status) {
       case 'pending':
-        statusIcon = const CircularProgressIndicator(
-          strokeWidth: 2,
-          value: null,
+        statusIcon = Image.asset(
+          'assets/images/sablier_animation.gif',
+          width: 24, 
         );
         statusText = 'En attente';
         statusColor = Colors.orange;
@@ -293,7 +294,8 @@ class DemandeDetailsPage extends StatelessWidget {
                                   children: [
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const Text(
                                             'Date de demande',
@@ -314,7 +316,8 @@ class DemandeDetailsPage extends StatelessWidget {
                                     const SizedBox(width: 24),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const Text(
                                             'Statut',
@@ -352,47 +355,59 @@ class DemandeDetailsPage extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 24),
+                                _buildInfoRow('Civilité',
+                                    demande['civilité'] ?? 'Non spécifié'),
+                                _buildInfoRow('Nom',
+                                    demande['last_name'] ?? 'Non spécifié'),
+                                _buildInfoRow('Prénom',
+                                    demande['first_name'] ?? 'Non spécifié'),
                                 _buildInfoRow(
-                                    'Civilité', demande['civilité'] ?? 'Non spécifié'),
-                                _buildInfoRow(
-                                    'Nom', demande['last_name'] ?? 'Non spécifié'),
-                                _buildInfoRow(
-                                    'Prénom', demande['first_name'] ?? 'Non spécifié'),
-                                _buildInfoRow('Nom de jeune fille',
-                                    demande['nom_jeunefille'] ?? 'Non spécifié'),
+                                    'Nom de jeune fille',
+                                    demande['nom_jeunefille'] ??
+                                        'Non spécifié'),
                                 _buildInfoRow('Date de naissance',
                                     demande['date_of_birth'] ?? 'Non spécifié'),
-                                _buildInfoRow('Lieu de naissance',
-                                    demande['lieu_denaissance'] ?? 'Non spécifié'),
+                                _buildInfoRow(
+                                    'Lieu de naissance',
+                                    demande['lieu_denaissance'] ??
+                                        'Non spécifié'),
                                 _buildInfoRow('Nationalité',
                                     demande['Nationalité'] ?? 'Non spécifié'),
                                 _buildInfoRow('Nationalité 2',
                                     demande['Nationalité2'] ?? 'Non spécifiée'),
-                                _buildInfoRow('Situation familiale',
-                                    demande['situation_familliale'] ?? 'Non spécifié'),
+                                _buildInfoRow(
+                                    'Situation familiale',
+                                    demande['situation_familliale'] ??
+                                        'Non spécifié'),
                                 _buildInfoRow('Prénom du père',
                                     demande['Prénom_pere'] ?? 'Non spécifié'),
                                 _buildInfoRow('Nom de la mère',
                                     demande['Nom_mere'] ?? 'Non spécifié'),
                                 _buildInfoRow('Prénom de la mère',
                                     demande['Prénom_mere'] ?? 'Non spécifié'),
-                                _buildInfoRow('Pays de naissance',
-                                    demande['Pays_naissance'] ?? 'Non spécifié'),
+                                _buildInfoRow(
+                                    'Pays de naissance',
+                                    demande['Pays_naissance'] ??
+                                        'Non spécifié'),
                                 _buildInfoRow('Adresse', demande['address']),
                                 _buildInfoRow('Téléphone',
                                     demande['phone_number'] ?? 'Non spécifié'),
-                                _buildInfoRow('Numéro d\'identité',
-                                    demande['numero_identite'] ?? 'Non spécifié'),
+                                _buildInfoRow(
+                                    'Numéro d\'identité',
+                                    demande['numero_identite'] ??
+                                        'Non spécifié'),
                                 _buildInfoRow('Numéro de document',
                                     demande['numero_doc'] ?? 'Non spécifié'),
-                                _buildInfoRow('Date d\'expiration du document',
-                                    demande['date_of_expiry'] ?? 'Non spécifié'),
+                                _buildInfoRow(
+                                    'Date d\'expiration du document',
+                                    demande['date_of_expiry'] ??
+                                        'Non spécifié'),
                                 _buildInfoRow(
                                     'Type de client',
                                     _getTypeName(demande['type_client']) ??
                                         'Non spécifié'),
-                                _buildInfoRow(
-                                    'Fonction', demande['fonction'] ?? 'Non spécifiée'),
+                                _buildInfoRow('Fonction',
+                                    demande['fonction'] ?? 'Non spécifiée'),
                                 _buildInfoRow('Nom de l\'employeur',
                                     demande['nom_employeur'] ?? 'Non spécifié'),
                               ],
@@ -423,12 +438,18 @@ class DemandeDetailsPage extends StatelessWidget {
                                     demande['fatca_nationalitéAM'] == true
                                         ? 'Oui'
                                         : 'Non'),
-                                _buildInfoRow('Résidence AM',
-                                    demande['fatca_residenceAM'] == true ? 'Oui' : 'Non'),
-                                _buildInfoRow('Green Card AM',
-                                    demande['fatca_greencardAM'] == true ? 'Oui' : 'Non'),
                                 _buildInfoRow(
-                                    'TIN', demande['fatca_TIN'] ?? 'Non spécifié'),
+                                    'Résidence AM',
+                                    demande['fatca_residenceAM'] == true
+                                        ? 'Oui'
+                                        : 'Non'),
+                                _buildInfoRow(
+                                    'Green Card AM',
+                                    demande['fatca_greencardAM'] == true
+                                        ? 'Oui'
+                                        : 'Non'),
+                                _buildInfoRow('TIN',
+                                    demande['fatca_TIN'] ?? 'Non spécifié'),
                               ],
                             ),
                           ),
