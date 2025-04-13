@@ -4,7 +4,7 @@ import 'package:signature/signature.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
-
+import 'face_detection.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import 'dart:io';
@@ -374,7 +374,7 @@ class _SignaturePageState extends State<SignaturePage> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => LoginScreen()),
+                                  builder: (context) => FaceDetectionScreen()),
                             );
                           } catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(
