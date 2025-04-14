@@ -7,6 +7,7 @@ import 'api_service.dart';
 import 'signature.dart';
 import 'dart:typed_data';
 import 'shared_data.dart';
+import 'package:file_picker/file_picker.dart';
 
 class Photo extends StatefulWidget {
   const Photo({super.key});
@@ -103,22 +104,27 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
   }
 
   Future<void> _pickImage() async {
-    // Empêcher de choisir une image si une image NFC existe
     if (_hasNfcImage) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              'Vous devez utiliser la photo récupérée depuis votre carte d\'identité'),
+          content: Text('Vous devez utiliser la photo NFC'),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
 
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      allowMultiple: false,
+      dialogTitle: 'Choisir un fichier',
+      lockParentWindow: true,
+    );
+
+    if (result != null && result.files.isNotEmpty) {
       setState(() {
-        _selectedImage = File(image.path);
+        _selectedImage = File(result.files.first.path!);
       });
     }
   }
@@ -316,20 +322,45 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
                       else
                         Column(
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.file(
-                                _selectedImage!,
+                            if (_selectedImage!.path
+                                .toLowerCase()
+                                .endsWith('.pdf'))
+                              Container(
                                 height: 300,
-                                width: double.infinity,
-                                fit: BoxFit.contain,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(15),
+                                ), // <-- Ajouter cette parenthèse manquante
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.picture_as_pdf,
+                                        size: 80, color: Colors.red),
+                                    SizedBox(height: 15),
+                                    Text(
+                                      'Fichier PDF sélectionné',
+                                      style: TextStyle(
+                                          color: Colors.blueGrey.shade700,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            else
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: Image.file(
+                                  _selectedImage!,
+                                  height: 300,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 10),
+                            SizedBox(height: 15),
                             _buildModernButton(
-                              text: 'Changer la photo',
+                              text: 'Changer le fichier',
                               onPressed: _pickImage,
-                              icon: Icons.photo_camera,
+                              icon: Icons.edit,
                               width: 200,
                             ),
                           ],
