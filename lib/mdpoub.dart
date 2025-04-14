@@ -92,9 +92,9 @@ class _ChangerMotDePasseState extends State<ChangerMotDePasse> {
       Navigator.pop(context);
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
-      );
+    );
     }
   }
 

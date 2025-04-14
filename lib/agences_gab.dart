@@ -20,7 +20,7 @@ class _AgencesGabState extends State<AgencesGab> {
     'Direction Générale': [
       {
         'name': 'Direction Générale',
-        'image': 'images/agences/direction.jpg',
+        'image': 'assets/images/agences/direction.jpg',
         'lat': 36.74472998890608,
         'lon': 2.9495913225210226,
         'adresse':
@@ -35,7 +35,7 @@ class _AgencesGabState extends State<AgencesGab> {
     'Agences Fransabank Centre': [
       {
         'name': 'Agence Sidi Yahia',
-        'image': 'images/agences/sidiyahia.jpg',
+        'image': 'assets/images/agences/sidiyahia.jpg',
         'lat': 36.73927566349871,
         'lon': 3.0348093562047174,
         'adresse': '45B, Lot Petite Provence Sidi Yahia Hydra, Alger.',
@@ -47,7 +47,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Ouled Fayet',
-        'image': 'images/agences/direction.jpg',
+        'image': 'assets/images/agences/direction.jpg',
         'lat': 36.744793512659946,
         'lon': 2.949679691562442,
         'adresse':
@@ -59,7 +59,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Blida',
-        'image': 'images/agences/blida.jpg',
+        'image': 'assets/images/agences/blida.jpg',
         'lat': 36.480146756851596,
         'lon': 2.835535094133326,
         'adresse':
@@ -71,7 +71,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Bab Ezzouar',
-        'image': 'images/agences/babezzouar.jpg',
+        'image': 'assets/images/agences/babezzouar.jpg',
         'lat': 36.71455593564886,
         'lon': 3.2009032316147428,
         'adresse':
@@ -83,7 +83,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Kouba',
-        'image': 'images/agences/kouba.jpg',
+        'image': 'assets/images/agences/kouba.jpg',
         'lat': 36.72513943052998,
         'lon': 3.0728849550068036,
         'adresse':
@@ -96,7 +96,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Baba Hassen',
-        'image': 'images/agences/babahassen.jpg',
+        'image': 'assets/images/agences/babahassen.jpg',
         'lat': 36.69910908147914,
         'lon': 2.973378301701347,
         'adresse': 'Ilot N°211, Section 03, N°01 et 02, Baba Hassen, Alger.',
@@ -108,7 +108,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Rouiba',
-        'image': 'images/agences/rouiba.jpg',
+        'image': 'assets/images/agences/rouiba.jpg',
         'lat': 36.7394504755736,
         'lon': 3.276088160217714,
         'adresse': 'Ilot 158 Bis, les Cadettes Commune de Rouiba, Alger.',
@@ -119,7 +119,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Tizi Ouzou',
-        'image': 'images/agences/tizi.jpg',
+        'image': 'assets/images/agences/tizi.jpg',
         'lat': 36.70975731102915,
         'lon': 4.0355921171127775,
         'adresse':
@@ -132,7 +132,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Alger Centre',
-        'image': 'images/agences/algercentre.jpg',
+        'image': 'assets/images/agences/algercentre.jpg',
         'lat': 36.7649657870512,
         'lon': 3.0539005052669164,
         'adresse': "N°18/20 Rue Ahmed Zabana, Commune Sidi M'Hammed, Alger.",
@@ -143,7 +143,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Garden City',
-        'image': 'images/agences/fransagarden.png',
+        'image': 'assets/images/agences/fransagarden.png',
         'lat': 36.75050919453092,
         'lon': 2.9518361826846578,
         'adresse':
@@ -155,7 +155,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Zeralda',
-        'image': 'images/agences/zeralda.jpg',
+        'image': 'assets/images/agences/zeralda.jpg',
         'lat': 36.71846921651968,
         'lon': 2.848701152037131,
         'adresse':
@@ -167,7 +167,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Dely Brahim',
-        'image': 'images/agences/delybrahim.jpg',
+        'image': 'assets/images/agences/delybrahim.jpg',
         'lat': 36.7537431546275,
         'lon': 2.97741143283714,
         'adresse':
@@ -181,7 +181,7 @@ class _AgencesGabState extends State<AgencesGab> {
     'Agences Fransabank Est': [
       {
         'name': 'Agence Béjaia',
-        'image': 'images/agences/bejaia.jpg',
+        'image': 'assets/images/agences/bejaia.jpg',
         'lat': 36.74516715456071,
         'lon': 5.0594578135128,
         'adresse': 'Route des AURES, Ilo n° 43 / Section n° 74, Béjaia',
@@ -191,8 +191,8 @@ class _AgencesGabState extends State<AgencesGab> {
             'https://maps.app.goo.gl/N1ndrjqHcsWFridf6?g_st=com.google.maps.preview.copy',
       },
       {
-        'name': 'Agence Bordj Bou Arréridj',
-        'image': 'images/agences/bordj.jpg',
+        'name': 'Agence Bordj BA',
+        'image': 'assets/images/agences/bordj.jpg',
         'lat': 36.075310929384564,
         'lon': 4.7466877164763,
         'adresse': 'Lot 475, N°T30, Bordj Bou Arréridj',
@@ -203,7 +203,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Sétif',
-        'image': 'images/agences/setif.jpg',
+        'image': 'assets/images/agences/setif.jpg',
         'lat': 36.20056113632666,
         'lon': 5.410176587442805,
         'adresse':
@@ -215,7 +215,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence El Eulma',
-        'image': 'images/agences/eleulma.jpg',
+        'image': 'assets/images/agences/eleulma.jpg',
         'lat': 36.152899576164685,
         'lon': 5.677293916502533,
         'adresse': 'Promotion Immobilière REKKAB, Bt "G", Bloc 1, El Eulma.',
@@ -227,7 +227,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Constantine',
-        'image': 'images/agences/constantine.jpg',
+        'image': 'assets/images/agences/constantine.jpg',
         'lat': 36.357592136521696,
         'lon': 6.635605747663993,
         'adresse': 'Cité Ali Besbes, Lot G N° 23, Sidi Mabrouk, Constantine.',
@@ -239,7 +239,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Batna',
-        'image': 'images/agences/batna.jpg',
+        'image': 'assets/images/agences/batna.jpg',
         'lat': 35.553862917721354,
         'lon': 6.1836037031341515,
         'adresse': 'Rue des Frères Guellil, lot N°9, Batna.',
@@ -250,7 +250,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Annaba',
-        'image': 'images/agences/annaba.jpg',
+        'image': 'assets/images/agences/annaba.jpg',
         'lat': 36.89442040019443,
         'lon': 7.757188761665468,
         'adresse': "07, avenue de l'ALN, Annaba.",
@@ -263,7 +263,7 @@ class _AgencesGabState extends State<AgencesGab> {
     'Agences Fransabank Ouest': [
       {
         'name': 'Agence Oran 1',
-        'image': 'images/agences/oran1.jpg',
+        'image': 'assets/images/agences/oran1.jpg',
         'lat': 35.69673220510397,
         'lon': -0.6059391335040081,
         'adresse': 'Cité Dar El Beida – Coopérative El Zouhour N°12, Oran.',
@@ -275,7 +275,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Oran 2',
-        'image': 'images/agences/oran2.jpg',
+        'image': 'assets/images/agences/oran2.jpg',
         'lat': 35.672663427176424,
         'lon': -0.6392721825016395,
         'adresse': "Cité des Palmiers, avenue de l'ANP, Oran.",
@@ -286,7 +286,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Sidi Bel Abbès',
-        'image': 'images/agences/belabbes.jpg',
+        'image': 'assets/images/agences/belabbes.jpg',
         'lat': 35.17924206483503,
         'lon': -0.6417915627385755,
         'adresse':
@@ -298,7 +298,7 @@ class _AgencesGabState extends State<AgencesGab> {
       },
       {
         'name': 'Agence Tlemcen',
-        'image': 'images/agences/tlemcen.jpg',
+        'image': 'assets/images/agences/tlemcen.jpg',
         'lat': 34.88454284848412,
         'lon': -1.3212830916133036,
         'adresse': 'Section 149, Ilot 138, lieu-dit Bab Wahrane, Tlemcen.',
@@ -311,7 +311,7 @@ class _AgencesGabState extends State<AgencesGab> {
     'Agences Fransabank Sud': [
       {
         'name': 'Agence Biskra',
-        'image': 'images/agences/biskra.jpg',
+        'image': 'assets/images/agences/biskra.jpg',
         'lat': 34.846318928141244,
         'lon': 5.710089981076843,
         'adresse': 'Cité 1000 Logements, Bâtiment N°34, Biskra.',
@@ -523,7 +523,7 @@ class _AgencesGabState extends State<AgencesGab> {
             height: 40,
             child: GestureDetector(
               onTap: () {
-                _showAgencyInfo(agency['name']);
+                _showAgencyDetails(agency);
               },
               child: Image.asset(
                 'assets/images/markerbank.png',
@@ -538,236 +538,82 @@ class _AgencesGabState extends State<AgencesGab> {
     return markers;
   }
 
-  void _showAgencyInfo(String agencyName) {
-    Map<String, dynamic>? selectedAgency;
-
-    _agenciesByRegion.forEach((region, agencies) {
-      for (var agency in agencies) {
-        if (agency['name'] == agencyName) {
-          selectedAgency = agency;
-          break;
-        }
-      }
-    });
-
-    if (selectedAgency != null) {
-      final name = selectedAgency!['name']?.toString() ?? '';
-      final adresse = selectedAgency!['adresse']?.toString() ?? '';
-      final telephone =
-          selectedAgency!['numéro de télephone']?.toString() ?? '';
-      final fax = selectedAgency!['fax']?.toString();
-      final email = selectedAgency!['e-mail']?.toString();
-      final lienmaps = selectedAgency!['lienmaps']?.toString();
-
-      showDialog(
-        context: context,
-        builder: (context) => Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
+  void _showAgencyDetails(Map<String, dynamic> agency) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: SingleChildScrollView(
           child: Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
+            width: MediaQuery.of(context).size.width * 0.9,
+            padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Color(0xFF1E40AF).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(Icons.account_balance,
-                          color: Color(0xFF1E40AF), size: 30),
-                    ),
-                    SizedBox(width: 15),
-                    Expanded(
-                      child: Text(
-                        name,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E40AF),
-                        ),
+                    Text(
+                      agency['name'],
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.camera_alt, color: Color(0xFF1E40AF)),
-                      onPressed: () {
-                        if (selectedAgency!['image'] != null &&
-                            selectedAgency!['image'].isNotEmpty) {
-                          showDialog(
-                            context: context,
-                            builder: (context) => Dialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Container(
-                                padding: EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'Photo de l\'agence',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF1E40AF),
-                                          ),
-                                        ),
-                                        IconButton(
-                                          icon: Icon(Icons.close),
-                                          onPressed: () =>
-                                              Navigator.pop(context),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 20),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: Container(
-                                        constraints: BoxConstraints(
-                                          maxWidth: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.8,
-                                          maxHeight: MediaQuery.of(context)
-                                                  .size
-                                                  .height *
-                                              0.6,
-                                        ),
-                                        child: Image.asset(
-                                          selectedAgency!['image'],
-                                          fit: BoxFit.contain,
-                                          filterQuality: FilterQuality.high,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(height: 20),
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Color(0xFF1E40AF),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 30, vertical: 12),
-                                      ),
-                                      onPressed: () => Navigator.pop(context),
-                                      child: Text(
-                                        'Fermer',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.close),
+                      icon: const Icon(Icons.close),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
-                SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildInfoCard(
-                        icon: Icons.location_on,
-                        title: 'Adresse',
-                        content: adresse,
-                      ),
-                      SizedBox(height: 15),
-                      _buildInfoCard(
-                        icon: Icons.phone,
-                        title: 'Téléphone',
-                        content: telephone,
-                      ),
-                      if (fax != null) ...[
-                        SizedBox(height: 15),
-                        _buildInfoCard(
-                          icon: Icons.fax,
-                          title: 'Fax',
-                          content: fax,
-                        ),
-                      ],
-                      if (email != null) ...[
-                        SizedBox(height: 15),
-                        _buildInfoCard(
-                          icon: Icons.email,
-                          title: 'E-mail',
-                          content: email,
-                        ),
-                      ],
-                      if (lienmaps != null) ...[
-                        SizedBox(height: 15),
-                        _buildInfoCard(
-                          icon: Icons.map,
-                          title: 'Itinéraire',
-                          content: lienmaps,
-                        ),
-                      ],
-                    ],
+                const SizedBox(height: 20),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.asset(
+                    agency['image'],
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.cover,
                   ),
                 ),
-                SizedBox(height: 20),
-                Center(
-                  child: ElevatedButton(
+                const SizedBox(height: 20),
+                _buildInfoRow(Icons.location_on, agency['adresse']),
+                const SizedBox(height: 10),
+                _buildInfoRow(Icons.phone, agency['numéro de télephone']),
+                if (agency['fax'] != null) ...[
+                  const SizedBox(height: 10),
+                  _buildInfoRow(Icons.fax, agency['fax']),
+                ],
+                if (agency['e-mail'] != null) ...[
+                  const SizedBox(height: 10),
+                  _buildInfoRow(Icons.email, agency['e-mail']),
+                ],
+                const SizedBox(height: 20),
+                if (agency['lienmaps'] != null && agency['lienmaps'].isNotEmpty)
+                  ElevatedButton.icon(
+                    onPressed: () => _launchMaps(agency['lienmaps']),
+                    icon: const Icon(Icons.map),
+                    label: const Text('Itinéraire'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF1E40AF),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      'Fermer',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
+                      backgroundColor: Colors.blue[900],
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
                       ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
         ),
-      );
-    }
+      ),
+    );
   }
 
-  Widget _buildInfoCard({
-    required IconData icon,
-    required String title,
-    required String content,
-  }) {
+  Widget _buildInfoRow(IconData icon, String content) {
     return Container(
       padding: EdgeInsets.all(15),
       decoration: BoxDecoration(
@@ -792,47 +638,26 @@ class _AgencesGabState extends State<AgencesGab> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  content,
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[700],
+                    color: Colors.grey[800],
                   ),
                 ),
-                SizedBox(height: 5),
-                if (title == 'Itinéraire')
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      final Uri url = Uri.parse(content);
-                      if (await canLaunchUrl(url)) {
-                        await launchUrl(url);
-                      }
-                    },
-                    icon: Icon(Icons.directions, size: 18),
-                    label: Text('Voir l\'itinéraire'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF1E40AF),
-                      foregroundColor: Colors.white,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  )
-                else
-                  Text(
-                    content,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[800],
-                    ),
-                  ),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  void _launchMaps(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }

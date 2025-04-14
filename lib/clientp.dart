@@ -29,6 +29,8 @@ class _ClientScreenState extends State<ClientScreen>
   final Map<String, Animation<double>> _scaleAnimations = {};
   double? _solde;
   Timer? _timer;
+  List<Map<String, dynamic>> _transactions = [];
+  bool _isLoadingTransactions = false;
 
   Future<void> _fetchSolde() async {
     try {
@@ -50,12 +52,30 @@ class _ClientScreenState extends State<ClientScreen>
     }
   }
 
+  Future<void> _fetchTransactions() async {
+    setState(() => _isLoadingTransactions = true);
+    try {
+      final transactions = await ApiService.getTransactions();
+      setState(() {
+        _transactions = transactions;
+        _isLoadingTransactions = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingTransactions = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur lors du chargement des transactions: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _fetchSolde(); // Charger le solde au démarrage
-
-    // Initialiser les contrôleurs d'animation
+    _fetchSolde();
+    _fetchTransactions();
     _initializeAnimationControllers();
   }
 
@@ -241,46 +261,7 @@ class _ClientScreenState extends State<ClientScreen>
                   ),
                   const SizedBox(height: 30),
                   // Section Transactions
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Transactions récentes',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 15),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          TransactionHistoryPage()),
-                                );
-                              },
-                              child: Text(
-                                'Voir tout',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue[900],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 15),
-                        _buildTransactionList(),
-                      ],
-                    ),
-                  ),
+                  _buildTransactionsSection(),
                 ],
               ),
             ),
@@ -335,137 +316,140 @@ class _ClientScreenState extends State<ClientScreen>
     );
   }
 
-  Widget _buildTransactionList() {
-    final List<Map<String, dynamic>> transactions = [
-      {
-        'icon': Icons.shopping_bag_rounded,
-        'title': 'Netflix',
-        'amount': '-570 DZD',
-        'status': 'Payé',
-        'date': '14 Juillet 2025',
-        'key': 'netflix',
-      },
-      {
-        'icon': Icons.sports_esports_rounded,
-        'title': 'PS Plus',
-        'amount': '-205 DZD',
-        'status': 'Échoué',
-        'date': '02 Juillet 2025',
-        'key': 'psplus',
-      },
-      {
-        'icon': Icons.directions_car_rounded,
-        'title': 'Yassir',
-        'amount': '-398 DZD',
-        'status': 'Échoué',
-        'date': '10 juin 2025',
-        'key': 'yassir',
-      },
-    ];
+  Widget _buildTransactionItem(Map<String, dynamic> transaction) {
+    final isReception = transaction['type'] == 'reception';
+    final montant = double.parse(transaction['montant']);
+    final date = DateTime.parse(transaction['date']);
+    final otherClient =
+        isReception ? transaction['source'] : transaction['destination'];
+    final otherClientName = '${otherClient['prenom']} ${otherClient['nom']}';
 
-    return Column(
-      children: transactions.map((transaction) {
-        return _buildTransactionItem(
-          transaction['icon'],
-          transaction['title'],
-          transaction['amount'],
-          transaction['status'],
-          transaction['date'],
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildTransactionItem(
-    IconData icon,
-    String title,
-    String amount,
-    String status,
-    String date,
-  ) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {},
-        borderRadius: BorderRadius.circular(15),
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 15),
-          padding: const EdgeInsets.all(15),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HistoriqueTransactionScreen(
+              transaction: transaction,
+            ),
           ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: Colors.blue[800], size: 24),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 15),
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isReception
+                    ? Colors.green.withOpacity(0.1)
+                    : Colors.red.withOpacity(0.1),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      date,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
+              child: Icon(
+                isReception ? Icons.arrow_downward : Icons.arrow_upward,
+                color: isReception ? Colors.green : Colors.red,
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+            ),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    amount,
-                    style: TextStyle(
-                      fontSize: 16,
+                    otherClientName,
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: status == 'Échoué' ? Colors.red : Colors.green,
+                      fontSize: 16,
                     ),
                   ),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: (status == 'Échoué' ? Colors.red : Colors.green)
-                          .withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      status,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: status == 'Échoué' ? Colors.red : Colors.green,
-                      ),
+                  const SizedBox(height: 5),
+                  Text(
+                    '${date.day}/${date.month}/${date.year}',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
                     ),
                   ),
                 ],
               ),
+            ),
+            Text(
+              '${isReception ? '+' : '-'}${montant.toStringAsFixed(2)}DZD',
+              style: TextStyle(
+                color: isReception ? Colors.green : Colors.red,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTransactionsSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Transactions récentes',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HistoriqueTransactionScreen(
+                        transactions: _transactions,
+                      ),
+                    ),
+                  );
+                },
+                child: const Text('Voir plus'),
+              ),
             ],
           ),
-        ),
+          const SizedBox(height: 20),
+          if (_isLoadingTransactions)
+            const Center(child: CircularProgressIndicator())
+          else if (_transactions.isEmpty)
+            const Center(
+              child: Text(
+                'Aucune transaction récente',
+                style: TextStyle(color: Colors.grey),
+              ),
+            )
+          else
+            Column(
+              children: _transactions
+                  .take(5)
+                  .map((transaction) => _buildTransactionItem(transaction))
+                  .toList(),
+            ),
+        ],
       ),
     );
   }

@@ -16,7 +16,6 @@ class _VirementsScreenState extends State<VirementsScreen> {
   final _formKey = GlobalKey<FormState>();
   final _compteDestinationController = TextEditingController();
   final _montantController = TextEditingController();
-  final _messageController = TextEditingController();
   bool _isLoading = false;
 
   @override
@@ -203,24 +202,6 @@ class _VirementsScreenState extends State<VirementsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: TextField(
-                        controller: _messageController,
-                        maxLines: 3,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          labelText: 'Messages',
-                          labelStyle: TextStyle(color: Colors.grey[600]),
-                          hintText: 'Ajouter une note ou une description...',
-                        ),
-                      ),
-                    ),
                     const SizedBox(height: 40),
                     Row(
                       children: [
@@ -326,7 +307,6 @@ class _VirementsScreenState extends State<VirementsScreen> {
       // Réinitialiser les champs
       _compteDestinationController.clear();
       _montantController.clear();
-      _messageController.clear();
     } catch (e) {
       if (!mounted) return;
 
@@ -349,7 +329,6 @@ class _VirementsScreenState extends State<VirementsScreen> {
   void dispose() {
     _compteDestinationController.dispose();
     _montantController.dispose();
-    _messageController.dispose();
     super.dispose();
   }
 }

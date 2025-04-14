@@ -799,4 +799,34 @@ class ApiService {
       rethrow;
     }
   }
+
+  static Future<List<Map<String, dynamic>>> getTransactions() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? prefs.getString('access_token');
+      final clientId = prefs.getString('client_id');
+
+      if (token == null || clientId == null) {
+        throw Exception('Token ou client_id non trouvé');
+      }
+
+      final response = await http.get(
+        Uri.parse('${Config.baseApiUrl}/api/client/$clientId/gettransactions/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['transactions']);
+      } else {
+        throw Exception('Erreur lors de la récupération des transactions');
+      }
+    } catch (e) {
+      print('Erreur lors de la récupération des transactions: $e');
+      rethrow;
+    }
+  }
 }
