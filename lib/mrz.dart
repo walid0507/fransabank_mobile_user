@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
@@ -23,7 +22,10 @@ class _MRZScannerState extends State<MRZScanner> with WidgetsBindingObserver {
   bool _isMRZValid = false;
   bool _isProcessing = false;
   bool _showSuccessMessage = false;
-bool _isScanning = false;
+  bool _isScanning = true;
+  
+  // Pour la détection périodique plutôt que sur chaque frame
+  DateTime _lastScanTime = DateTime.now();
 
   @override
   void initState() {
@@ -119,7 +121,6 @@ bool _isScanning = false;
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: _showSuccessMessage ? Colors.green : Colors.white,
-
                 width: 3,
               ),
             ),
@@ -178,21 +179,20 @@ bool _isScanning = false;
             ),
           ),
           if (_showSuccessMessage)
-  Positioned(
-    right: 60,
-      
-    child: RotatedBox(
-      quarterTurns: 1, 
-      child: Text(
-        "Scan réussi!",
-        style: TextStyle(
-          color: Colors.green,
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    ),
-  ),
+            Positioned(
+              right: 60,
+              child: RotatedBox(
+                quarterTurns: 1, 
+                child: Text(
+                  "Scan réussi!",
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -263,6 +263,9 @@ bool _isScanning = false;
   }
 
   void _stopCamera() {
+    if (_isScanning) {
+      _isScanning = false;
+    }
     _cameraController?.dispose();
   }
 
@@ -287,51 +290,82 @@ bool _isScanning = false;
       camera,
       ResolutionPreset.max,
       enableAudio: false,
+      imageFormatGroup: ImageFormatGroup.yuv420,
     );
+    
     await _cameraController!.initialize();
     await _cameraController!.setFlashMode(FlashMode.off);
 
-    // Démarrer l'analyse continue
-    _startContinuousScan();
+    // Démarrer l'analyse en temps réel
+    _startVideoProcessing();
 
     if (!mounted) return;
     setState(() {});
   }
 
-  Future<void> _startContinuousScan() async {
-  while (mounted) {
-    if (!_isProcessing) {
+  Future<void> _startVideoProcessing() async {
+    _isScanning = true;
+    
+    // Démarrer le flux vidéo
+    await _cameraController!.startImageStream((CameraImage cameraImage) async {
+      // Vérifier si une analyse est déjà en cours ou si on ne scanne plus
+      if (!_isScanning || _isProcessing) return;
+      
+      // Limiter la fréquence des scans à 1 toutes les 300ms
+      final now = DateTime.now();
+      if (now.difference(_lastScanTime).inMilliseconds < 300) return;
+      _lastScanTime = now;
+      
       _isProcessing = true;
+      
       try {
-        final image = await _cameraController!.takePicture();
-        final inputImage = InputImage.fromFilePath(image.path);
-        final recognizedText = await textRecognizer.processImage(inputImage);
-
-        // Utiliser la méthode preprocessMRZ existante
-        List<String> mrzLines = preprocessMRZ(recognizedText.text);
+        // Prendre une photo du flux pour l'analyser
+        // C'est plus fiable que d'essayer de traiter directement l'image du flux
+        final XFile photoFile = await _cameraController!.takePicture();
+        
+        if (!_isScanning) return; // Double check si on a arrêté le scan entre temps
+        
+        // Traiter l'image avec ML Kit
+        final InputImage inputImage = InputImage.fromFilePath(photoFile.path);
+        final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+        
+        // Utiliser votre fonction de prétraitement MRZ
+        final List<String> mrzLines = preprocessMRZ(recognizedText.text);
+        
+        // Vérifier si on a trouvé un MRZ valide
         if (mrzLines.length == 3) {
+          // Arrêter le flux vidéo
+          _isScanning = false;
+          await _cameraController!.stopImageStream();
+          
+          // Afficher le message de succès
           setState(() {
             _showSuccessMessage = true;
           });
-
-          // Attendre un instant pour montrer le succès
-          await Future.delayed(Duration(seconds: 2));
-
+          
+          // Attendre un peu avant de naviguer vers l'écran suivant
+          await Future.delayed(const Duration(seconds: 2));
+          
+          // Retourner le résultat
           if (mounted) {
             Navigator.pop(context, mrzLines);
           }
-          break;
         }
+        
+        // Supprimer le fichier temporaire
+        try {
+          await File(photoFile.path).delete();
+        } catch (e) {
+          // Ignorer les erreurs de suppression de fichier
+        }
+        
       } catch (e) {
-        print('Error scanning image: $e');
+        print('Erreur lors de l\'analyse de l\'image: $e');
+      } finally {
+        _isProcessing = false;
       }
-      _isProcessing = false;
-      // Petite pause pour ne pas surcharger
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
+    });
   }
-}
-
 
   List<String> preprocessMRZ(String text) {
     List<String> lines =
@@ -351,12 +385,12 @@ bool _isScanning = false;
     for (var line in lines) {
       if (line.startsWith("IDDZA") && line.length >= 24) {
         line1 = line;
-      } else if ( line.length == 30 && RegExp(
+      } else if (line.length == 30 && RegExp(
         r'^(\d{6})(\d)([MF])(\d{6})(\d)DZA<+(\d?)$',
       ).hasMatch(line)) {
         line2 = line;
       } else if (line.contains("<<") &&
-          line.length ==30 &&
+          line.length == 30 &&
           !line.startsWith("IDDZA")) {
         line3 = line;
       }
@@ -368,7 +402,7 @@ bool _isScanning = false;
       line3 = line3.padRight(30, '<');
       return [line1, line2, line3];
     }
-    print("MRZ invalid.Reprenez la photo");
+    print("MRZ invalid. Reprenez la photo");
     return [];
   }
 
