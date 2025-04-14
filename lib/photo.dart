@@ -131,6 +131,7 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    // Sauvegarde une copie locale de l'image NFC pour l'utiliser plus tard
     Uint8List? imagenfc = SharedData.imageData;
     Color primaryBlue = Color(0xFF024DA2);
 
@@ -330,7 +331,7 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
                                 decoration: BoxDecoration(
                                   color: Colors.grey.shade100,
                                   borderRadius: BorderRadius.circular(15),
-                                ), // <-- Ajouter cette parenthèse manquante
+                                ),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -397,61 +398,80 @@ class _PhotoState extends State<Photo> with SingleTickerProviderStateMixin {
                                 );
                               },
                             );
-
-                            // Si nous avons une image NFC, convertir en File temporaire pour l'upload
+                            
+                            // Important: Gardez une copie de l'image NFC avant de la supprimer
+                            Uint8List? imageBytes;
                             if (_hasNfcImage) {
+                              // Sauvegardez une copie des données de l'image NFC
+                              imageBytes = Uint8List.fromList(imagenfc!);
+                              
                               // Créer un fichier temporaire depuis les données d'image NFC
-                              final tempDir =
-                                  await Directory.systemTemp.createTemp();
-                              final tempFile =
-                                  File('${tempDir.path}/nfc_photo.jpg');
-                              await tempFile.writeAsBytes(imagenfc!);
+                              final tempDir = await Directory.systemTemp.createTemp();
+                              final tempFile = File('${tempDir.path}/nfc_photo.jpg');
+                              await tempFile.writeAsBytes(imagenfc);
 
                               await ApiService.uploadPhoto(tempFile, demandeId);
-                              SharedData.imageData = null;
+                              // Ne pas effacer SharedData.imageData maintenant
                             } else if (_selectedImage != null) {
-                              await ApiService.uploadPhoto(
-                                  _selectedImage!, demandeId);
+                              await ApiService.uploadPhoto(_selectedImage!, demandeId);
+                              imageBytes = await _selectedImage!.readAsBytes();
                             } else {
                               // Fermer l'indicateur de chargement
-                              Navigator.pop(context);
+                              if (Navigator.of(context).canPop()) {
+                                Navigator.of(context).pop();
+                              }
 
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content:
-                                      Text('Veuillez sélectionner une photo'),
+                                  content: Text('Veuillez sélectionner une photo'),
                                   backgroundColor: Colors.red,
                                 ),
                               );
                               return;
                             }
 
-                            // Fermer l'indicateur de chargement
-                            Navigator.pop(context);
-
                             // Afficher un message de succès
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content:
-                                      Text('Photo téléchargée avec succès')),
+                              SnackBar(content: Text('Photo téléchargée avec succès')),
                             );
+                            
+                            // Fermer d'abord l'indicateur de chargement
+                            if (Navigator.of(context).canPop()) {
+                              Navigator.of(context).pop();
+                            }
 
-                            // Naviguer vers la page suivante
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => SignaturePage(),
-                              ),
-                            );
+                            // Naviguer vers la page de signature
+                            if (imageBytes != null) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SignaturePage(imageBytes: imageBytes),
+                                ),
+                              );
+                              
+                              // On ne supprime SharedData.imageData qu'après la navigation
+                              if (_hasNfcImage) {
+                                SharedData.imageData = null;
+                              }
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Erreur: Image manquante'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
                           } catch (e) {
+                            print("❌ Erreur lors du téléchargement: $e");
+                            
                             // Fermer l'indicateur de chargement s'il est encore ouvert
-                            Navigator.of(context).pop();
+                            if (Navigator.of(context).canPop()) {
+                              Navigator.of(context).pop();
+                            }
 
                             // Afficher l'erreur
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text(
-                                      'Erreur lors du téléchargement: $e')),
+                              SnackBar(content: Text('Erreur lors du téléchargement: $e')),
                             );
                           }
                         },

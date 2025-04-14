@@ -7,19 +7,112 @@ import 'package:google_ml_kit/google_ml_kit.dart';
 import 'ml_service.dart';
 import 'image_converter.dart';
 import 'package:image/image.dart' as imglib;
+import 'curved_header.dart';
 
 class FaceDetectionScreen extends StatefulWidget {
-  const FaceDetectionScreen({
-    super.key,
-  }); // Correction : ajout d'un espace après "const"
+  final Uint8List? imageBytes;
+  const FaceDetectionScreen({super.key, required this.imageBytes});
+
   @override
   State<FaceDetectionScreen> createState() => _FaceDetectionScreenState();
 }
 
-class _FaceDetectionScreenState extends State<FaceDetectionScreen> {
+class _FaceDetectionScreenState extends State<FaceDetectionScreen> 
+    with SingleTickerProviderStateMixin {
   File? _image;
   File? _capturedImage;
   final MLService _mlService = MLService();
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  final Color primaryBlue = const Color(0xFF024DA2);
+
+  @override
+  void initState() {
+    super.initState();
+    _image = _createTempFile(widget.imageBytes!);
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  File _createTempFile(Uint8List bytes) {
+    final tempDir = Directory.systemTemp;
+    final tempFile = File('${tempDir.path}/uploaded_image.jpg');
+    tempFile.writeAsBytesSync(bytes);
+    return tempFile;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget _buildModernButton({
+    required String text,
+    required VoidCallback onPressed,
+    bool isEnabled = true,
+    IconData? icon,
+    double? width,
+    double? height,
+  }) {
+    return GestureDetector(
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) => _controller.reverse(),
+      onTapCancel: () => _controller.reverse(),
+      onTap: isEnabled ? onPressed : null,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          width: width ?? 200,
+          height: height ?? 56,
+          decoration: BoxDecoration(
+            gradient: isEnabled
+                ? LinearGradient(
+                    colors: [primaryBlue.withOpacity(0.9), primaryBlue],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : LinearGradient(
+                    colors: [Colors.grey.shade400, Colors.grey.shade600],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                spreadRadius: 1,
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, color: Colors.white, size: 24),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                text,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Future<void> _navigateToLivenessDetection() async {
     final result = await Navigator.push(
@@ -28,32 +121,30 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen> {
     );
     if (result != null && result is File) {
       setState(() {
-        _capturedImage = result; // On récupère l'image validée
+        _capturedImage = result;
       });
     }
   }
 
-  Future _pickimage(ImageSource source) async {
-    try {
-      final image = await ImagePicker().pickImage(source: source);
-      if (image == null) return;
-      setState(() {
-        _image = File(image.path);
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-    }
-  }
+  // Future _pickImage(ImageSource source) async {
+  //   try {
+  //     final image = await ImagePicker().pickImage(source: source);
+  //     if (image == null) return;
+  //     setState(() {
+  //       _image = File(image.path);
+  //     });
+  //   } catch (e) {
+  //     if (kDebugMode) {
+  //       print(e);
+  //     }
+  //   }
+  // }
 
   Future<void> _detectFaces() async {
-    if (_image == null || _capturedImage == null) {
+    if (_capturedImage == null) { // On ne vérifie plus _image
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Veuillez sélectionner une image et capturer une photo.',
-          ),
+        const SnackBar(
+          content: Text('Veuillez capturer une photo.'),
         ),
       );
       return;
@@ -75,14 +166,14 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen> {
 
       if (faces.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Aucun visage détecté dans l\'image.')),
+          const SnackBar(content: Text('Aucun visage détecté dans l\'image.')),
         );
         return;
       }
 
       if (capturedFaces.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Aucun visage détecté dans la photo capturée.'),
           ),
         );
@@ -155,14 +246,14 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Images Prétraitées'),
+          title: const Text('Images Prétraitées'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Image Importée :'),
+              const Text('Image Importée :'),
               imageFromImgLib(uploadedCroppedFace),
-              SizedBox(height: 10),
-              Text('Image Capturée :'),
+              const SizedBox(height: 10),
+              const Text('Image Capturée :'),
               imageFromImgLib(capturedCroppedFace),
             ],
           ),
@@ -171,7 +262,7 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Fermer'),
+              child: const Text('Fermer'),
             ),
           ],
         );
@@ -182,65 +273,107 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Face Detection')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                height: 250,
-                color: Colors.grey,
-                child:
-                    _image != null
-                        ? Image.file(_image!)
-                        : Center(child: Icon(Icons.add_a_photo, size: 60)),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                width: double.infinity,
-                height: 50,
-                color: Colors.blueAccent,
-                child: MaterialButton(
-                  onPressed: () {
-                    _navigateToLivenessDetection();
-                  },
-                  child: const Text(
-                    'prendre une photo',
-                    style: TextStyle(color: Colors.white, fontSize: 23),
+      body: Stack(
+        children: [
+          CurvedHeader(
+            height: 0.25,
+            title: 'Reconnaissance faciale',
+            
+            onBackPressed: () => Navigator.pop(context),
+            child: Container(),
+          ),
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                SizedBox(height: MediaQuery.of(context).size.height * 0.22),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(25),
+                      boxShadow: [
+                        BoxShadow(
+                          color: primaryBlue.withOpacity(0.1),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        _imagePreviewSection(),
+                        const SizedBox(height: 20),
+                        _capturedImagePreviewSection(),
+                        const SizedBox(height: 30),
+                        _buildModernButton(
+                          text: 'Démarrer la vérification',
+                          onPressed: _detectFaces,
+                          icon: Icons.face_retouching_natural,
+                          width: double.infinity,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Container(
-                width: double.infinity,
-                height: 50,
-                color: Colors.blueAccent,
-                child: MaterialButton(
-                  onPressed: () {
-                    _pickimage(ImageSource.gallery);
-                  },
-                  child: const Text(
-                    'importer la photo identité',
-                    style: TextStyle(color: Colors.white, fontSize: 23),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _detectFaces,
-                child: const Text('Detect Faces'),
-              ),
-              if (_capturedImage != null)
-                Container(
-                  width: double.infinity,
-                  height: 250,
-                  child: Image.file(_capturedImage!),
-                ),
-            ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _imagePreviewSection() {
+    return Column(
+      children: [
+        Container(
+          height: 200,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: primaryBlue.withOpacity(0.3)),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Image.file(_image!, fit: BoxFit.cover),
           ),
         ),
-      ),
+        // Supprimer le bouton d'import ici
+      ],
+    );
+  }
+  
+  Widget _capturedImagePreviewSection() {
+    return Column(
+      children: [
+        Container(
+          height: 200,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: primaryBlue.withOpacity(0.3)),
+          ),
+          child: _capturedImage != null
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.file(_capturedImage!, fit: BoxFit.cover),
+                )
+              : Center(
+                  child: IconButton(
+                    icon: Icon(Icons.camera_alt,
+                        color: primaryBlue.withOpacity(0.5), size: 50),
+                    onPressed: _navigateToLivenessDetection,
+                  ),
+                ),
+        ),
+        const SizedBox(height: 15),
+        _buildModernButton(
+          text: 'Prendre une photo',
+          onPressed: _navigateToLivenessDetection,
+          icon: Icons.camera_alt,
+          width: double.infinity,
+        ),
+      ],
     );
   }
 }

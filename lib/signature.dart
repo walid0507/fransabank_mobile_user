@@ -15,7 +15,8 @@ import 'main.dart';
 import 'shared_data.dart';
 
 class SignaturePage extends StatefulWidget {
-  const SignaturePage({Key? key}) : super(key: key);
+  final Uint8List? imageBytes;
+  const SignaturePage({Key? key,  required this.imageBytes}) : super(key: key);
 
   @override
   _SignaturePageState createState() => _SignaturePageState();
@@ -371,10 +372,12 @@ class _SignaturePageState extends State<SignaturePage> {
                             await ApiService.uploadSignature(file, demandeId);
                             SharedData.signatureData = null;
 
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => FaceDetectionScreen()),
+                                builder: (context) => FaceDetectionScreen(
+                                    imageBytes: widget.imageBytes),
+                              ),
                             );
                           } catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(

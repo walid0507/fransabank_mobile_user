@@ -57,11 +57,12 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
     _idNumberController.addListener(_checkFields);
 
     if (widget.prefillData != null) {
+     
       _firstNameController.text = widget.prefillData!['firstName'] ?? '';
       _lastNameController.text = widget.prefillData!['lastName'] ?? '';
       _idNumberController.text = widget.prefillData!['documentNumber'] ?? '';
       _NINController.text = widget.prefillData!['nin'] ?? '';
-      _checkFields();
+      
 
       // Traitement de la date de naissance
       if (widget.prefillData != null) {
