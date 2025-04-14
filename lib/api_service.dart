@@ -76,38 +76,38 @@ class ApiService {
   }
 
   static Future<List<Map<String, dynamic>>> getMesDemandes() async {
-  try {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('access_token');
-    
-    if (token == null) {
-      throw Exception("Token non trouvé !");
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('access_token');
+
+      if (token == null) {
+        throw Exception("Token non trouvé !");
+      }
+
+      final response = await http.get(
+        Uri.parse('${Config.baseApiUrl}/api/demandecompte/mes_demandes/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+
+      print("Code HTTP: ${response.statusCode}");
+      print("Réponse brute: ${response.body}");
+
+      if (response.statusCode == 200) {
+        // Traite directement la réponse comme un tableau
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((item) => Map<String, dynamic>.from(item)).toList();
+      } else {
+        throw Exception("Erreur ${response.statusCode} : ${response.body}");
+      }
+    } catch (e) {
+      print("Erreur lors de la récupération des demandes: $e");
+      return [];
     }
-    
-    final response = await http.get(
-      Uri.parse('${Config.baseApiUrl}/api/demandecompte/mes_demandes/'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    );
-    
-    print("Code HTTP: ${response.statusCode}");
-    print("Réponse brute: ${response.body}");
-    
-    if (response.statusCode == 200) {
-      // Traite directement la réponse comme un tableau
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.map((item) => Map<String, dynamic>.from(item)).toList();
-    } else {
-      throw Exception("Erreur ${response.statusCode} : ${response.body}");
-    }
-  } catch (e) {
-    print("Erreur lors de la récupération des demandes: $e");
-    return [];
   }
-}
 
 //fonction upload document
   static Future<void> uploadMultipleDocuments(int demandeId,
@@ -720,6 +720,82 @@ class ApiService {
           "Signature uploadée avec succès. URL: ${responseData['signature_url']}");
     } catch (e) {
       print('Erreur lors du téléchargement de la signature: $e');
+      rethrow;
+    }
+  }
+
+  static Future<Map<String, dynamic>> requestPasswordReset(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${Config.baseApiUrl}/api/password-reset/request/'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'email': email}),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error'] ?? 'Une erreur est survenue');
+      }
+    } catch (e) {
+      print('Erreur lors de la demande de réinitialisation: $e');
+      rethrow;
+    }
+  }
+
+  static Future<Map<String, dynamic>> verifyResetCode(
+      String email, String code) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${Config.baseApiUrl}/api/password-reset/verify/'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'email': email,
+          'code': code,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error'] ?? 'Code invalide');
+      }
+    } catch (e) {
+      print('Erreur lors de la vérification du code: $e');
+      rethrow;
+    }
+  }
+
+  static Future<Map<String, dynamic>> resetPassword(
+      String email, String code, String newPassword) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${Config.baseApiUrl}/api/password-reset/reset/'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'email': email,
+          'code': code,
+          'new_password': newPassword,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(
+            errorData['error'] ?? 'Erreur lors de la réinitialisation');
+      }
+    } catch (e) {
+      print('Erreur lors de la réinitialisation du mot de passe: $e');
       rethrow;
     }
   }
