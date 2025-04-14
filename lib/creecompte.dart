@@ -57,12 +57,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
     _idNumberController.addListener(_checkFields);
 
     if (widget.prefillData != null) {
-     
       _firstNameController.text = widget.prefillData!['firstName'] ?? '';
       _lastNameController.text = widget.prefillData!['lastName'] ?? '';
       _idNumberController.text = widget.prefillData!['documentNumber'] ?? '';
       _NINController.text = widget.prefillData!['nin'] ?? '';
-      
 
       // Traitement de la date de naissance
       if (widget.prefillData != null) {
@@ -98,6 +96,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen>
       }
 
       civility = widget.prefillData!['gender'];
+
+      // Déclencher la vérification des champs immédiatement après le pré-remplissage
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkFields();
+      });
     }
 
     // Initialisation de l'animation

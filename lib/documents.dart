@@ -54,9 +54,12 @@ class _DocumentsState extends State<Documents> {
 
   // Calculer le progrès total
   double get uploadProgress {
-    int selectedCount = selectedDocuments.values.fold(0, (sum, files) => sum + files.length);
-    int totalRequired = documentStates.length; // Nombre total de documents requis
-    return (selectedCount / totalRequired).clamp(0.0, 1.0); // ✅ Limite entre 0 et 1
+    int selectedCount =
+        selectedDocuments.values.fold(0, (sum, files) => sum + files.length);
+    int totalRequired =
+        documentStates.length; // Nombre total de documents requis
+    return (selectedCount / totalRequired)
+        .clamp(0.0, 1.0); // ✅ Limite entre 0 et 1
   }
 
   // Mettre à jour l'état d'un document
@@ -179,97 +182,118 @@ class _DocumentsState extends State<Documents> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(20.0),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      minimumSize: Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  child: Visibility(
+                    visible:
+                        documentStates.values.every((value) => value == true),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        minimumSize: Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                    ),
-                    onPressed: _isUploading
-                        ? null
-                        : () async {
-                            setState(() => _isUploading = true);
-                            try {
-                              SharedPreferences prefs = await SharedPreferences.getInstance();
-                              String? token = prefs.getString('access_token');
-                              String? demandeId = prefs.getString('demande_id');
-                              
-                              if (token == null || demandeId == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Token ou demande ID manquant')),
-                                );
-                                return;
-                              }
-
-                              List<String> typeDocumentIds = [];
-                              List<File> filesToUpload = [];
-
-                              // Récupérer tous les fichiers sélectionnés et leurs types
-                              selectedDocuments.forEach((title, files) {
-                                String typeDocumentId = _getTypeDocumentId(title);
-                                for (File file in files) {
-                                  typeDocumentIds.add(typeDocumentId);
-                                  filesToUpload.add(file);
-                                }
-                              });
-                              print("📂 Documents sélectionnés avant l'envoi : ${filesToUpload.map((f) => f.path).toList()}");
-
-                              if (filesToUpload.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Veuillez sélectionner au moins un document.')),
-                                );
-                                return;
-                              }
-
+                      onPressed: _isUploading
+                          ? null
+                          : () async {
+                              setState(() => _isUploading = true);
                               try {
-                                await ApiService.uploadMultipleDocuments(
-                                  int.parse(demandeId),
-                                  typeDocumentIds,
-                                  filesToUpload,
-                                  token,
-                                );
+                                SharedPreferences prefs =
+                                    await SharedPreferences.getInstance();
+                                String? token = prefs.getString('access_token');
+                                String? demandeId =
+                                    prefs.getString('demande_id');
 
-                                setState(() {
-                                  documentStates.updateAll((key, value) => true);
+                                if (token == null || demandeId == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            'Token ou demande ID manquant')),
+                                  );
+                                  return;
+                                }
+
+                                List<String> typeDocumentIds = [];
+                                List<File> filesToUpload = [];
+
+                                // Récupérer tous les fichiers sélectionnés et leurs types
+                                selectedDocuments.forEach((title, files) {
+                                  String typeDocumentId =
+                                      _getTypeDocumentId(title);
+                                  for (File file in files) {
+                                    typeDocumentIds.add(typeDocumentId);
+                                    filesToUpload.add(file);
+                                  }
                                 });
+                                print(
+                                    "📂 Documents sélectionnés avant l'envoi : ${filesToUpload.map((f) => f.path).toList()}");
 
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Tous les documents ont été téléversés avec succès !')),
-                                );
-                                
-                                // Navigate to photo.dart
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const Photo()),
-                                );
+                                if (filesToUpload.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            'Veuillez sélectionner au moins un document.')),
+                                  );
+                                  return;
+                                }
+
+                                try {
+                                  await ApiService.uploadMultipleDocuments(
+                                    int.parse(demandeId),
+                                    typeDocumentIds,
+                                    filesToUpload,
+                                    token,
+                                  );
+
+                                  setState(() {
+                                    documentStates
+                                        .updateAll((key, value) => true);
+                                  });
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            'Tous les documents ont été téléversés avec succès !')),
+                                  );
+
+                                  // Navigate to photo.dart
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => const Photo()),
+                                  );
+                                } catch (e) {
+                                  print("❌ Erreur lors de l'upload: $e");
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            'Erreur lors du téléversement des documents.')),
+                                  );
+                                } finally {
+                                  setState(() => _isUploading = false);
+                                }
                               } catch (e) {
-                                print("❌ Erreur lors de l'upload: $e");
+                                print("❌ Erreur générale: $e");
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Erreur lors du téléversement des documents.')),
+                                  SnackBar(
+                                      content:
+                                          Text('Une erreur est survenue.')),
                                 );
-                              } finally {
                                 setState(() => _isUploading = false);
                               }
-                            } catch (e) {
-                              print("❌ Erreur générale: $e");
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Une erreur est survenue.')),
-                              );
-                              setState(() => _isUploading = false);
-                            }
-                          },
-                    child: _isUploading
-                        ? SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 3,
-                            ),
-                          )
-                        : Text('Continuer', style: TextStyle(color: Colors.white)),
+                            },
+                      child: _isUploading
+                          ? SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 3,
+                              ),
+                            )
+                          : Text('Continuer',
+                              style: TextStyle(color: Colors.white)),
+                    ),
                   ),
                 ),
               ],
@@ -321,19 +345,23 @@ class _DocumentsState extends State<Documents> {
                 size: 30,
               ),
         onTap: () async {
-          final files = await _pickFiles(); 
+          final files = await _pickFiles();
 
           if (files != null && files.isNotEmpty) {
             setState(() {
               if (selectedDocuments.containsKey(title)) {
-                selectedDocuments[title]!.addAll(files); 
+                selectedDocuments[title]!.addAll(files);
               } else {
-                selectedDocuments[title] = files; 
+                selectedDocuments[title] = files;
               }
+              // Mettre à jour l'état du document
+              documentStates[title] = true;
             });
 
-            print("📂 Fichiers ajoutés pour $title: ${files.map((f) => f.path).toList()}");
-            print("📊 Nouvelle progression : ${(uploadProgress * 100).toInt()}%");
+            print(
+                "📂 Fichiers ajoutés pour $title: ${files.map((f) => f.path).toList()}");
+            print(
+                "📊 Nouvelle progression : ${(uploadProgress * 100).toInt()}%");
 
             // ScaffoldMessenger.of(context).showSnackBar(
             //   SnackBar(content: Text('${files.length} fichier(s) ajouté(s) pour $title')),
