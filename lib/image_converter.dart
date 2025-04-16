@@ -77,22 +77,57 @@ imglib.Image _convertYUV420(CameraImage image) {
   int height = image.height;
   var img = imglib.Image(width, height);
   const int hexFF = 0xFF000000;
+
+  // Vérifier si les plans sont valides
+  if (image.planes.length < 3) {
+    throw Exception('Image YUV420 invalide: nombre de plans insuffisant');
+  }
+
+  // Vérifier les dimensions des plans
+  if (image.planes[0].bytes.length < width * height) {
+    throw Exception('Plan Y invalide: dimensions incorrectes');
+  }
+
   final int uvyButtonStride = image.planes[1].bytesPerRow;
   final int? uvPixelStride = image.planes[1].bytesPerPixel;
+
+  // Pré-calculer les indices UV
+  final uvIndices = List<int>.generate(
+    (width * height) ~/ 4,
+    (i) =>
+        uvPixelStride! * (i % (width ~/ 2)) +
+        uvyButtonStride * (i ~/ (width ~/ 2)),
+  );
+
   for (int x = 0; x < width; x++) {
     for (int y = 0; y < height; y++) {
-      final int uvIndex =
-          uvPixelStride! * (x / 2).floor() + uvyButtonStride * (y / 2).floor();
-      final int index = y * width + x;
-      final yp = image.planes[0].bytes[index];
-      final up = image.planes[1].bytes[uvIndex];
-      final vp = image.planes[2].bytes[uvIndex];
-      int r = (yp + vp * 1436 / 1024 - 179).round().clamp(0, 255);
-      int g = (yp - up * 46549 / 131072 + 44 - vp * 93604 / 131072 + 91)
-          .round()
-          .clamp(0, 255);
-      int b = (yp + up * 1814 / 1024 - 227).round().clamp(0, 255);
-      img.data[index] = hexFF | (b << 16) | (g << 8) | r;
+      try {
+        final int index = y * width + x;
+        final int uvIndex = uvIndices[(y ~/ 2) * (width ~/ 2) + (x ~/ 2)];
+
+        if (index < image.planes[0].bytes.length &&
+            uvIndex < image.planes[1].bytes.length &&
+            uvIndex < image.planes[2].bytes.length) {
+          final yp = image.planes[0].bytes[index];
+          final up = image.planes[1].bytes[uvIndex];
+          final vp = image.planes[2].bytes[uvIndex];
+
+          // Optimisation des calculs RGB
+          final vp1436 = vp * 1436;
+          final up46549 = up * 46549;
+          final vp93604 = vp * 93604;
+          final up1814 = up * 1814;
+
+          int r = (yp + (vp1436 ~/ 1024) - 179).clamp(0, 255);
+          int g = (yp - (up46549 ~/ 131072) + 44 - (vp93604 ~/ 131072) + 91)
+              .clamp(0, 255);
+          int b = (yp + (up1814 ~/ 1024) - 227).clamp(0, 255);
+
+          img.data[index] = hexFF | (b << 16) | (g << 8) | r;
+        }
+      } catch (e) {
+        print('Erreur lors de la conversion YUV420: $e');
+      }
     }
   }
 

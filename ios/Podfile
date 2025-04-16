@@ -29,9 +29,13 @@ flutter_ios_podfile_setup
 
 target 'Runner' do
   use_frameworks!
-  use_modular_headers!  # <-- Ajouté ici
+  use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+
+  # 🔧 Forcer l'utilisation locale de TensorFlowLiteSwift
+  pod 'TensorFlowLiteSwift', :path => '/Users/macbookpro/Desktop/tensorflow-master/tensorflow/lite/swift'
+
   target 'RunnerTests' do
     inherit! :search_paths
   end
@@ -105,5 +109,6 @@ post_install do |installer|
     end
   end
 end
+
 
 

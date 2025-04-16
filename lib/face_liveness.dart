@@ -39,6 +39,8 @@ class _FaceLivenessScreenState extends State<FaceLivenessScreen> {
         enableContours: true,
         enableClassification: true,
         enableTracking: true,
+        minFaceSize: 0.15,
+        performanceMode: FaceDetectorMode.accurate,
       ),
     );
   }
@@ -58,11 +60,13 @@ class _FaceLivenessScreenState extends State<FaceLivenessScreen> {
       (camera) => camera.lensDirection == CameraLensDirection.front,
       orElse: () => cameras.first,
     );
+    final resolution = ResolutionPreset.high;
 
     _cameraController = CameraController(
       frontCamera,
-      ResolutionPreset.medium,
+      resolution,
       enableAudio: false,
+      imageFormatGroup: ImageFormatGroup.yuv420,
     );
     await _cameraController!.initialize();
     if (mounted) {
@@ -73,59 +77,74 @@ class _FaceLivenessScreenState extends State<FaceLivenessScreen> {
   }
 
   void _startFaceDetection() {
-    _timer = Timer.periodic(const Duration(milliseconds: 500), (timer) async {
+    final detectionInterval = 500;
+
+    _timer = Timer.periodic(Duration(milliseconds: detectionInterval),
+        (timer) async {
       if (_cameraController == null || !_cameraController!.value.isInitialized)
         return;
 
-      final XFile file = await _cameraController!.takePicture();
-      final faces = await _detectFaces(File(file.path));
+      try {
+        final XFile file = await _cameraController!.takePicture();
+        final faces = await _detectFaces(File(file.path));
 
-      if (faces.isNotEmpty) {
-        final face = faces.first;
+        // Supprimer le fichier temporaire après la détection
+        try {
+          await File(file.path).delete();
+        } catch (e) {
+          print('Erreur lors de la suppression du fichier temporaire: $e');
+        }
 
-        setState(() {
-          _faceDetected = true;
+        if (faces.isNotEmpty) {
+          final face = faces.first;
 
-          // Vérification séquentielle des mouvements selon l'étape actuelle
-          switch (_currentStep) {
-            case 0: // Tête à droite
-              if (shouldMirror
-                  ? face.headEulerAngleY! < -15
-                  : face.headEulerAngleY! > 15) {
-                _steps[0] = true;
-                _currentStep = 1;
-              }
-              break;
-            case 1: // Tête à gauche
-              if (shouldMirror
-                  ? face.headEulerAngleY! > 15
-                  : face.headEulerAngleY! < -15) {
-                _steps[1] = true;
-                _currentStep = 2;
-              }
-              break;
-            case 2: // Sourire
-              if (face.smilingProbability != null &&
-                  face.smilingProbability! > 0.6) {
-                _steps[2] = true;
-                _currentStep = 3;
-                _startCountdown();
-              }
-              break;
-          }
+          setState(() {
+            _faceDetected = true;
 
-          // Calcul de la progression
-          _progressValue = _steps.where((step) => step).length / _steps.length;
+            // Vérification séquentielle des mouvements selon l'étape actuelle
+            switch (_currentStep) {
+              case 0: // Tête à droite
+                if (shouldMirror
+                    ? face.headEulerAngleY! < -15
+                    : face.headEulerAngleY! > 15) {
+                  _steps[0] = true;
+                  _currentStep = 1;
+                }
+                break;
+              case 1: // Tête à gauche
+                if (shouldMirror
+                    ? face.headEulerAngleY! > 15
+                    : face.headEulerAngleY! < -15) {
+                  _steps[1] = true;
+                  _currentStep = 2;
+                }
+                break;
+              case 2: // Sourire
+                if (face.smilingProbability != null &&
+                    face.smilingProbability! > 0.6) {
+                  _steps[2] = true;
+                  _currentStep = 3;
+                  _startCountdown();
+                }
+                break;
+            }
 
-          // Sauvegarde de l'image pour la fin du processus
-          if (!_allChecksPassed && _steps.every((step) => step)) {
-            _capturedImage = file;
-          }
-        });
-      } else {
-        setState(() {
-          _faceDetected = false;
-        });
+            // Calcul de la progression
+            _progressValue =
+                _steps.where((step) => step).length / _steps.length;
+
+            // Sauvegarde de l'image pour la fin du processus
+            if (!_allChecksPassed && _steps.every((step) => step)) {
+              _capturedImage = file;
+            }
+          });
+        } else {
+          setState(() {
+            _faceDetected = false;
+          });
+        }
+      } catch (e) {
+        print('Erreur lors de la détection faciale: $e');
       }
     });
   }
@@ -167,6 +186,8 @@ class _FaceLivenessScreenState extends State<FaceLivenessScreen> {
 
   Future<List<Face>> _detectFaces(File imageFile) async {
     final inputImage = InputImage.fromFile(imageFile);
+    print(
+        "Détection de visage sur ${Platform.isIOS ? 'iOS' : 'Android'}: ${imageFile.path}");
     return await _faceDetector!.processImage(inputImage);
   }
 
@@ -223,10 +244,9 @@ class _FaceLivenessScreenState extends State<FaceLivenessScreen> {
                   height: circleDiameter,
                   child: Transform(
                     alignment: Alignment.center,
-                    transform:
-                        shouldMirror
-                            ? Matrix4.rotationY(math.pi)
-                            : Matrix4.identity(),
+                    transform: shouldMirror
+                        ? Matrix4.rotationY(math.pi)
+                        : Matrix4.identity(),
                     child: CameraPreview(_cameraController!),
                   ),
                 ),
@@ -358,25 +378,22 @@ class ProgressiveCirclePainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
 
     // Cercle complet (contour blanc ou gris)
-    final fullCirclePaint =
-        Paint()
-          ..color =
-              faceDetected
-                  ? Colors.green.withOpacity(0.3)
-                  : Colors.white.withOpacity(0.3)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.0;
+    final fullCirclePaint = Paint()
+      ..color = faceDetected
+          ? Colors.green.withOpacity(0.3)
+          : Colors.white.withOpacity(0.3)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
 
     canvas.drawCircle(center, radius - 1, fullCirclePaint);
 
     // Cercle progressif (contour vert)
     if (progress > 0) {
-      final progressPaint =
-          Paint()
-            ..color = Colors.green
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 3.0
-            ..strokeCap = StrokeCap.round;
+      final progressPaint = Paint()
+        ..color = Colors.green
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.0
+        ..strokeCap = StrokeCap.round;
 
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius - 1.5),
