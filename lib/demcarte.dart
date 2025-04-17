@@ -4,6 +4,7 @@ import 'api_service.dart';
 import 'header.dart'; // Importation du header commun
 import 'package:projet1/configngrok.dart';
 import 'package:projet1/header3.dart';
+import 'package:projet1/pret.dart';
 
 class DemandeCarteScreen extends StatefulWidget {
   final String clientId;
@@ -165,36 +166,23 @@ class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
             onBackPressed: () => Navigator.pop(context),
           ),
           Expanded(
-            child: SafeArea(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                ),
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20.0, vertical: 30.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 20),
-                        _buildDropdownField("Type de carte", typesDeCartes),
-                        const SizedBox(height: 15),
-                        _buildTextField("Plafond de paiement"),
-                        const SizedBox(height: 15),
-                        _buildTextField("Plafond de retrait"),
-                        const SizedBox(height: 15),
-                        _buildReadOnlyField("Frais de la carte: 50.00€"),
-                        const SizedBox(height: 15),
-                        _buildCheckbox("J'ai payé les frais de la carte"),
-                        const SizedBox(height: 30),
-                        _buildButton(
-                            context, "Valider la demande", envoyerDemande),
-                        const SizedBox(height: 20),
-                      ],
-                    ),
-                  ),
-                ),
+            child: Container(
+              color: Colors.white,
+              child: ListView(
+                padding: EdgeInsets.all(16),
+                children: [
+                  _buildDropdownField("Type de carte", typesDeCartes),
+                  SizedBox(height: 12),
+                  _buildTextField("Plafond de paiement"),
+                  SizedBox(height: 12),
+                  _buildTextField("Plafond de retrait"),
+                  SizedBox(height: 12),
+                  _buildReadOnlyField("Frais de la carte: 50.00€"),
+                  SizedBox(height: 12),
+                  _buildCheckbox("J'ai payé les frais de la carte"),
+                  SizedBox(height: 20),
+                  _buildButton(context, "Valider la demande", envoyerDemande),
+                ],
               ),
             ),
           ),
@@ -222,58 +210,107 @@ class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
 
   Widget _buildDropdownField(String label, List<String> options) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        DropdownButtonFormField<String>(
-          dropdownColor: Colors.white,
-          decoration: InputDecoration(
-            labelText: label,
-            labelStyle: TextStyle(color: Colors.grey[700]),
-            filled: true,
-            fillColor: Colors.grey[100],
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
+        Container(
+          height: 60,
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: DropdownButtonFormField<String>(
+            dropdownColor: Colors.white,
+            isExpanded: true,
+            icon: Icon(Icons.arrow_drop_down, color: Colors.grey[700]),
+            decoration: InputDecoration(
+              labelText: label,
+              labelStyle: TextStyle(color: Colors.grey[700]),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+            selectedItemBuilder: (BuildContext context) {
+              return options.map<Widget>((String item) {
+                return Container(
+                  alignment: Alignment.centerLeft,
+                  constraints: BoxConstraints(minHeight: 48),
+                  child: Text(
+                    cartesInfo[item]!["nom"],
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                    ),
+                  ),
+                );
+              }).toList();
+            },
+            items: options.map((option) {
+              final info = cartesInfo[option]!;
+              return DropdownMenuItem<String>(
+                value: option,
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              info["nom"],
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text(
+                              "Plafonds: ${info["plafond_paiement"]}€ / ${info["plafond_retrait"]}€",
+                              style: TextStyle(
+                                  color: Colors.grey[700], fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                selectedCarteType = value;
+                if (value != null) {
+                  _updateFraisCard(value);
+                }
+              });
+            },
+          ),
+        ),
+        if (selectedCarteType != null)
+          Padding(
+            padding: EdgeInsets.only(top: 4, bottom: 4),
+            child: Row(
+              children: [
+                Icon(Icons.warning_amber_rounded,
+                    color: Colors.orange, size: 16),
+                SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    "Solde minimum requis: ${cartesInfo[selectedCarteType]!["solde_minimum"]}€",
+                    style: TextStyle(
+                      color: Colors.orange[700],
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          items: options.map((option) {
-            final info = cartesInfo[option]!;
-            return DropdownMenuItem(
-              value: option,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(info["nom"],
-                      style: const TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold)),
-                  Text(
-                    "Plafonds: ${info["plafond_paiement"]}€ / ${info["plafond_retrait"]}€",
-                    style: TextStyle(color: Colors.grey[700], fontSize: 12),
-                  ),
-                  Text(
-                    "Solde minimum: ${info["solde_minimum"]}€",
-                    style: TextStyle(color: Colors.grey[700], fontSize: 12),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              selectedCarteType = value;
-              if (value != null) {
-                _updateFraisCard(value);
-              }
-            });
-          },
-        ),
-        if (selectedCarteType != null) ...[
-          const SizedBox(height: 10),
-          Text(
-            "⚠️ Cette carte nécessite un solde minimum de ${cartesInfo[selectedCarteType]!["solde_minimum"]}€",
-            style: const TextStyle(color: Colors.orange, fontSize: 12),
-          ),
-        ],
       ],
     );
   }

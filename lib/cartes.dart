@@ -40,69 +40,71 @@ class _CartesPageState extends State<CartesPage>
   Widget build(BuildContext context) {
     return CommonHeader(
       title: 'Mes Cartes',
-      body: Column(
-        children: [
-          SizedBox(height: 50),
-          // Carte bancaire avec animation de retournement
-          GestureDetector(
-            onTap: _flipCard,
-            child: AnimatedBuilder(
-              animation: _animation,
-              builder: (context, child) {
-                return Transform(
-                  transform: Matrix4.identity()
-                    ..setEntry(3, 2, 0.001)
-                    ..rotateY(_animation.value * 3.141592),
-                  alignment: Alignment.center,
-                  child: _animation.value <= 0.5
-                      ? _buildFrontCard()
-                      : _buildBackCard(),
-                );
-              },
+      body: SafeArea(
+        child: Column(
+          children: [
+            SizedBox(height: 20),
+            // Carte bancaire avec animation de retournement
+            GestureDetector(
+              onTap: _flipCard,
+              child: AnimatedBuilder(
+                animation: _animation,
+                builder: (context, child) {
+                  return Transform(
+                    transform: Matrix4.identity()
+                      ..setEntry(3, 2, 0.001)
+                      ..rotateY(_animation.value * 3.141592),
+                    alignment: Alignment.center,
+                    child: _animation.value <= 0.5
+                        ? _buildFrontCard()
+                        : _buildBackCard(),
+                  );
+                },
+              ),
             ),
-          ),
-          SizedBox(height: 20),
-          // Titre "Transactions"
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Transactions',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue.shade900,
+            SizedBox(height: 16),
+            // Titre "Transactions"
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Transactions',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue.shade900,
+                  ),
                 ),
               ),
             ),
-          ),
-          SizedBox(height: 10),
-          // Liste des transactions
-          Expanded(
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              itemCount: 3,
-              itemBuilder: (context, index) {
-                return _buildTransactionItem(
-                  index == 0
-                      ? Icons.payment
-                      : (index == 1
-                          ? Icons.shopping_cart
-                          : Icons.directions_car),
-                  index == 0 ? 'netflix' : (index == 1 ? 'psplus' : 'yassir'),
-                  index == 0 ? '-570 da' : (index == 1 ? '-205 da' : '-398 da'),
-                  index == 0 ? 'Paid' : 'Failed',
-                  index == 0
-                      ? '14 Juillet 2025'
-                      : (index == 1 ? '02 Juillet 2025' : '10 juin 2025'),
-                );
-              },
+            SizedBox(height: 8),
+            // Liste des transactions
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
+                itemCount: 3,
+                itemBuilder: (context, index) {
+                  return _buildTransactionItem(
+                    index == 0
+                        ? Icons.payment
+                        : (index == 1
+                            ? Icons.shopping_cart
+                            : Icons.directions_car),
+                    index == 0 ? 'netflix' : (index == 1 ? 'psplus' : 'yassir'),
+                    index == 0
+                        ? '-570 da'
+                        : (index == 1 ? '-205 da' : '-398 da'),
+                    index == 0 ? 'Paid' : 'Failed',
+                    index == 0
+                        ? '14 Juillet 2025'
+                        : (index == 1 ? '02 Juillet 2025' : '10 juin 2025'),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -110,9 +112,9 @@ class _CartesPageState extends State<CartesPage>
   // Carte recto
   Widget _buildFrontCard() {
     return Container(
-      width: MediaQuery.of(context).size.width * 0.8,
-      height: 200, // Hauteur fixe pour la carte
-      margin: EdgeInsets.all(16),
+      width: MediaQuery.of(context).size.width * 0.85,
+      height: 180,
+      margin: EdgeInsets.symmetric(horizontal: 16),
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -180,9 +182,9 @@ class _CartesPageState extends State<CartesPage>
   // Carte verso
   Widget _buildBackCard() {
     return Container(
-      width: MediaQuery.of(context).size.width * 0.9,
-      height: 200, // Hauteur fixe pour la carte
-      margin: EdgeInsets.all(16),
+      width: MediaQuery.of(context).size.width * 0.85,
+      height: 180,
+      margin: EdgeInsets.symmetric(horizontal: 16),
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(

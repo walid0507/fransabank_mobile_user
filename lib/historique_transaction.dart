@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:projet1/header3.dart';
+import 'package:projet1/pret.dart';
 
 class HistoriqueTransactionScreen extends StatefulWidget {
   final Map<String, dynamic>? transaction;
@@ -29,6 +30,15 @@ class _HistoriqueTransactionScreenState
             title: 'Historique des transactions',
             icon: Icons.arrow_back,
             onBackPressed: () => Navigator.pop(context),
+            rightIcon: Icons.account_balance,
+            onLogoutPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const LoanPage(),
+                ),
+              );
+            },
           ),
           Expanded(
             child: widget.transaction != null
@@ -234,7 +244,7 @@ class _HistoriqueTransactionScreenState
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
-                        borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withOpacity(0.1),
@@ -244,11 +254,11 @@ class _HistoriqueTransactionScreenState
             ),
           ],
         ),
-                        child: Row(
-                          children: [
-                            Container(
+        child: Row(
+          children: [
+            Container(
               padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
+              decoration: BoxDecoration(
                 color: isReception
                     ? Colors.green.withOpacity(0.1)
                     : Colors.red.withOpacity(0.1),
@@ -260,39 +270,39 @@ class _HistoriqueTransactionScreenState
               ),
             ),
             const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
                     otherClientName,
                     style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                                  Text(
+                  Text(
                     '${date.hour}:${date.minute}',
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Text(
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
               '${isReception ? '+' : '-'}${montant.toStringAsFixed(2)}DZD',
-                              style: TextStyle(
+              style: TextStyle(
                 color: isReception ? Colors.green : Colors.red,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
