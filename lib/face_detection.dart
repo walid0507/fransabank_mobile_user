@@ -17,7 +17,7 @@ class FaceDetectionScreen extends StatefulWidget {
   State<FaceDetectionScreen> createState() => _FaceDetectionScreenState();
 }
 
-class _FaceDetectionScreenState extends State<FaceDetectionScreen> 
+class _FaceDetectionScreenState extends State<FaceDetectionScreen>
     with SingleTickerProviderStateMixin {
   File? _image;
   File? _capturedImage;
@@ -141,7 +141,8 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen>
   // }
 
   Future<void> _detectFaces() async {
-    if (_capturedImage == null) { // On ne vérifie plus _image
+    if (_capturedImage == null) {
+      // On ne vérifie plus _image
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Veuillez capturer une photo.'),
@@ -221,23 +222,53 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen>
       if (kDebugMode) {
         print('Condition "distance <= threshold" exécutée.');
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Les visages correspondent ! Distance : ${distance.toStringAsFixed(2)}',
-          ),
-        ),
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Succès'),
+            content: const Text(
+                'Les visages correspondent, votre demande a été envoyée'),
+            actions: [
+              _buildModernButton(
+                text: 'OK',
+                onPressed: () {
+                  Navigator.of(context).pop(); // Ferme la boîte de dialogue
+                  Navigator.pushReplacementNamed(
+                      context, '/home'); // Redirige vers home.dart
+                },
+                width: 100,
+                height: 40,
+              ),
+            ],
+          );
+        },
       );
     } else {
       if (kDebugMode) {
         print('Condition "distance > threshold" exécutée.');
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Les visages ne correspondent pas. Distance : ${distance.toStringAsFixed(2)}',
-          ),
-        ),
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Échec'),
+            content: const Text('Les visages ne correspondent pas, réessayez'),
+            actions: [
+              _buildModernButton(
+                text: 'OK',
+                onPressed: () {
+                  Navigator.of(context).pop(); // Ferme la boîte de dialogue
+                  _navigateToLivenessDetection(); // Relance la reconnaissance faciale
+                },
+                width: 100,
+                height: 40,
+              ),
+            ],
+          );
+        },
       );
     }
 
@@ -278,7 +309,6 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen>
           CurvedHeader(
             height: 0.25,
             title: 'Reconnaissance faciale',
-            
             onBackPressed: () => Navigator.pop(context),
             child: Container(),
           ),
@@ -324,7 +354,7 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen>
       ),
     );
   }
-  
+
   Widget _imagePreviewSection() {
     return Column(
       children: [
@@ -343,7 +373,7 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen>
       ],
     );
   }
-  
+
   Widget _capturedImagePreviewSection() {
     return Column(
       children: [

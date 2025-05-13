@@ -169,12 +169,41 @@ class _FaceLivenessScreenState extends State<FaceLivenessScreen> {
 
   Future<void> _takeFinalPicture() async {
     try {
-      final XFile finalImage = await _cameraController!.takePicture();
-
-      // Attendre un peu pour montrer l'animation de succès
-      Future.delayed(const Duration(milliseconds: 800), () {
-        Navigator.pop(context, File(finalImage.path));
-      });
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Confirmation'),
+            content: const Text('Voulez-vous prendre la photo maintenant ?'),
+            actions: [
+              _buildModernButton(
+                text: 'Oui',
+                onPressed: () async {
+                  Navigator.of(context).pop(); // Ferme la boîte de dialogue
+                  final XFile finalImage =
+                      await _cameraController!.takePicture();
+                  // Attendre un peu pour montrer l'animation de succès
+                  Future.delayed(const Duration(milliseconds: 800), () {
+                    Navigator.pop(context, File(finalImage.path));
+                  });
+                },
+                width: 100,
+                height: 40,
+              ),
+              _buildModernButton(
+                text: 'Non',
+                onPressed: () {
+                  Navigator.of(context).pop(); // Ferme la boîte de dialogue
+                  _startFaceDetection(); // Relance la détection faciale
+                },
+                width: 100,
+                height: 40,
+              ),
+            ],
+          );
+        },
+      );
     } catch (e) {
       // En cas d'erreur, utiliser l'image déjà capturée
       Navigator.pop(
@@ -358,6 +387,33 @@ class _FaceLivenessScreenState extends State<FaceLivenessScreen> {
         color: completed ? Colors.green : Colors.grey[800],
       ),
       child: Icon(icon, color: Colors.white, size: 24),
+    );
+  }
+
+  Widget _buildModernButton({
+    required String text,
+    required VoidCallback onPressed,
+    required double width,
+    required double height,
+  }) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        minimumSize: Size(width, height),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 }

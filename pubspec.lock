@@ -408,7 +408,7 @@ packages:
     source: hosted
     version: "0.14.0"
   google_mlkit_face_detection:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: google_mlkit_face_detection
       sha256: "65988405c884fd84a4ccc8bded7b5e3e4c33362f6f4eaaa94818bdaaba7bab7d"
