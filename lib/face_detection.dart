@@ -157,13 +157,19 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen>
     final capturedInputImage = ImageConverter.convertFileToInputImage(
       _capturedImage!,
     );
+    InputImage rotatedcapturedInputImage;
+
+    rotatedcapturedInputImage = ImageConverter.rotateInputImage(
+      capturedInputImage,
+      270,
+    );
 
     List<Face> faces = [];
     List<Face> capturedFaces = [];
 
     try {
       faces = await faceDetector.processImage(inputImage);
-      capturedFaces = await faceDetector.processImage(capturedInputImage);
+      capturedFaces = await faceDetector.processImage(rotatedcapturedInputImage);
 
       if (faces.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -202,7 +208,7 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen>
     await _mlService.initializeInterpreter();
     final uploadedVector = await _mlService.predict(inputImage, face);
     final capturedVector = await _mlService.predict(
-      capturedInputImage,
+      rotatedcapturedInputImage,
       capturedFace,
     );
 

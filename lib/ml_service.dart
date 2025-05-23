@@ -88,8 +88,7 @@ class MLService {
 
   imglib.Image cropFace(InputImage image, Face faceDetected) {
     imglib.Image convertedImage = _convertInputImage(image);
-    // Removed unused variable 'rotatedImage'
-    imglib.copyRotate(convertedImage, -90);
+    // Removed unused variable 'rotatedImage
     double x = faceDetected.boundingBox.left - 10.0;
     double y = faceDetected.boundingBox.top - 10.0;
     double w = faceDetected.boundingBox.width + 10.0;
