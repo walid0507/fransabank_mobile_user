@@ -47,6 +47,35 @@ class ImageConverter {
 
     return imglib.copyCrop(image, x.round(), y.round(), w.round(), h.round());
   }
+    static InputImage rotateInputImage(InputImage inputImage, int angleDegrees) {
+    // Convertir l'image en imglib.Image pour la manipulation
+    final imglibImage = convertFileToImage(File(inputImage.filePath!));
+    if (imglibImage == null) {
+      throw Exception('Impossible de convertir l\'image pour la rotation.');
+    }
+
+    // Faire pivoter l'image selon l'angle spécifié
+    imglib.Image rotated;
+    switch (angleDegrees) {
+      case 90:
+        rotated = imglib.copyRotate(imglibImage, 90);
+        break;
+      case 180:
+        rotated = imglib.copyRotate(imglibImage, 180);
+        break;
+      case 270:
+        rotated = imglib.copyRotate(imglibImage, 270);
+        break;
+      default:
+        rotated = imglibImage;
+    }
+
+    // Convertir l'image pivotée en InputImage
+    final tempFile = File(inputImage.filePath!);
+    tempFile.writeAsBytesSync(imglib.encodeJpg(rotated));
+
+    return InputImage.fromFile(tempFile);
+  }
 }
 
 imglib.Image? convertToImage(CameraImage image) {

@@ -17,7 +17,7 @@ class FaceDetectionScreen extends StatefulWidget {
   State<FaceDetectionScreen> createState() => _FaceDetectionScreenState();
 }
 
-class _FaceDetectionScreenState extends State<FaceDetectionScreen> 
+class _FaceDetectionScreenState extends State<FaceDetectionScreen>
     with SingleTickerProviderStateMixin {
   File? _image;
   File? _capturedImage;
@@ -141,7 +141,8 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen>
   // }
 
   Future<void> _detectFaces() async {
-    if (_capturedImage == null) { // On ne vérifie plus _image
+    if (_capturedImage == null) {
+      // On ne vérifie plus _image
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Veuillez capturer une photo.'),
@@ -156,13 +157,22 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen>
     final capturedInputImage = ImageConverter.convertFileToInputImage(
       _capturedImage!,
     );
+    InputImage rotatedcapturedInputImage;
+
+    rotatedcapturedInputImage = capturedInputImage;
+
+    // rotatedcapturedInputImage = ImageConverter.rotateInputImage(
+    //   capturedInputImage,
+    //   270,
+    // );
 
     List<Face> faces = [];
     List<Face> capturedFaces = [];
 
     try {
       faces = await faceDetector.processImage(inputImage);
-      capturedFaces = await faceDetector.processImage(capturedInputImage);
+      capturedFaces =
+          await faceDetector.processImage(rotatedcapturedInputImage);
 
       if (faces.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -201,7 +211,7 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen>
     await _mlService.initializeInterpreter();
     final uploadedVector = await _mlService.predict(inputImage, face);
     final capturedVector = await _mlService.predict(
-      capturedInputImage,
+      rotatedcapturedInputImage,
       capturedFace,
     );
 
@@ -209,7 +219,7 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen>
       capturedVector.cast<double>(),
       uploadedVector.cast<double>(),
     );
-    final threshold = 1;
+    final threshold = 0.8;
 
     if (kDebugMode) {
       print(
@@ -221,52 +231,48 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen>
       if (kDebugMode) {
         print('Condition "distance <= threshold" exécutée.');
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Les visages correspondent ! Distance : ${distance.toStringAsFixed(2)}',
-          ),
-        ),
-      );
+      _showResultDialog(isSuccess: true, distance: distance);
     } else {
       if (kDebugMode) {
         print('Condition "distance > threshold" exécutée.');
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Les visages ne correspondent pas. Distance : ${distance.toStringAsFixed(2)}',
-          ),
-        ),
-      );
+      _showResultDialog(isSuccess: false, distance: distance);
     }
+  }
 
-    // Afficher les images prétraitées
+  void _showResultDialog({required bool isSuccess, required double distance}) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Images Prétraitées'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Image Importée :'),
-              imageFromImgLib(uploadedCroppedFace),
-              const SizedBox(height: 10),
-              const Text('Image Capturée :'),
-              imageFromImgLib(capturedCroppedFace),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Fermer'),
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: isSuccess ? Colors.green[50] : Colors.red[50],
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isSuccess ? Icons.check_circle : Icons.cancel,
+              color: isSuccess ? Colors.green : Colors.red,
+              size: 60,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              isSuccess ? 'Visages reconnus !' : 'Visages non reconnus.',
+              style: TextStyle(
+                color: isSuccess ? Colors.green[900] : Colors.red[900],
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
-        );
-      },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Fermer'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -278,7 +284,6 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen>
           CurvedHeader(
             height: 0.25,
             title: 'Reconnaissance faciale',
-            
             onBackPressed: () => Navigator.pop(context),
             child: Container(),
           ),
@@ -324,7 +329,7 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen>
       ),
     );
   }
-  
+
   Widget _imagePreviewSection() {
     return Column(
       children: [
@@ -343,7 +348,7 @@ class _FaceDetectionScreenState extends State<FaceDetectionScreen>
       ],
     );
   }
-  
+
   Widget _capturedImagePreviewSection() {
     return Column(
       children: [
