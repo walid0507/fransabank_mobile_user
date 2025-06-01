@@ -59,7 +59,7 @@ class _DocumentsState extends State<Documents> {
     int totalRequired =
         documentStates.length; // Nombre total de documents requis
     return (selectedCount / totalRequired)
-        .clamp(0.0, 1.0); // ✅ Limite entre 0 et 1
+        .clamp(0.0, 1.0); //  Limite entre 0 et 1
   }
 
   // Mettre à jour l'état d'un document
@@ -263,7 +263,7 @@ class _DocumentsState extends State<Documents> {
                                         builder: (context) => const Photo()),
                                   );
                                 } catch (e) {
-                                  print("❌ Erreur lors de l'upload: $e");
+                                  print(" Erreur lors de l'upload: $e");
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                         content: Text(
@@ -273,7 +273,7 @@ class _DocumentsState extends State<Documents> {
                                   setState(() => _isUploading = false);
                                 }
                               } catch (e) {
-                                print("❌ Erreur générale: $e");
+                                print(" Erreur générale: $e");
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                       content:
@@ -359,9 +359,9 @@ class _DocumentsState extends State<Documents> {
             });
 
             print(
-                "📂 Fichiers ajoutés pour $title: ${files.map((f) => f.path).toList()}");
+                " Fichiers ajoutés pour $title: ${files.map((f) => f.path).toList()}");
             print(
-                "📊 Nouvelle progression : ${(uploadProgress * 100).toInt()}%");
+                " Nouvelle progression : ${(uploadProgress * 100).toInt()}%");
 
             // ScaffoldMessenger.of(context).showSnackBar(
             //   SnackBar(content: Text('${files.length} fichier(s) ajouté(s) pour $title')),

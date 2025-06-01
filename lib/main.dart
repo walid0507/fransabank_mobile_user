@@ -169,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
         await prefs.setString('access_token', token);
         await prefs.setString('last_email', email); // Sauvegarder l'email actuel
         await _saveEmail(email);
-        print("✅ Connexion réussie, Token JWT : $token");
+        print(" Connexion réussie, Token JWT : $token");
         _showMessage("Connexion réussie", isError: false);
 
         Navigator.pushReplacement(

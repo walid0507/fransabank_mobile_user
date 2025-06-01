@@ -85,7 +85,7 @@ class _CreateAccountStep2State extends State<CreateAccountStep2> {
         "Nom_jeune_fille": _maidenNameController.text,
         "lieu_denaissance":_birthplaceController.text,
         "situation_familliale":
-            situationFamiliale, // ✅ Ajout de la situation familiale
+            situationFamiliale, //  Ajout de la situation familiale
       });
 
       if (nationality1 == 'Américaine' || nationality2 == 'Américaine') {

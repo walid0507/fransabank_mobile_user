@@ -97,10 +97,10 @@ class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
     });
 
     try {
-      print("🚀 Début de l'envoi de la demande de carte");
-      print("📱 Type de carte sélectionné: $selectedCarteType");
-      print("🔑 Client ID: $_clientId");
-      print("🔑 Token: $_token");
+      print(" Début de l'envoi de la demande de carte");
+      print(" Type de carte sélectionné: $selectedCarteType");
+      print(" Client ID: $_clientId");
+      print(" Token: $_token");
 
       final response = await ApiService.demanderCarte(
         _clientId,
@@ -108,7 +108,7 @@ class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
         _token,
       );
 
-      print("✅ Réponse reçue: $response");
+      print(" Réponse reçue: $response");
 
       if (!mounted) return;
 
@@ -125,7 +125,7 @@ class _DemandeCarteScreenState extends State<DemandeCarteScreen> {
       if (!mounted) return;
       Navigator.pop(context);
     } catch (e) {
-      print("❌ Erreur détaillée lors de l'envoi de la demande:");
+      print(" Erreur détaillée lors de l'envoi de la demande:");
       print("Type d'erreur: ${e.runtimeType}");
       print("Message d'erreur: $e");
 

@@ -81,7 +81,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // 🌟 Fond blanc au lieu d'un écran noir
+      backgroundColor: Colors.white, //  Fond blanc au lieu d'un écran noir
       body: Stack(
         fit: StackFit.expand,
         children: [

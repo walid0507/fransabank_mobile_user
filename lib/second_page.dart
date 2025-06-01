@@ -79,7 +79,7 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
     if (mrzLines == null) {
       return "Commencez par scanner le MRZ de votre carte d'identité.";
     } else if (mrzData != null && !showResults) {
-      return "✅ L'extraction est terminée avec succès ! Appuyez sur 'Voir les résultats' pour consulter les informations de votre carte.";
+      return " L'extraction est terminée avec succès ! Appuyez sur 'Voir les résultats' pour consulter les informations de votre carte.";
     } else {
       return ""; // On retourne une chaîne vide car on utilise _buildInstructionStep
     }
@@ -576,15 +576,15 @@ class _SecondPageState extends State<SecondPage> with TickerProviderStateMixin {
         final personalNumber = await passport.readPersonalNumber();
 
         if (personalNumber != null && personalNumber.isNotEmpty) {
-          print("✅ Numéro d'identité : $personalNumber");
+          print(" Numéro d'identité : $personalNumber");
           setState(() {
             this.numeroIdentite = personalNumber;
           });
         } else {
-          print("❌ Le Personal Number est vide ou non disponible.");
+          print(" Le Personal Number est vide ou non disponible.");
         }
       } catch (e, stackTrace) {
-        print("❌ Erreur lors de la lecture du Personal Number : $e");
+        print(" Erreur lors de la lecture du Personal Number : $e");
         print("StackTrace : $stackTrace");
         if (mounted) {
           Navigator.of(context)

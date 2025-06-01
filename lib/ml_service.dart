@@ -33,18 +33,18 @@ class MLService {
         options: options,
       );
       isInitialized = true;
-      debugPrint('✅ Interpreter loaded with GPU');
+      debugPrint(' Interpreter loaded with GPU');
     } catch (e) {
-      debugPrint('⚠️ GPU init failed: $e');
-      debugPrint('⏬ Falling back to CPU...');
+      debugPrint(' GPU init failed: $e');
+      debugPrint(' Falling back to CPU...');
       try {
         interpreter = await Interpreter.fromAsset(
           'assets/mobilefacenet.tflite',
         );
         isInitialized = true;
-        debugPrint('✅ Interpreter loaded with CPU');
+        debugPrint(' Interpreter loaded with CPU');
       } catch (e) {
-        debugPrint('❌ Interpreter init failed completely: $e');
+        debugPrint(' Interpreter init failed completely: $e');
         isInitialized = false;
       }
     }

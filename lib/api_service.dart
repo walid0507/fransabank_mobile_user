@@ -16,7 +16,7 @@ class ApiService {
       String? refreshToken = prefs.getString('refresh_token');
 
       if (refreshToken == null) {
-        print("⚠️ Refresh token non trouvé dans SharedPreferences !");
+        print(" Refresh token non trouvé dans SharedPreferences !");
         return null;
       }
 
@@ -31,10 +31,10 @@ class ApiService {
         final newToken = data['access'];
 
         await prefs.setString('access_token', newToken);
-        print("✅ Nouveau token sauvegardé avec succès");
+        print(" Nouveau token sauvegardé avec succès");
         return newToken;
       } else {
-        print("❌ Échec du rafraîchissement du token : ${response.body}");
+        print(" Échec du rafraîchissement du token : ${response.body}");
         return null;
       }
     } catch (e) {
@@ -124,7 +124,7 @@ class ApiService {
       // Ajouter plusieurs `type_document_id` (répétition de la clé)
       for (int i = 0; i < typeDocumentIds.length; i++) {
         request.fields['type_document_id[$i]'] =
-            typeDocumentIds[i]; // ✅ Envoie chaque ID séparément
+            typeDocumentIds[i]; //  Envoie chaque ID séparément
       }
 
       // Ajouter plusieurs fichiers sous `documents[]`
@@ -141,14 +141,14 @@ class ApiService {
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('✅ Documents uploadés avec succès !');
+        print(' Documents uploadés avec succès !');
         print('Réponse : ${response.body}');
       } else {
-        print('❌ Erreur lors de l\'upload : ${response.body}');
+        print(' Erreur lors de l\'upload : ${response.body}');
         throw Exception('Erreur ${response.statusCode}: ${response.body}');
       }
     } catch (e) {
-      print('❌ Erreur lors de l\'upload : $e');
+      print(' Erreur lors de l\'upload : $e');
       rethrow;
     }
   }
@@ -162,15 +162,15 @@ class ApiService {
       if (token == null) {
         throw Exception("Token non trouvé");
       }
-      print("🔗 URL appelée : ${Config.baseApiUrl}/api/client/mes-comptes/");
+      print(" URL appelée : ${Config.baseApiUrl}/api/client/mes-comptes/");
 
       final response = await authenticatedRequest(
         "${Config.baseApiUrl}/api/client/mes-comptes/",
         'GET',
       );
       print(
-          "🔗 URL appelée : ${response.request?.url}"); // URL finale après redirections
-      print("📊 Statut HTTP : ${response.statusCode}");
+          " URL appelée : ${response.request?.url}"); // URL finale après redirections
+      print(" Statut HTTP : ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -212,13 +212,13 @@ class ApiService {
       );
 
       if (response.statusCode == 201) {
-        print("✅ Demande de visio envoyée avec succès !");
+        print(" Demande de visio envoyée avec succès !");
       } else {
         final error = jsonDecode(response.body);
         throw Exception("Erreur : ${error['error'] ?? response.body}");
       }
     } catch (e) {
-      print("❌ Erreur lors de la demande de visio: $e");
+      print(" Erreur lors de la demande de visio: $e");
       rethrow;
     }
   }
@@ -285,9 +285,9 @@ class ApiService {
             'Échec de l\'upload du fichier. Code: ${response.statusCode}, Message: ${response.body}');
       }
 
-      print("✅ Fichier uploadé avec succès !");
+      print(" Fichier uploadé avec succès !");
     } catch (e) {
-      print("❌ Erreur lors de l'upload du fichier: $e");
+      print(" Erreur lors de l'upload du fichier: $e");
       throw e;
     }
   }
@@ -305,9 +305,9 @@ class ApiService {
     );
 
     if (response.statusCode == 200) {
-      print("Le token est valide ✅");
+      print("Le token est valide ");
     } else {
-      print("Token invalide ❌ : ${response.statusCode} - ${response.body}");
+      print("Token invalide  : ${response.statusCode} - ${response.body}");
     }
   }
 
@@ -321,10 +321,10 @@ class ApiService {
     final url = Uri.parse('${clientBaseUrl}${cleanClientId}/demande-carte/');
 
     try {
-      print("🚀 Début de la demande de carte");
-      print("📍 URL: $url");
-      print("🔑 Token utilisé: $token");
-      print("📦 Données envoyées: ${jsonEncode({"type_carte": typeCarte})}");
+      print(" Début de la demande de carte");
+      print(" URL: $url");
+      print(" Token utilisé: $token");
+      print(" Données envoyées: ${jsonEncode({"type_carte": typeCarte})}");
 
       final response = await http.post(
         url,
@@ -336,7 +336,7 @@ class ApiService {
         body: jsonEncode({"type_carte": typeCarte}),
       );
 
-      print("📥 Réponse reçue:");
+      print(" Réponse reçue:");
       print("  → Code de statut: ${response.statusCode}");
       print("  → Corps: ${response.body}");
       print("  → Headers: ${response.headers}");
@@ -353,7 +353,7 @@ class ApiService {
         }
       }
     } catch (e) {
-      print("❌ Erreur lors de la demande de carte: $e");
+      print(" Erreur lors de la demande de carte: $e");
       rethrow;
     }
   }
@@ -389,11 +389,11 @@ class ApiService {
         if (data["access"] != null && data["refresh"] != null) {
           await prefs.setString("access_token", data["access"]);
           await prefs.setString("refresh_token", data["refresh"]);
-          print("✅ Token et refresh_token sauvegardés !");
+          print(" Token et refresh_token sauvegardés !");
         }
         if (data["client_id"] != null) {
           await prefs.setString("client_id", data["client_id"]);
-          print("✅ client_id sauvegardé : ${data["client_id"]}");
+          print(" client_id sauvegardé : ${data["client_id"]}");
         }
 
         String? savedToken = await prefs.getString('access_token');
@@ -577,7 +577,7 @@ class ApiService {
         throw Exception("Erreur ${response.statusCode}: ${response.body}");
       }
     } catch (e) {
-      print("❌ Erreur lors de la récupération des visioconférences: $e");
+      print(" Erreur lors de la récupération des visioconférences: $e");
       return [];
     }
   }
